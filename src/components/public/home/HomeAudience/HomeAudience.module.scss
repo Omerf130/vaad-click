@@ -1,0 +1,101 @@
+@use "../../../../styles/tokens" as *;
+@use "../../../../styles/breakpoints" as *;
+
+.section {
+  padding-block: $space-10;
+  background-color: $color-bg-surface;
+  border-block: 1px solid $color-border;
+}
+
+.header {
+  max-width: 44rem;
+  margin-block-end: $space-8;
+}
+
+.kicker {
+  display: inline-block;
+  margin-block-end: $space-3;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $color-accent;
+}
+
+.title {
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  color: $color-primary;
+  margin-block-end: $space-4;
+}
+
+.intro {
+  margin: 0;
+  font-size: $font-size-lg;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.editorial {
+  display: grid;
+  gap: $space-6;
+
+  @include lg-up {
+    grid-template-columns: 1fr 1fr;
+    gap: $space-8;
+    align-items: start;
+  }
+}
+
+.block {
+  position: relative;
+  padding: $space-7 $space-6 $space-6;
+  background-color: $color-bg-page;
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 4px;
+  }
+}
+
+.committees::before {
+  background-color: $color-primary;
+}
+
+.management::before {
+  background-color: $color-accent;
+}
+
+.index {
+  display: block;
+  margin-block-end: $space-4;
+  font-size: clamp(2.5rem, 4vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(18 40 73 / 10%);
+  letter-spacing: -0.04em;
+}
+
+.blockTitle {
+  font-size: clamp(1.25rem, 2vw, $font-size-2xl);
+  color: $color-primary;
+  margin-block-end: $space-3;
+}
+
+.blockBody {
+  margin: 0;
+  font-size: $font-size-md;
+  color: $color-text;
+  line-height: $line-height-relaxed;
+}
+
+.management {
+  @include lg-up {
+    margin-block-start: $space-8;
+  }
+}

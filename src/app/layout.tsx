@@ -10,7 +10,11 @@ const notoSansHebrew = Noto_Sans_Hebrew({
 });
 
 export const metadata: Metadata = {
-  title: "ועד בקליק",
+  metadataBase: new URL("https://vaadclick.co.il"),
+  title: {
+    default: "ועד בקליק",
+    template: "%s | ועד בקליק",
+  },
   description: "פלטפורמה לניהול גביית חובות ועד בית באמצעות משרד עורכי דין",
 };
 

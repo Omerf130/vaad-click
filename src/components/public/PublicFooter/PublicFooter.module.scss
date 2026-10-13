@@ -1,0 +1,84 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.footer {
+  background-color: $color-navy-900;
+  color: $color-text-on-dark-muted;
+  padding-block: $space-10 $space-8;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: $space-8;
+}
+
+.columns {
+  display: grid;
+  gap: $space-8;
+
+  @include md-up {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+    gap: $space-10;
+    align-items: start;
+  }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $font-size-xl;
+  font-weight: 700;
+  color: $color-text-on-dark;
+  margin-block-end: $space-3;
+
+  &::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: $color-accent;
+  }
+}
+
+.description {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-on-dark-muted;
+  max-width: 30rem;
+  line-height: $line-height-relaxed;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.navTitle {
+  margin: 0;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: $color-text-on-dark;
+}
+
+.navLink {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text-on-dark-muted;
+  text-decoration: none;
+
+  &:hover {
+    color: $color-accent-400;
+  }
+}
+
+.copy {
+  margin: 0;
+  font-size: $font-size-xs;
+  color: rgb(148 163 184 / 85%);
+  padding-block-start: $space-6;
+  border-block-start: 1px solid rgb(255 255 255 / 10%);
+}

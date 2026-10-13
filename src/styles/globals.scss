@@ -1,6 +1,7 @@
 @use "reset";
 @use "typography";
 @use "mixins";
+@use "skip-link" as *;
 
 :focus {
   outline: none;

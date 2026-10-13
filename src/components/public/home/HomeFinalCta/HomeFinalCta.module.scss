@@ -1,0 +1,68 @@
+@use "../../../../styles/tokens" as *;
+@use "../../../../styles/breakpoints" as *;
+
+.section {
+  position: relative;
+  overflow: hidden;
+  padding-block: $space-10;
+  background: linear-gradient(128deg, $color-navy-800 0%, $color-navy-900 72%);
+  color: $color-text-on-dark;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -10%;
+    top: -40%;
+    width: 45%;
+    height: 120%;
+    background: radial-gradient(
+      ellipse at center,
+      rgb(34 128 235 / 18%) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+}
+
+.inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+  max-width: 44rem;
+  padding-inline: $space-2;
+
+  @include md-up {
+    padding-inline: 0;
+  }
+}
+
+.accentBar {
+  width: 3.5rem;
+  height: 4px;
+  border-radius: $radius-pill;
+  background-color: $color-accent;
+}
+
+.title {
+  font-size: clamp(1.75rem, 3.2vw, 2.65rem);
+  color: $color-text-on-dark;
+  margin: 0;
+  line-height: $line-height-tight;
+}
+
+.body {
+  margin: 0;
+  font-size: $font-size-lg;
+  color: $color-text-on-dark-muted;
+  line-height: $line-height-relaxed;
+  max-width: 36rem;
+}
+
+.ctaWrap {
+  margin-block-start: $space-2;
+}
+
+.hintOnDark {
+  color: $color-text-on-dark-muted;
+}

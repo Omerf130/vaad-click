@@ -1,0 +1,90 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: rgb(255 255 255 / 94%);
+  backdrop-filter: blur(10px);
+  border-block-end: 1px solid $color-border;
+  box-shadow: 0 1px 0 rgb(18 40 73 / 4%);
+}
+
+.inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  padding-block: $space-3;
+
+  @include md-up {
+    padding-block: $space-4;
+  }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: clamp(1.05rem, 1.6vw, $font-size-xl);
+  font-weight: 700;
+  color: $color-primary;
+  text-decoration: none;
+  letter-spacing: -0.03em;
+
+  &::before {
+    content: "";
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background-color: $color-accent;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    color: $color-navy-700;
+  }
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2 $space-5;
+  order: 3;
+  width: 100%;
+
+  @include md-up {
+    order: 0;
+    width: auto;
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+.navLink {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text-muted;
+  text-decoration: none;
+  padding-block: $space-2;
+  border-block-end: 2px solid transparent;
+
+  &:hover {
+    color: $color-primary;
+    border-block-end-color: rgb(34 128 235 / 35%);
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+  margin-inline-start: auto;
+
+  @include md-up {
+    margin-inline-start: 0;
+  }
+}

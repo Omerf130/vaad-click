@@ -1,0 +1,124 @@
+@use "../../../../styles/tokens" as *;
+@use "../../../../styles/breakpoints" as *;
+
+.section {
+  padding-block: $space-10;
+  background-color: $color-bg-page;
+}
+
+.header {
+  max-width: 42rem;
+  margin-block-end: $space-8;
+}
+
+.title {
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  color: $color-primary;
+  margin-block-end: $space-4;
+}
+
+.intro {
+  margin: 0;
+  font-size: $font-size-lg;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-inline-end: 1.65rem;
+    top: 1.5rem;
+    bottom: 1.5rem;
+    width: 2px;
+    background: linear-gradient(
+      180deg,
+      $color-accent-400 0%,
+      rgb(34 128 235 / 25%) 100%
+    );
+    pointer-events: none;
+
+    @include md-up {
+      inset-inline-end: 2.15rem;
+    }
+  }
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: $space-5;
+  padding-block: $space-6;
+  padding-inline-end: $space-6;
+  border-block-end: 1px solid rgb(221 227 236 / 70%);
+
+  &:last-child {
+    border-block-end: none;
+  }
+
+  @include md-up {
+    padding-inline-end: $space-10;
+
+    &:nth-child(2) {
+      padding-inline-start: $space-6;
+    }
+
+    &:nth-child(3) {
+      padding-inline-start: $space-10;
+    }
+  }
+}
+
+.number {
+  font-size: clamp(2.75rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1;
+  color: $color-accent;
+  letter-spacing: -0.05em;
+  min-width: 3.5rem;
+  text-align: end;
+}
+
+.stepTitle {
+  font-size: clamp(1.125rem, 2vw, $font-size-xl);
+  color: $color-primary;
+  margin-block-end: $space-2;
+}
+
+.stepBody {
+  margin: 0;
+  font-size: $font-size-md;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+  max-width: 38rem;
+}
+
+.stepContent {
+  padding-block-start: $space-2;
+}
+
+.stepMarker {
+  position: absolute;
+  inset-inline-end: 1.15rem;
+  top: 2.75rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background-color: $color-bg-surface;
+  border: 2px solid $color-accent;
+  box-shadow: 0 0 0 4px rgb(34 128 235 / 12%);
+
+  @include md-up {
+    inset-inline-end: 1.65rem;
+  }
+}

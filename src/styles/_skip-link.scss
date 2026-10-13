@@ -1,0 +1,24 @@
+@use "tokens" as *;
+@use "mixins" as *;
+
+.skipLink {
+  @include visually-hidden;
+
+  &:focus {
+    position: fixed;
+    top: $space-3;
+    inset-inline-start: $space-3;
+    z-index: 100;
+    width: auto;
+    height: auto;
+    padding: $space-3 $space-4;
+    clip: auto;
+    overflow: visible;
+    background-color: $color-bg-surface;
+    color: $color-primary;
+    font-weight: 600;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    box-shadow: $shadow-md;
+  }
+}

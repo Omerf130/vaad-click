@@ -1,0 +1,93 @@
+// VaadClick design tokens — CP1B approved visual foundation.
+
+// Brand
+$color-navy-900: #0c1f3d;
+$color-navy-800: #122849;
+$color-navy-700: #1a3354;
+$color-accent-600: #1a6fd4;
+$color-accent-500: #2280eb;
+$color-accent-400: #4d9af0;
+
+// Surfaces & page
+$color-bg-page: #eef2f7;
+$color-bg-surface: #ffffff;
+$color-bg-subtle: #f6f8fb;
+$color-bg-sidebar: $color-navy-900;
+
+// Text
+$color-text: #0f172a;
+$color-text-muted: #5b6472;
+$color-text-on-dark: #f1f5f9;
+$color-text-on-dark-muted: #94a3b8;
+
+// Borders & dividers
+$color-border: #dde3ec;
+$color-border-strong: #c8d1de;
+
+// Semantic status
+$color-success-bg: #e8f5ee;
+$color-success-text: #0d6b3a;
+$color-warning-bg: #fef6e7;
+$color-warning-text: #9a6700;
+$color-error-bg: #fdecec;
+$color-error-text: #b42318;
+$color-info-bg: #e8f1fc;
+$color-info-text: #1558a8;
+$color-neutral-bg: #eef2f7;
+$color-neutral-text: #475569;
+
+// Aliases (semantic usage in components)
+$color-primary: $color-navy-800;
+$color-primary-hover: $color-navy-700;
+$color-accent: $color-accent-500;
+$color-focus: $color-accent-600;
+
+// Typography
+$font-family-base: var(--font-hebrew), system-ui, sans-serif;
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-md: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.25rem;
+$font-size-2xl: 1.5rem;
+$font-size-3xl: 1.875rem;
+$line-height-tight: 1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.65;
+
+// Spacing scale
+$space-1: 0.25rem;
+$space-2: 0.5rem;
+$space-3: 0.75rem;
+$space-4: 1rem;
+$space-5: 1.5rem;
+$space-6: 2rem;
+$space-7: 2.5rem;
+$space-8: 3rem;
+$space-10: 4rem;
+
+// Layout
+$container-max-width: 72rem;
+$container-narrow-max-width: 48rem;
+$container-padding-inline: $space-4;
+$sidebar-width: 16.5rem;
+
+// Radii
+$radius-sm: 0.375rem;
+$radius-md: 0.5rem;
+$radius-lg: 0.75rem;
+$radius-pill: 999px;
+
+// Shadows
+$shadow-sm: 0 1px 2px rgb(15 23 42 / 5%);
+$shadow-md: 0 4px 12px rgb(15 23 42 / 6%);
+$shadow-card:
+  0 1px 3px rgb(15 23 42 / 4%),
+  0 1px 2px rgb(15 23 42 / 3%);
+
+// Focus
+$focus-ring-width: 2px;
+$focus-ring-offset: 2px;
+
+// Motion (minimal — no elaborate animation)
+$transition-fast: 120ms ease;

@@ -1,0 +1,47 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: $space-4;
+  margin-block-end: $space-6;
+
+  @include md-up {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0 0 $space-2;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-accent;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.5vw, $font-size-3xl);
+}
+
+.subtitle {
+  margin: $space-3 0 0;
+  font-size: $font-size-lg;
+  color: $color-text-muted;
+  max-width: 42rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  flex-shrink: 0;
+}

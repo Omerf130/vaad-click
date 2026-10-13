@@ -1,0 +1,48 @@
+@use "tokens" as *;
+@use "breakpoints" as *;
+
+@mixin container {
+  width: 100%;
+  max-width: $container-max-width;
+  margin-inline: auto;
+  padding-inline: $container-padding-inline;
+
+  @include md-up {
+    padding-inline: $space-6;
+  }
+}
+
+@mixin container-narrow {
+  width: 100%;
+  max-width: $container-narrow-max-width;
+  margin-inline: auto;
+  padding-inline: $container-padding-inline;
+}
+
+@mixin focus-ring {
+  outline: $focus-ring-width solid $color-focus;
+  outline-offset: $focus-ring-offset;
+}
+
+@mixin surface-card {
+  background-color: $color-bg-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@mixin text-on-dark {
+  color: $color-text-on-dark;
+}

@@ -1,0 +1,17 @@
+@use "reset";
+@use "typography";
+@use "mixins";
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  @include mixins.focus-ring;
+}
+
+a:focus-visible,
+button:focus-visible {
+  @include mixins.focus-ring;
+  border-radius: 2px;
+}

@@ -1,0 +1,35 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/mixins" as *;
+
+.card {
+  @include surface-card;
+}
+
+.md {
+  padding: $space-5;
+}
+
+.lg {
+  padding: $space-6;
+}
+
+.header {
+  margin-block-end: $space-4;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: 700;
+  margin-block-end: $space-2;
+}
+
+.description {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  margin: 0;
+}
+
+.body {
+  font-size: $font-size-md;
+  color: $color-text;
+}

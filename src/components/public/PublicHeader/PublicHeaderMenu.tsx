@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useId, useState } from "react";
-import { Button } from "@/components/ui/Button/Button";
+import { ButtonLink } from "@/components/ui/Button/ButtonLink";
 import { homepageHeader } from "@/content/homepage";
 import { shouldCloseMobileMenuOnAnchorClick } from "@/shared/navigation/mobile-menu";
 import styles from "./PublicHeader.module.scss";
@@ -58,24 +58,12 @@ export function PublicHeaderMenu() {
         </nav>
 
         <div className={styles.actions}>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled
-            title={homepageHeader.loginHint}
-          >
+          <ButtonLink href="/login" variant="ghost" size="sm">
             {homepageHeader.loginLabel}
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            disabled
-            title={homepageHeader.registerHint}
-          >
+          </ButtonLink>
+          <ButtonLink href="/register" variant="primary" size="sm">
             {homepageHeader.registerLabel}
-          </Button>
+          </ButtonLink>
         </div>
       </div>
     </>

@@ -1,0 +1,27 @@
+@use "../../styles/tokens" as *;
+
+.shell {
+  min-height: 100vh;
+  background: $color-bg-page;
+}
+
+.header {
+  border-bottom: 1px solid $color-border;
+  background: $color-bg-surface;
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  min-height: 3.5rem;
+}
+
+.brand {
+  font-weight: 700;
+}
+
+.main {
+  padding: $space-6 0 $space-10;
+}

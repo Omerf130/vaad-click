@@ -11,12 +11,21 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --check .",
-    "format:write": "prettier --write ."
+    "format:write": "prettier --write .",
+    "verify:mongo": "node --env-file=.env.local scripts/verify-mongo-connection.mjs",
+    "provision:lawyer-admin": "node --env-file=.env.local scripts/provision-lawyer-admin.mjs",
+    "count:lawyer-admins": "node --env-file=.env.local scripts/count-lawyer-admins.mjs",
+    "issue:lawyer-admin-setup-link": "node --env-file=.env.local scripts/issue-lawyer-admin-setup-link.mjs"
   },
   "dependencies": {
+    "argon2": "^0.45.1",
+    "mongoose": "^9.11.2",
     "next": "16.4.0",
+    "rate-limiter-flexible": "^11.2.2",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

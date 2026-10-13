@@ -1,0 +1,60 @@
+@use "../../../styles/tokens" as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+}
+
+.header {
+  border-bottom: 1px solid $color-border;
+  background: $color-bg-surface;
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  min-height: 3.5rem;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: $font-size-lg;
+  color: $color-text;
+  text-decoration: none;
+
+  &:hover {
+    color: $color-accent;
+  }
+}
+
+.main {
+  padding: $space-8 0 $space-10;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 28rem;
+  padding: $space-6;
+  background: $color-bg-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.title {
+  margin: 0 0 $space-2;
+  font-size: $font-size-2xl;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0 0 $space-5;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+  line-height: $line-height-normal;
+}

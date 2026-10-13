@@ -1,0 +1,67 @@
+@use "../../styles/tokens" as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.label {
+  font-size: $font-size-sm;
+  font-weight: 600;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font: inherit;
+  background: $color-bg-surface;
+
+  &:focus-visible {
+    outline: $focus-ring-width solid $color-focus;
+    outline-offset: $focus-ring-offset;
+  }
+}
+
+.fieldError {
+  margin: 0;
+  font-size: $font-size-xs;
+  color: $color-error-text;
+}
+
+.formError {
+  margin: 0;
+  padding: $space-3;
+  border-radius: $radius-md;
+  background: $color-error-bg;
+  color: $color-error-text;
+  font-size: $font-size-sm;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  margin-top: $space-2;
+}
+
+.footerLink {
+  margin: 0;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+
+  a {
+    color: $color-accent;
+    font-weight: 600;
+  }
+}

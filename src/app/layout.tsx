@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Hebrew } from "next/font/google";
+import { SITE_NAME, SITE_URL } from "@/shared/seo/site";
 import "@/styles/globals.scss";
 
 const notoSansHebrew = Noto_Sans_Hebrew({
@@ -10,12 +11,16 @@ const notoSansHebrew = Noto_Sans_Hebrew({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://vaadclick.co.il"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "ועד בקליק",
-    template: "%s | ועד בקליק",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
   description: "פלטפורמה לניהול גביית חובות ועד בית באמצעות משרד עורכי דין",
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

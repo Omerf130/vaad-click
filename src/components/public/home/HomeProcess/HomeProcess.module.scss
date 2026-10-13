@@ -47,6 +47,10 @@
     );
     pointer-events: none;
 
+    @include md-down {
+      display: none;
+    }
+
     @include md-up {
       inset-inline-end: 2.15rem;
     }
@@ -66,8 +70,15 @@
     border-block-end: none;
   }
 
+  @include md-down {
+    padding-inline-end: 0;
+    grid-template-columns: 1fr;
+    gap: $space-3;
+  }
+
   @include md-up {
     padding-inline-end: $space-10;
+    grid-template-columns: auto 1fr;
 
     &:nth-child(2) {
       padding-inline-start: $space-6;
@@ -117,6 +128,10 @@
   background-color: $color-bg-surface;
   border: 2px solid $color-accent;
   box-shadow: 0 0 0 4px rgb(34 128 235 / 12%);
+
+  @include md-down {
+    display: none;
+  }
 
   @include md-up {
     inset-inline-end: 1.65rem;

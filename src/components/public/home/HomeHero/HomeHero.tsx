@@ -1,8 +1,8 @@
 import Image from "next/image";
+import heroImage from "../../../../../public/pics/hero-img.png";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button/ButtonLink";
 import { PlannedAction } from "@/components/public/PlannedAction/PlannedAction";
-import { HeroIllustrativePreview } from "@/components/public/home/HeroIllustrativePreview/HeroIllustrativePreview";
 import { homepageHero } from "@/content/homepage";
 import styles from "./HomeHero.module.scss";
 
@@ -29,18 +29,15 @@ export function HomeHero() {
         </div>
 
         <div className={styles.visualColumn}>
-          <div className={styles.visualFrame}>
-            <div className={styles.imageWrap}>
-              <Image
-                src="/pics/hero-img.png"
-                alt={homepageHero.imageAlt}
-                fill
-                priority
-                sizes="(max-width: 1024px) 92vw, 540px"
-                className={styles.heroImage}
-              />
-            </div>
-            <HeroIllustrativePreview />
+          <div className={styles.imageWrap}>
+            <Image
+              src={heroImage}
+              alt={homepageHero.imageAlt}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 55vw, 620px"
+              className={styles.heroImage}
+            />
           </div>
         </div>
       </Container>

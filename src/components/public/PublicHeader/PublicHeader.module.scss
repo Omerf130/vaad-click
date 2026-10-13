@@ -21,6 +21,7 @@
 
   @include md-up {
     padding-block: $space-4;
+    flex-wrap: nowrap;
   }
 }
 
@@ -33,6 +34,7 @@
   color: $color-primary;
   text-decoration: none;
   letter-spacing: -0.03em;
+  z-index: 1;
 
   &::before {
     content: "";
@@ -48,18 +50,67 @@
   }
 }
 
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $space-2 $space-5;
-  order: 3;
-  width: 100%;
+.menuToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding-inline: $space-4;
+  margin-inline-start: auto;
+  font-family: inherit;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  color: $color-primary;
+  background-color: $color-bg-surface;
+  border: 1px solid $color-border-strong;
+  border-radius: $radius-md;
+  cursor: pointer;
 
   @include md-up {
-    order: 0;
-    width: auto;
+    display: none;
+  }
+}
+
+.menuPanel {
+  display: none;
+  flex-direction: column;
+  gap: $space-4;
+  width: 100%;
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background-color: $color-bg-surface;
+  box-shadow: $shadow-sm;
+
+  @include md-up {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     flex: 1;
+    width: auto;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    gap: $space-3;
+  }
+}
+
+.menuPanelOpen {
+  display: flex;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+
+  @include md-up {
+    flex: 1;
+    flex-direction: row;
     justify-content: center;
+    gap: $space-5;
   }
 }
 
@@ -68,12 +119,23 @@
   font-weight: 600;
   color: $color-text-muted;
   text-decoration: none;
-  padding-block: $space-2;
+  padding: $space-3 $space-2;
+  border-radius: $radius-sm;
   border-block-end: 2px solid transparent;
 
   &:hover {
     color: $color-primary;
+    background-color: $color-bg-subtle;
     border-block-end-color: rgb(34 128 235 / 35%);
+  }
+
+  @include md-up {
+    padding-block: $space-2;
+    background-color: transparent;
+
+    &:hover {
+      background-color: transparent;
+    }
   }
 }
 
@@ -82,9 +144,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: $space-2;
-  margin-inline-start: auto;
 
   @include md-up {
-    margin-inline-start: 0;
+    flex-shrink: 0;
   }
 }

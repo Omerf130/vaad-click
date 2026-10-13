@@ -28,7 +28,6 @@ export const homepageHero = {
   primaryCtaHint: "הרשמה — תיפתח בשלב הבא",
   secondaryCta: "למידע על התהליך",
   imageAlt: "בניין מגורים מודרני עם חצר מטופחת — צילום המחשה לסביבת מגורים ישראלית",
-  previewDisclaimer: "תצוגת ממשק המחשית — לא נתונים אמיתיים",
 } as const;
 
 export const homepageAudience = {

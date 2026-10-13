@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { Button } from "@/components/ui/Button/Button";
 import type { ButtonVariant } from "@/components/ui/Button/Button";
 import styles from "./PlannedAction.module.scss";
@@ -16,18 +17,23 @@ export function PlannedAction({
   variant = "primary",
   hintClassName,
 }: PlannedActionProps) {
+  const hintId = useId();
+
   return (
     <span className={styles.wrap}>
       <Button
         type="button"
         variant={variant}
         disabled
-        aria-disabled="true"
         title={hint}
+        aria-describedby={hintId}
       >
         {label}
       </Button>
-      <span className={[styles.hint, hintClassName].filter(Boolean).join(" ")}>
+      <span
+        id={hintId}
+        className={[styles.hint, hintClassName].filter(Boolean).join(" ")}
+      >
         {hint}
       </span>
     </span>

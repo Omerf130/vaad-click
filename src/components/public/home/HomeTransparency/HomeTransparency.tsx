@@ -15,9 +15,9 @@ export function HomeTransparency() {
           </h2>
         </div>
 
-        <div className={styles.panel} role="list" aria-label="עקרונות שקיפות">
+        <ul className={styles.panel} aria-label="עקרונות שקיפות">
           {homepageTransparency.paragraphs.map((paragraph, index) => (
-            <article key={index} className={styles.timelineItem} role="listitem">
+            <li key={index} className={styles.timelineItem}>
               <div className={styles.timelineRail} aria-hidden="true">
                 <span className={styles.timelineDot} />
                 {index < homepageTransparency.paragraphs.length - 1 && (
@@ -28,9 +28,9 @@ export function HomeTransparency() {
                 <p className={styles.timelineLabel}>{timelineLabels[index]}</p>
                 <p className={styles.paragraph}>{paragraph}</p>
               </div>
-            </article>
+            </li>
           ))}
-        </div>
+        </ul>
       </Container>
     </section>
   );

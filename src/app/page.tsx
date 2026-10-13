@@ -7,18 +7,14 @@ import { HomeHero } from "@/components/public/home/HomeHero/HomeHero";
 import { HomeProcess } from "@/components/public/home/HomeProcess/HomeProcess";
 import { HomeTransparency } from "@/components/public/home/HomeTransparency/HomeTransparency";
 import { homepageMeta } from "@/content/homepage";
+import { buildPublicPageMetadata } from "@/shared/seo/build-public-page-metadata";
 import styles from "./page.module.scss";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: homepageMeta.title,
   description: homepageMeta.description,
-  openGraph: {
-    title: homepageMeta.title,
-    description: homepageMeta.description,
-    locale: "he_IL",
-    type: "website",
-  },
-};
+  path: "/",
+});
 
 export default function HomePage() {
   return (

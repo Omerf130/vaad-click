@@ -26,3 +26,9 @@ $breakpoint-xl: 1280px;
     @content;
   }
 }
+
+@mixin md-down {
+  @media (max-width: ($breakpoint-md - 1px)) {
+    @content;
+  }
+}

@@ -37,6 +37,8 @@
 }
 
 .panel {
+  list-style: none;
+  margin: 0;
   padding: $space-6;
   border-radius: $radius-lg;
   border: 1px solid $color-border;

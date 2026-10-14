@@ -9,6 +9,8 @@ import { connectMongo } from "@/shared/db/connect";
 import {
   genericAuthenticationFailureMessage,
   getAccountLoginBlockReason,
+  isLawyerAdminLoginAllowed,
+  isPortalPasswordLoginAllowed,
 } from "@/shared/security/account-login";
 import { verifyPassword } from "@/shared/security/password";
 import { normalizeEmail } from "@/shared/validation/email";
@@ -37,16 +39,26 @@ export async function loginWithEmailPassword(input: {
     };
   }
 
-  const blockReason = getAccountLoginBlockReason(user.accountStatus as AccountStatus);
-  if (blockReason || user.accountStatus !== AccountStatus.ACTIVE) {
+  const status = user.accountStatus as AccountStatus;
+  const role = user.role as UserRole;
+  const blockReason = getAccountLoginBlockReason(status);
+  if (blockReason) {
     return {
       ok: false,
-      code:
-        blockReason === "disabled"
-          ? "ACCOUNT_DISABLED"
-          : blockReason === "locked"
-            ? "ACCOUNT_LOCKED"
-            : "INVALID_CREDENTIALS",
+      code: blockReason === "disabled" ? "ACCOUNT_DISABLED" : "ACCOUNT_LOCKED",
+      message: genericAuthenticationFailureMessage(),
+    };
+  }
+
+  const loginAllowed =
+    role === UserRole.LAWYER_ADMIN
+      ? isLawyerAdminLoginAllowed(status)
+      : isPortalPasswordLoginAllowed(status);
+
+  if (!loginAllowed) {
+    return {
+      ok: false,
+      code: "INVALID_CREDENTIALS",
       message: genericAuthenticationFailureMessage(),
     };
   }
@@ -66,7 +78,8 @@ export async function loginWithEmailPassword(input: {
   return {
     ok: true,
     userId,
-    role: user.role as UserRole,
+    role,
     authStage,
+    accountStatus: status,
   };
 }

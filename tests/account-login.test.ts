@@ -5,13 +5,22 @@ import {
   accountLoginBlockMessage,
   getAccountLoginBlockReason,
   genericAuthenticationFailureMessage,
+  isPortalPasswordLoginAllowed,
 } from "@/shared/security/account-login";
 
 describe("account login guards", () => {
   it("detects disabled and locked accounts", () => {
     expect(getAccountLoginBlockReason(AccountStatus.ACTIVE)).toBeNull();
+    expect(getAccountLoginBlockReason(AccountStatus.PENDING_APPROVAL)).toBeNull();
+    expect(getAccountLoginBlockReason(AccountStatus.REJECTED)).toBeNull();
     expect(getAccountLoginBlockReason(AccountStatus.DISABLED)).toBe("disabled");
     expect(getAccountLoginBlockReason(AccountStatus.LOCKED)).toBe("locked");
+  });
+
+  it("allows portal password login for pending and rejected accounts", () => {
+    expect(isPortalPasswordLoginAllowed(AccountStatus.PENDING_APPROVAL)).toBe(true);
+    expect(isPortalPasswordLoginAllowed(AccountStatus.REJECTED)).toBe(true);
+    expect(isPortalPasswordLoginAllowed(AccountStatus.DISABLED)).toBe(false);
   });
 
   it("returns safe messages without leaking internals", () => {

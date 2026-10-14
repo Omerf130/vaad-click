@@ -24,7 +24,8 @@ Existing CP3A session stages (`primary` / `mfa_complete`) and MFA enrollment fie
 ## Registration
 
 - Public registration: `building_rep` or `management_company` only.
-- No building/company linkage — accounts have **no operational scope** until CP6+ onboarding.
+- No building/company linkage at registration time.
+- **CP6A:** new self-registrations start as `pending_approval`; login succeeds but operational `/app` routes redirect to `/app/account-status` until lawyer approval sets `active`.
 - `emailVerifiedAt` remains null; **no email provider** — verification is not faked.
 
 ## Initial lawyer admin
@@ -37,4 +38,4 @@ No public admin registration. Recovery reprovision requires `ALLOW_LAWYER_ADMIN_
 
 ## Email verification dependency
 
-When transactional email is available (**CP18**), pending verification can gate activation. CP3B keeps accounts active for development portal access only.
+When transactional email is available (**CP18**), email verification may gate activation in addition to lawyer approval. CP6A lawyer approval is authoritative for operational access; see [`cp6-organizational-rules.md`](cp6-organizational-rules.md).

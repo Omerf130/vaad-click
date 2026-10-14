@@ -20,7 +20,7 @@ describe("admin single-header layout structure", () => {
   it("renders portal header only in the portal route group", () => {
     const portal = readAppFile("(portal)/layout.tsx");
     expect(portal).toMatch(/app-shell\.module\.scss/);
-    expect(portal).toMatch(/requireDevelopmentPortalAccess/);
+    expect(portal).toMatch(/requireAuthenticatedPortalSession/);
     expect(portal).toMatch(/LogoutButton/);
   });
 
@@ -46,6 +46,9 @@ describe("lawyer admin access boundaries (layout wiring)", () => {
   it("requires lawyer admin on all admin segment pages", () => {
     const pages = [
       "(lawyer-admin)/admin/page.tsx",
+      "(lawyer-admin)/admin/buildings/page.tsx",
+      "(lawyer-admin)/admin/management-companies/page.tsx",
+      "(lawyer-admin)/admin/users/page.tsx",
       "(lawyer-admin)/admin/settings/page.tsx",
       "(lawyer-admin)/admin/financial-settings/page.tsx",
     ];

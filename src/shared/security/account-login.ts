@@ -19,6 +19,8 @@ export function getAccountLoginBlockReason(
   return null;
 }
 
+export { isLawyerAdminLoginAllowed, isPortalPasswordLoginAllowed } from "@/modules/users/domain/account-status";
+
 /** Maps account state to a safe user-facing message (no internal details). */
 export function accountLoginBlockMessage(reason: AccountLoginBlockReason): string {
   if (reason === "disabled") {

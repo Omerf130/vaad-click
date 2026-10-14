@@ -9,13 +9,18 @@ import {
 describe("admin navigation configuration", () => {
   it("lists overview and settings as implemented routes", () => {
     const implemented = getImplementedAdminNavItems();
-    expect(implemented.map((item) => item.id)).toEqual(["overview", "settings"]);
-    expect(implemented.map((item) => item.href)).toEqual(["/app/admin", "/app/admin/settings"]);
+    expect(implemented.map((item) => item.id)).toEqual([
+      "overview",
+      "buildings",
+      "management_companies",
+      "users",
+      "settings",
+    ]);
   });
 
   it("marks future modules as planned without hrefs", () => {
     const planned = ADMIN_NAV_ITEMS.filter((item) => item.status === "planned");
-    expect(planned.length).toBeGreaterThanOrEqual(7);
+    expect(planned.length).toBeGreaterThanOrEqual(5);
     for (const item of planned) {
       expect(item.href).toBeNull();
       expect(item.unavailableReasonHe).toBeTruthy();
@@ -27,6 +32,13 @@ describe("admin navigation configuration", () => {
     expect(isAdminNavItemActive("/app/admin", overview)).toBe(true);
     expect(isAdminNavItemActive("/app/admin/settings", overview)).toBe(false);
     expect(isAdminNavItemActive("/app/admin/financial-settings", overview)).toBe(false);
+  });
+
+  it("highlights users for list and detail routes", () => {
+    const users = ADMIN_NAV_ITEMS.find((item) => item.id === "users")!;
+    expect(isAdminNavItemActive("/app/admin/users", users)).toBe(true);
+    expect(isAdminNavItemActive("/app/admin/users/abc", users)).toBe(true);
+    expect(isAdminNavItemActive("/app/admin", users)).toBe(false);
   });
 
   it("highlights settings for settings hub and financial settings", () => {

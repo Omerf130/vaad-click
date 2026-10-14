@@ -1,17 +1,10 @@
 @use "../../../styles/tokens" as *;
 @use "../../../styles/breakpoints" as *;
 
-.grid {
-  display: grid;
-  gap: $space-4;
-
-  @include md-up {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @include lg-up {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
 }
 
 .notice {
@@ -24,18 +17,166 @@
   line-height: $line-height-relaxed;
 }
 
-.summaryList {
+.kpiRow {
+  display: grid;
+  gap: $space-3;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  @include md-up {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.kpiCard {
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+  box-shadow: $shadow-card;
+}
+
+.kpiHighlight {
+  border-color: rgb(154 103 0 / 35%);
+  background: linear-gradient(180deg, $color-warning-bg 0%, $color-bg-surface 100%);
+}
+
+.kpiLabel {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.kpiValue {
   margin: $space-2 0 0;
+  font-size: $font-size-2xl;
+  font-weight: 700;
+  line-height: $line-height-tight;
+  color: $color-primary;
+}
+
+.kpiHint {
+  margin: $space-1 0 0;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.columns {
+  display: grid;
+  gap: $space-4;
+
+  @include lg-up {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.panel {
+  padding: $space-5;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+  box-shadow: $shadow-card;
+}
+
+.panelHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-3;
+  margin-bottom: $space-4;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: 700;
+}
+
+.panelSubtitle {
+  margin: $space-1 0 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.pendingList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.pendingItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  padding: $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+}
+
+.pendingMain {
+  min-width: 0;
+}
+
+.pendingName {
+  font-weight: 700;
+  text-decoration: none;
+  color: $color-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.pendingMeta {
+  margin: $space-1 0 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.actionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.financialStrip {
+  margin-top: $space-5;
+  padding-top: $space-4;
+  border-top: 1px solid $color-border;
+}
+
+.stripTitle {
+  margin: 0 0 $space-2;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  color: $color-text-muted;
+}
+
+.stripList {
+  margin: 0;
   padding: 0;
   list-style: none;
   font-size: $font-size-sm;
   color: $color-text-muted;
+  line-height: $line-height-relaxed;
 
   li + li {
     margin-top: $space-1;
   }
 }
 
-.settingsActions {
-  margin-top: $space-4;
+.footerLink {
+  margin: 0;
+  font-size: $font-size-sm;
 }

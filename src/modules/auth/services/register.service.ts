@@ -72,7 +72,7 @@ export async function registerPublicUser(
               email: input.email,
               passwordHash,
               role: input.role,
-              accountStatus: AccountStatus.ACTIVE,
+              accountStatus: AccountStatus.PENDING_APPROVAL,
               emailVerifiedAt: null,
             },
           ],

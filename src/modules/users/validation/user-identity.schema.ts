@@ -20,11 +20,13 @@ export const userIdentitySchema = z
     phoneE164: phoneE164Schema.optional(),
     accountStatus: z
       .enum([
+        AccountStatus.PENDING_APPROVAL,
         AccountStatus.ACTIVE,
+        AccountStatus.REJECTED,
         AccountStatus.DISABLED,
         AccountStatus.LOCKED,
       ])
-      .default(AccountStatus.ACTIVE),
+      .default(AccountStatus.PENDING_APPROVAL),
   })
   .superRefine((data, ctx) => {
     if (!data.email) {

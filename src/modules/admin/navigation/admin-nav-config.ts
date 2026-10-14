@@ -13,16 +13,20 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   {
     id: "buildings",
     labelHe: "בניינים",
-    href: null,
-    status: "planned",
-    unavailableReasonHe: "יושק ב-checkpoint עתידי",
+    href: "/app/admin/buildings",
+    status: "implemented",
+  },
+  {
+    id: "management_companies",
+    labelHe: "חברות ניהול",
+    href: "/app/admin/management-companies",
+    status: "implemented",
   },
   {
     id: "users",
     labelHe: "משתמשים",
-    href: null,
-    status: "planned",
-    unavailableReasonHe: "יושק ב-checkpoint עתידי",
+    href: "/app/admin/users",
+    status: "implemented",
   },
   {
     id: "debt_cases",
@@ -78,6 +82,18 @@ export function isAdminNavItemActive(pathname: string, item: AdminNavItem): bool
     return (
       pathname === "/app/admin/settings" ||
       pathname.startsWith("/app/admin/financial-settings")
+    );
+  }
+  if (item.href === "/app/admin/users") {
+    return pathname === "/app/admin/users" || pathname.startsWith("/app/admin/users/");
+  }
+  if (item.href === "/app/admin/buildings") {
+    return pathname === "/app/admin/buildings" || pathname.startsWith("/app/admin/buildings/");
+  }
+  if (item.href === "/app/admin/management-companies") {
+    return (
+      pathname === "/app/admin/management-companies" ||
+      pathname.startsWith("/app/admin/management-companies/")
     );
   }
   return pathname === item.href || pathname.startsWith(`${item.href}/`);

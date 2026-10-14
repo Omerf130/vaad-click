@@ -19,6 +19,7 @@ import {
   recordAuthRegistrationFailure,
 } from "@/modules/audit/services/auth-audit.service";
 import { resolveAuditCorrelationId } from "@/modules/audit/services/audit-correlation";
+import { AccountStatus } from "@/modules/users/domain/account-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { getAuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 import {
@@ -56,12 +57,22 @@ function clampFormData(value: FormDataEntryValue | null): string {
   return value.slice(0, MAX_FORM_FIELD_LENGTH);
 }
 
-function loginRedirectPath(role: UserRole, returnTo: string | null): string {
-  if (returnTo) {
-    return returnTo;
+function portalRedirectPath(input: {
+  role: UserRole;
+  accountStatus: AccountStatus;
+  returnTo: string | null;
+}): string {
+  if (input.returnTo) {
+    return input.returnTo;
   }
-  if (role === UserRole.LAWYER_ADMIN) {
+  if (input.role === UserRole.LAWYER_ADMIN) {
     return "/app/admin";
+  }
+  if (
+    input.accountStatus === AccountStatus.PENDING_APPROVAL ||
+    input.accountStatus === AccountStatus.REJECTED
+  ) {
+    return "/app/account-status";
   }
   return "/app";
 }
@@ -137,7 +148,13 @@ export async function loginAction(
   }
 
   const returnTo = sanitizeReturnPath(clampFormData(formData.get("returnTo")));
-  redirect(loginRedirectPath(result.role, returnTo));
+  redirect(
+    portalRedirectPath({
+      role: result.role,
+      accountStatus: result.accountStatus,
+      returnTo,
+    }),
+  );
 }
 
 export async function registerAction(
@@ -206,7 +223,13 @@ export async function registerAction(
   }
 
   await writeSessionCookie(result.sessionToken, SessionAuthStage.MFA_COMPLETE);
-  redirect("/app");
+  redirect(
+    portalRedirectPath({
+      role: parsed.data.role,
+      accountStatus: AccountStatus.PENDING_APPROVAL,
+      returnTo: null,
+    }),
+  );
 }
 
 export async function logoutAction(): Promise<void> {

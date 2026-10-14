@@ -1,0 +1,52 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: $space-4;
+  background: rgb(0 0 0 / 45%);
+
+  @include md-up {
+    align-items: center;
+  }
+}
+
+.dialog {
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow: auto;
+  padding: $space-5;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+  box-shadow: $shadow-md;
+}
+
+.title {
+  margin: 0 0 $space-3;
+  font-size: $font-size-xl;
+}
+
+.body {
+  margin: 0;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.error {
+  margin: $space-3 0 0;
+  color: $color-error-text;
+  font-size: $font-size-sm;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  margin-top: $space-5;
+}

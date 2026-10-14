@@ -14,6 +14,10 @@ vi.mock("@/shared/db/connect", () => ({
   connectMongo: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/shared/security/password", () => ({
+  verifyPassword: vi.fn().mockResolvedValue(true),
+}));
+
 describe("loginWithEmailPassword", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -34,6 +38,31 @@ describe("loginWithEmailPassword", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.code).toBe("INVALID_CREDENTIALS");
+    }
+  });
+
+  it("allows login for pending_approval building rep", async () => {
+    mockFindOne.mockReturnValue({
+      select: () => ({
+        lean: async () => ({
+          _id: { toString: () => "id-pending" },
+          passwordHash: "$argon2id$v=19$m=19456,t=2,p=1$abc",
+          accountStatus: AccountStatus.PENDING_APPROVAL,
+          role: UserRole.BUILDING_REP,
+        }),
+      }),
+    });
+
+    const { loginWithEmailPassword } = await import(
+      "@/modules/auth/services/login.service"
+    );
+    const result = await loginWithEmailPassword({
+      email: "pending@example.com",
+      password: "valid-password-12",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.accountStatus).toBe(AccountStatus.PENDING_APPROVAL);
     }
   });
 

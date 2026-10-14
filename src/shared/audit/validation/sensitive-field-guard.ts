@@ -1,5 +1,6 @@
+/** Short tokens like `pan` use word boundaries to avoid false positives (e.g. `managementCompanyId`). */
 const FORBIDDEN_KEY_PATTERN =
-  /password|passwd|secret|token|cookie|session|otp|mfa|totp|hash|authorization|credential|api[_-]?key|connection[_-]?string|mongodb(\+srv)?|card|cvv|pan/i;
+  /password|passwd|secret|token|cookie|session|otp|mfa|totp|hash|authorization|credential|api[_-]?key|connection[_-]?string|mongodb(\+srv)?|card|cvv|\bpan\b/i;
 
 const FORBIDDEN_VALUE_PATTERN = /mongodb(\+srv)?:\/\/|Bearer\s+[A-Za-z0-9\-._~+/]+=*/i;
 

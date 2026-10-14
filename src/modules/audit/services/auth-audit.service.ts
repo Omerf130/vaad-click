@@ -130,8 +130,14 @@ export async function recordAuthRateLimitExceeded(input: {
 
 export async function recordAuthAccessForbidden(input: {
   context: AuthenticatedContext;
-  reasonCode: "production_mfa_required" | "role_mismatch";
+  reasonCode:
+    | "production_mfa_required"
+    | "role_mismatch"
+    | "account_not_operational"
+    | "account_status_page_denied"
+    | "building_access_denied";
   correlationId?: string;
+  buildingPublicId?: string;
 }): Promise<void> {
   await writeAuditEvent({
     eventType: AuditEventType.AUTH_ACCESS_FORBIDDEN,
@@ -139,7 +145,10 @@ export async function recordAuthAccessForbidden(input: {
     action: "access",
     outcome: AuditOutcome.DENIED,
     target: { entityType: "user", entityId: input.context.user.id },
-    metadata: { reasonCode: input.reasonCode },
+    metadata: {
+      reasonCode: input.reasonCode,
+      ...(input.buildingPublicId ? { buildingId: input.buildingPublicId } : {}),
+    },
     correlationId: input.correlationId,
   });
 }

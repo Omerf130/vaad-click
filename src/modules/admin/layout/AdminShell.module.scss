@@ -1,0 +1,172 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+$admin-sidebar-fixed-width: 280px;
+
+.shell {
+  display: grid;
+  direction: ltr;
+  grid-template-columns: minmax(0, 1fr) $admin-sidebar-fixed-width;
+  grid-template-areas: "main sidebar";
+  min-height: 100vh;
+  background: $color-bg-page;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  grid-column: 2;
+  direction: rtl;
+  width: $admin-sidebar-fixed-width;
+  min-width: $admin-sidebar-fixed-width;
+  max-width: $admin-sidebar-fixed-width;
+  background: $color-bg-sidebar;
+  color: $color-text-on-dark;
+  display: flex;
+  flex-direction: column;
+  padding: $space-5 $space-3;
+  gap: $space-4;
+}
+
+.brandBlock {
+  padding-inline: $space-2;
+}
+
+.brandTitle {
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: 700;
+}
+
+.brandSubtitle {
+  margin: $space-1 0 0;
+  font-size: $font-size-xs;
+  color: $color-text-on-dark-muted;
+}
+
+.navList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.navLink,
+.navLinkActive,
+.navLinkDisabled {
+  display: block;
+  width: 100%;
+  padding: $space-3 $space-3;
+  border: 0;
+  border-radius: $radius-md;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  transition: background $transition-fast;
+}
+
+.navLink {
+  color: $color-text-on-dark;
+  background: transparent;
+
+  &:hover {
+    background: rgb(255 255 255 / 8%);
+  }
+}
+
+.navLinkActive {
+  display: block;
+  width: 100%;
+  padding: $space-3 $space-3;
+  border: 0;
+  border-radius: $radius-md;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  transition: background $transition-fast;
+  color: $color-text-on-dark;
+  background: rgb(255 255 255 / 12%);
+  border-inline-start: 3px solid $color-accent-400;
+  font-weight: 600;
+}
+
+.navLinkDisabled {
+  color: $color-text-on-dark-muted;
+  background: transparent;
+  cursor: not-allowed;
+}
+
+.mainColumn {
+  grid-area: main;
+  grid-column: 1;
+  direction: rtl;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.topBar {
+  background: $color-bg-surface;
+  border-bottom: 1px solid $color-border;
+  padding: $space-3 $space-6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  min-height: 3.75rem;
+}
+
+.topBarTitle {
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: 700;
+}
+
+.topBarMeta {
+  margin: $space-1 0 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.topBarActions {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.workspace {
+  flex: 1;
+  padding: $space-6;
+}
+
+@include md-down {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "sidebar"
+      "main";
+  }
+
+  .mainColumn {
+    grid-column: auto;
+  }
+
+  .sidebar {
+    grid-column: auto;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    padding: $space-4;
+  }
+
+  .navList {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .workspace {
+    padding: $space-4;
+  }
+}

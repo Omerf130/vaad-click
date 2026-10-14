@@ -1,0 +1,42 @@
+@use "../../../styles/tokens" as *;
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-5;
+  background: $color-bg-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  min-height: 10rem;
+}
+
+.cardDisabled {
+  opacity: 0.72;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+}
+
+.title {
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: 700;
+}
+
+.description {
+  margin: 0;
+  flex: 1;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+  font-size: $font-size-sm;
+}
+
+.footer {
+  margin-top: auto;
+}

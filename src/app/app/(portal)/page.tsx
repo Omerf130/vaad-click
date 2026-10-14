@@ -3,7 +3,7 @@ import { Container } from "@/components/ui";
 import { Card } from "@/components/ui/Card/Card";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { requireDevelopmentPortalAccess } from "@/shared/auth/require-access";
-import styles from "./portal.module.scss";
+import styles from "../portal.module.scss";
 
 export default async function AppPortalPage() {
   const { user } = await requireDevelopmentPortalAccess();

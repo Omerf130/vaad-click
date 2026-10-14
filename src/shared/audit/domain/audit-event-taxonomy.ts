@@ -44,6 +44,14 @@ export const AuditEventType = {
   PAYMENT_RECORDED: "payment.transaction.recorded",
   PAYMENT_ADJUSTED: "payment.ledger.adjusted",
   SYSTEM_CONFIG_UPDATED: "system_config.settings.updated",
+  SYSTEM_CONFIG_FINANCIAL_SETTINGS_DRAFT_CREATED:
+    "system_config.financial_settings.draft_created",
+  SYSTEM_CONFIG_FINANCIAL_SETTINGS_DRAFT_UPDATED:
+    "system_config.financial_settings.draft_updated",
+  SYSTEM_CONFIG_FINANCIAL_SETTINGS_DRAFT_DISCARDED:
+    "system_config.financial_settings.draft_discarded",
+  SYSTEM_CONFIG_FINANCIAL_SETTINGS_VERSION_PUBLISHED:
+    "system_config.financial_settings.version_published",
 } as const;
 
 export type AuditEventType = (typeof AuditEventType)[keyof typeof AuditEventType];

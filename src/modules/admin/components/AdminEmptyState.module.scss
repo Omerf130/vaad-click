@@ -1,0 +1,28 @@
+@use "../../../styles/tokens" as *;
+
+.root {
+  padding: $space-6;
+  border: 1px dashed $color-border-strong;
+  border-radius: $radius-lg;
+  background: $color-bg-subtle;
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 $space-2;
+  font-size: $font-size-lg;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.actions {
+  margin-top: $space-4;
+  display: flex;
+  justify-content: center;
+  gap: $space-3;
+}

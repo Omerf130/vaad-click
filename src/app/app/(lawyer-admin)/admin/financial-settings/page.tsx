@@ -25,23 +25,21 @@ export default async function FinancialSettingsAdminPage() {
           settingsVersionId: draft.settingsVersionId,
           revision: draft.revision,
           currency: draft.currency,
-          amounts: {
-            debtorTreatmentFeeExVat: draft.amounts?.debtorTreatmentFeeExVat
-              ? { amountMinor: draft.amounts.debtorTreatmentFeeExVat.amountMinor }
-              : undefined,
-            committeeTreatmentFeeWhenDebtorWaivedExVat: draft.amounts
-              ?.committeeTreatmentFeeWhenDebtorWaivedExVat
-              ? {
-                  amountMinor:
-                    draft.amounts.committeeTreatmentFeeWhenDebtorWaivedExVat.amountMinor,
-                }
-              : undefined,
-          },
+          amountsMonetaryBasis: draft.amountsMonetaryBasis,
+          amounts: draft.amounts ?? undefined,
           vatSchedule: draft.vatSchedule ?? [],
           escalation: {
             recoveryFeeRateBasisPoints:
               draft.escalation?.recoveryFeeRateBasisPoints ?? undefined,
           },
+          platformFees: draft.platformFees
+            ? {
+                trustAccountProcessingFeeBasisPoints:
+                  draft.platformFees.trustAccountProcessingFeeBasisPoints ?? undefined,
+                committeeTransferFeeBasisPoints:
+                  draft.platformFees.committeeTransferFeeBasisPoints ?? undefined,
+              }
+            : undefined,
           notesInternal: draft.notesInternal,
           provenance: draft.provenance,
         },

@@ -1,10 +1,19 @@
 import { z } from "zod";
 
+import {
+  CollectionAllocationOrder,
+  COLLECTION_ALLOCATION_ORDERS,
+} from "@/modules/financial-settings/domain/collection-allocation-order";
 import { CourtCostsPolicy, COURT_COSTS_POLICIES } from "@/modules/financial-settings/domain/court-costs-policy";
 import {
   EscalationCalculationBase,
   ESCALATION_CALCULATION_BASES,
 } from "@/modules/financial-settings/domain/escalation-calculation-base";
+import {
+  SUCCESS_FEE_EXCLUSIONS,
+  SuccessFeeExclusion,
+} from "@/modules/financial-settings/domain/success-fee-exclusion";
+import { AmountsMonetaryBasis } from "@/modules/financial-settings/domain/amounts-monetary-basis";
 import { CurrencyCode, CURRENCY_CODES } from "@/shared/financial/currency";
 import { moneyAmountSchema } from "@/shared/financial/money.schema";
 import { basisPointsSchema } from "@/shared/financial/percentage.schema";
@@ -17,9 +26,39 @@ export const vatScheduleEntryInputSchema = z.object({
 
 export type VatScheduleEntryInput = z.infer<typeof vatScheduleEntryInputSchema>;
 
-export const financialSettingsAmountsSchema = z.object({
+/** Legacy net (ex-VAT) amounts — read-only on historical published rows. */
+export const financialSettingsLegacyAmountsSchema = z.object({
   debtorTreatmentFeeExVat: moneyAmountSchema,
   committeeTreatmentFeeWhenDebtorWaivedExVat: moneyAmountSchema,
+});
+
+/** Draft save: lawyer-entered gross-inclusive treatment fees only. */
+export const financialSettingsDraftGrossAmountsSchema = z.object({
+  debtorTreatmentFeeGross: moneyAmountSchema,
+  committeeTreatmentFeeWhenDebtorWaivedGross: moneyAmountSchema,
+});
+
+/** Publish: frozen gross/net/VAT triple derived at effective date. */
+export const publishFinancialSettingsGrossAmountsSchema = z.object({
+  amountsMonetaryBasis: z.literal(AmountsMonetaryBasis.GROSS_INCLUSIVE_VAT),
+  debtorTreatmentFeeGross: moneyAmountSchema,
+  debtorTreatmentFeeNet: moneyAmountSchema,
+  debtorTreatmentFeeVat: moneyAmountSchema,
+  committeeTreatmentFeeWhenDebtorWaivedGross: moneyAmountSchema,
+  committeeTreatmentFeeWhenDebtorWaivedNet: moneyAmountSchema,
+  committeeTreatmentFeeWhenDebtorWaivedVat: moneyAmountSchema,
+  appliedVatRateBasisPoints: basisPointsSchema,
+});
+
+export type PublishFinancialSettingsAmounts = z.infer<
+  typeof publishFinancialSettingsGrossAmountsSchema
+>;
+
+export const financialSettingsAmountsSchema = financialSettingsLegacyAmountsSchema;
+
+export const financialSettingsPlatformFeesSchema = z.object({
+  trustAccountProcessingFeeBasisPoints: basisPointsSchema,
+  committeeTransferFeeBasisPoints: basisPointsSchema,
 });
 
 export const financialSettingsEscalationSchema = z.object({
@@ -33,13 +72,31 @@ export const financialSettingsEscalationSchema = z.object({
   courtCostsPolicy: z.enum(
     COURT_COSTS_POLICIES as [CourtCostsPolicy, ...CourtCostsPolicy[]],
   ),
+  successFeeExclusions: z
+    .array(
+      z.enum(SUCCESS_FEE_EXCLUSIONS as [SuccessFeeExclusion, ...SuccessFeeExclusion[]]),
+    )
+    .min(1),
+  collectionAllocationOrder: z.enum(
+    COLLECTION_ALLOCATION_ORDERS as [
+      CollectionAllocationOrder,
+      ...CollectionAllocationOrder[],
+    ],
+  ),
 });
 
 export const draftFinancialSettingsContentSchema = z.object({
   currency: z.enum(CURRENCY_CODES as [CurrencyCode, ...CurrencyCode[]]),
-  amounts: financialSettingsAmountsSchema.partial().optional(),
+  amountsMonetaryBasis: z
+    .enum([
+      AmountsMonetaryBasis.GROSS_INCLUSIVE_VAT,
+      AmountsMonetaryBasis.LEGACY_NET_EXCLUSIVE_VAT,
+    ])
+    .optional(),
+  amounts: financialSettingsDraftGrossAmountsSchema.partial().optional(),
   vatSchedule: z.array(vatScheduleEntryInputSchema).optional(),
   escalation: financialSettingsEscalationSchema.partial().optional(),
+  platformFees: financialSettingsPlatformFeesSchema.partial().optional(),
   notesInternal: z.string().max(2000).optional(),
 });
 
@@ -52,9 +109,10 @@ export const publishFinancialSettingsInputSchema = z
     revision: z.number().int().positive(),
     effectiveFromIso: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     currency: z.enum(CURRENCY_CODES as [CurrencyCode, ...CurrencyCode[]]),
-    amounts: financialSettingsAmountsSchema,
+    amounts: publishFinancialSettingsGrossAmountsSchema,
     vatSchedule: z.array(vatScheduleEntryInputSchema).min(1),
     escalation: financialSettingsEscalationSchema,
+    platformFees: financialSettingsPlatformFeesSchema,
     notesInternal: z.string().max(2000).optional(),
   })
   .superRefine((value, ctx) => {
@@ -84,18 +142,59 @@ export const publishFinancialSettingsInputSchema = z
       });
     }
 
-    if (value.amounts.debtorTreatmentFeeExVat.currency !== value.currency) {
+    const amountFields = [
+      "debtorTreatmentFeeGross",
+      "debtorTreatmentFeeNet",
+      "debtorTreatmentFeeVat",
+      "committeeTreatmentFeeWhenDebtorWaivedGross",
+      "committeeTreatmentFeeWhenDebtorWaivedNet",
+      "committeeTreatmentFeeWhenDebtorWaivedVat",
+    ] as const;
+
+    for (const field of amountFields) {
+      if (value.amounts[field].currency !== value.currency) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Amount currency must match version currency",
+          path: ["amounts", field],
+        });
+      }
+    }
+
+    const debtorGross = value.amounts.debtorTreatmentFeeGross.amountMinor;
+    const debtorNet = value.amounts.debtorTreatmentFeeNet.amountMinor;
+    const debtorVat = value.amounts.debtorTreatmentFeeVat.amountMinor;
+    if (debtorNet + debtorVat !== debtorGross) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Amount currency must match version currency",
-        path: ["amounts", "debtorTreatmentFeeExVat"],
+        message: "Debtor treatment fee gross must equal net plus VAT",
+        path: ["amounts", "debtorTreatmentFeeGross"],
       });
     }
-    if (value.amounts.committeeTreatmentFeeWhenDebtorWaivedExVat.currency !== value.currency) {
+
+    const committeeGross = value.amounts.committeeTreatmentFeeWhenDebtorWaivedGross.amountMinor;
+    const committeeNet = value.amounts.committeeTreatmentFeeWhenDebtorWaivedNet.amountMinor;
+    const committeeVat = value.amounts.committeeTreatmentFeeWhenDebtorWaivedVat.amountMinor;
+    if (committeeNet + committeeVat !== committeeGross) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Amount currency must match version currency",
-        path: ["amounts", "committeeTreatmentFeeWhenDebtorWaivedExVat"],
+        message: "Committee treatment fee gross must equal net plus VAT",
+        path: ["amounts", "committeeTreatmentFeeWhenDebtorWaivedGross"],
+      });
+    }
+
+    if (value.escalation.calculationBase === EscalationCalculationBase.UNSPECIFIED) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Success fee calculation base must be specified before publish",
+        path: ["escalation", "calculationBase"],
+      });
+    }
+    if (value.escalation.collectionAllocationOrder === CollectionAllocationOrder.UNSPECIFIED) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Collection allocation order must be specified before publish",
+        path: ["escalation", "collectionAllocationOrder"],
       });
     }
 

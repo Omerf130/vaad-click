@@ -2,8 +2,11 @@ import "server-only";
 
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
 
+import { AMOUNTS_MONETARY_BASES } from "@/modules/financial-settings/domain/amounts-monetary-basis";
+import { CollectionAllocationOrder } from "@/modules/financial-settings/domain/collection-allocation-order";
 import { CourtCostsPolicy } from "@/modules/financial-settings/domain/court-costs-policy";
 import { EscalationCalculationBase } from "@/modules/financial-settings/domain/escalation-calculation-base";
+import { SuccessFeeExclusion } from "@/modules/financial-settings/domain/success-fee-exclusion";
 import { FinancialSettingsVersionStatus } from "@/modules/financial-settings/domain/financial-settings-version-status";
 import { installFinancialSettingsVersionImmutabilityGuards } from "@/modules/financial-settings/infra/financial-settings-version-immutability";
 import { CurrencyCode } from "@/shared/financial/currency";
@@ -28,6 +31,12 @@ const amountsSchema = new Schema(
   {
     debtorTreatmentFeeExVat: { type: moneyAmountSchema, required: false },
     committeeTreatmentFeeWhenDebtorWaivedExVat: { type: moneyAmountSchema, required: false },
+    debtorTreatmentFeeGross: { type: moneyAmountSchema, required: false },
+    debtorTreatmentFeeNet: { type: moneyAmountSchema, required: false },
+    debtorTreatmentFeeVat: { type: moneyAmountSchema, required: false },
+    committeeTreatmentFeeWhenDebtorWaivedGross: { type: moneyAmountSchema, required: false },
+    committeeTreatmentFeeWhenDebtorWaivedNet: { type: moneyAmountSchema, required: false },
+    committeeTreatmentFeeWhenDebtorWaivedVat: { type: moneyAmountSchema, required: false },
   },
   { _id: false },
 );
@@ -45,6 +54,25 @@ const escalationSchema = new Schema(
       required: false,
       enum: Object.values(CourtCostsPolicy),
     },
+    successFeeExclusions: {
+      type: [String],
+      required: false,
+      enum: Object.values(SuccessFeeExclusion),
+      default: undefined,
+    },
+    collectionAllocationOrder: {
+      type: String,
+      required: false,
+      enum: Object.values(CollectionAllocationOrder),
+    },
+  },
+  { _id: false },
+);
+
+const platformFeesSchema = new Schema(
+  {
+    trustAccountProcessingFeeBasisPoints: { type: Number, required: false, min: 0, max: 10_000 },
+    committeeTransferFeeBasisPoints: { type: Number, required: false, min: 0, max: 10_000 },
   },
   { _id: false },
 );
@@ -72,9 +100,15 @@ const financialSettingsVersionSchema = new Schema(
     createdByUserId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     revision: { type: Number, required: true, default: 1 },
     currency: { type: String, required: true, enum: Object.values(CurrencyCode) },
+    amountsMonetaryBasis: {
+      type: String,
+      required: false,
+      enum: AMOUNTS_MONETARY_BASES,
+    },
     amounts: { type: amountsSchema, required: true, default: () => ({}) },
     vatSchedule: { type: [vatScheduleEntrySchema], required: true, default: () => [] },
     escalation: { type: escalationSchema, required: true, default: () => ({}) },
+    platformFees: { type: platformFeesSchema, required: false, default: undefined },
     notesInternal: { type: String, required: false, maxlength: 2000 },
     provenance: { type: provenanceSchema, required: false },
   },

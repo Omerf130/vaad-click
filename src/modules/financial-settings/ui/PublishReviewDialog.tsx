@@ -1,8 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/Button/Button";
+import { isGrossInclusiveVatBasis } from "@/modules/financial-settings/domain/amounts-monetary-basis";
 import { FINANCIAL_SETTINGS_UI_COPY } from "@/modules/financial-settings/presentation/financial-settings-messages.he";
-import type { DraftViewModel } from "@/modules/financial-settings/presentation/financial-settings-view-model";
+import {
+  computeTreatmentFeePublishPreview,
+  type DraftViewModel,
+} from "@/modules/financial-settings/presentation/financial-settings-view-model";
 import type { FinancialSettingsActionState } from "@/modules/financial-settings/actions/financial-settings.actions";
 import styles from "@/modules/financial-settings/ui/FinancialSettingsAdmin.module.scss";
 
@@ -10,6 +14,7 @@ type PublishReviewDialogProps = {
   open: boolean;
   savedDraft: DraftViewModel;
   effectiveFromIso: string;
+  vatRows: { effectiveFromIso: string; ratePercent: string }[];
   revision: number;
   confirmPublish: boolean;
   onConfirmPublishChange: (checked: boolean) => void;
@@ -19,10 +24,42 @@ type PublishReviewDialogProps = {
   publishState: FinancialSettingsActionState;
 };
 
+function renderTreatmentFeeReview(input: {
+  title: string;
+  grossShekels: string;
+  effectiveFromIso: string;
+  vatRows: { effectiveFromIso: string; ratePercent: string }[];
+}) {
+  const preview = computeTreatmentFeePublishPreview({
+    grossShekels: input.grossShekels,
+    vatRows: input.vatRows,
+    effectiveFromIso: input.effectiveFromIso,
+  });
+
+  return (
+    <div className={styles.definitionRow}>
+      <dt className={styles.definitionTerm}>{input.title}</dt>
+      <dd className={styles.definitionValue}>
+        <strong>
+          {preview?.grossShekels ?? input.grossShekels} ₪ ({FINANCIAL_SETTINGS_UI_COPY.grossInclusiveFieldLabel})
+        </strong>
+        {preview ? (
+          <span className={styles.hint}>
+            {" "}
+            · נטו {preview.netShekels} ₪ · מע&quot;מ {preview.vatShekels} ₪ (
+            {preview.vatRatePercent}% לפי תאריך תוקף)
+          </span>
+        ) : null}
+      </dd>
+    </div>
+  );
+}
+
 export function PublishReviewDialog({
   open,
   savedDraft,
   effectiveFromIso,
+  vatRows,
   revision,
   confirmPublish,
   onConfirmPublishChange,
@@ -47,21 +84,33 @@ export function PublishReviewDialog({
           {FINANCIAL_SETTINGS_UI_COPY.publishReviewTitle}
         </h2>
         <dl className={styles.definitionList}>
+          {renderTreatmentFeeReview({
+            title: "דמי טיפול לחייב",
+            grossShekels: savedDraft.debtorTreatmentFeeShekels,
+            effectiveFromIso,
+            vatRows,
+          })}
+          {renderTreatmentFeeReview({
+            title: "דמי טיפול — ועד",
+            grossShekels: savedDraft.committeeAssumedTreatmentFeeShekels,
+            effectiveFromIso,
+            vatRows,
+          })}
           <div className={styles.definitionRow}>
-            <dt className={styles.definitionTerm}>דמי טיפול לחייב</dt>
+            <dt className={styles.definitionTerm}>עמלת נאמנות</dt>
             <dd className={styles.definitionValue}>
-              {savedDraft.debtorTreatmentFeeShekels} ₪ (לפני מע&quot;מ)
+              {savedDraft.trustAccountProcessingFeePercent}%
             </dd>
           </div>
           <div className={styles.definitionRow}>
-            <dt className={styles.definitionTerm}>דמי טיפול מהוועד</dt>
-            <dd className={styles.definitionValue}>
-              {savedDraft.committeeWaiverFeeShekels} ₪ (לפני מע&quot;מ)
-            </dd>
+            <dt className={styles.definitionTerm}>עמלת העברה לוועד</dt>
+            <dd className={styles.definitionValue}>{savedDraft.committeeTransferFeePercent}%</dd>
           </div>
           <div className={styles.definitionRow}>
-            <dt className={styles.definitionTerm}>אחוז גבייה</dt>
-            <dd className={styles.definitionValue}>{savedDraft.escalationPercent}%</dd>
+            <dt className={styles.definitionTerm}>דמי הצלחה</dt>
+            <dd className={styles.definitionValue}>
+              {savedDraft.escalationPercent}% — {FINANCIAL_SETTINGS_UI_COPY.escalationBaseUnresolved}
+            </dd>
           </div>
           <div className={styles.definitionRow}>
             <dt className={styles.definitionTerm}>מע&quot;מ</dt>
@@ -80,13 +129,17 @@ export function PublishReviewDialog({
           <div className={styles.definitionRow}>
             <dt className={styles.definitionTerm}>מדיניות משפטית</dt>
             <dd className={styles.definitionValue}>
-              {FINANCIAL_SETTINGS_UI_COPY.courtCostsUnresolved} ·{" "}
-              {FINANCIAL_SETTINGS_UI_COPY.escalationBaseUnresolved}
+              {FINANCIAL_SETTINGS_UI_COPY.courtCostsUnresolved}
             </dd>
           </div>
         </dl>
         {savedDraft.showSuggestedValueHints ? (
           <p className={styles.banner}>{FINANCIAL_SETTINGS_UI_COPY.suggestedBanner}</p>
+        ) : null}
+        {isGrossInclusiveVatBasis(savedDraft.amountsMonetaryBasis) ? (
+          <p className={styles.hint}>
+            פירוט נטו/מע&quot;מ יוקפא בפרסום לפי שיעור המע&quot;מ בתאריך תחילת התוקף.
+          </p>
         ) : null}
         <p className={styles.hint}>
           לאחר פרסום לא ניתן לערוך גרסה זו. תיקון יתבצע באמצעות גרסה חדשה עם תאריך תוקף עתידי.

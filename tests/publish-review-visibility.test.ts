@@ -26,4 +26,13 @@ describe("publish review eligibility", () => {
   it("allows review when the draft matches the last saved revision", () => {
     expect(evaluatePublishReviewEligibility({ isDirty: false }).allowed).toBe(true);
   });
+
+  it("blocks review when legacy drafts still need gross re-entry", () => {
+    const result = evaluatePublishReviewEligibility({
+      isDirty: false,
+      requiresGrossAmountReentry: true,
+    });
+    expect(result.allowed).toBe(false);
+    expect(result.reasonHe).toMatch(/כולל מע/);
+  });
 });

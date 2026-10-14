@@ -3,8 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SessionAuthStage } from "@/modules/auth/domain/session-types";
 import { AccountStatus } from "@/modules/users/domain/account-status";
 import { UserRole } from "@/modules/users/domain/user-role";
+import { CollectionAllocationOrder } from "@/modules/financial-settings/domain/collection-allocation-order";
 import { CourtCostsPolicy } from "@/modules/financial-settings/domain/court-costs-policy";
 import { EscalationCalculationBase } from "@/modules/financial-settings/domain/escalation-calculation-base";
+import { CONFIRMED_SUCCESS_FEE_EXCLUSIONS } from "@/modules/financial-settings/domain/success-fee-exclusion";
+import { SAMPLE_GROSS_PUBLISH_AMOUNTS } from "./fixtures/gross-financial-settings-amounts";
 import { FinancialSettingsErrorCode } from "@/modules/financial-settings/domain/financial-settings-errors";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 
@@ -68,15 +71,19 @@ function futurePublishPayload(revision: number) {
     revision,
     effectiveFromIso: "2030-06-01",
     currency: "ILS" as const,
-    amounts: {
-      debtorTreatmentFeeExVat: { currency: "ILS" as const, amountMinor: 100 },
-      committeeTreatmentFeeWhenDebtorWaivedExVat: { currency: "ILS" as const, amountMinor: 200 },
-    },
+    amounts: SAMPLE_GROSS_PUBLISH_AMOUNTS,
     vatSchedule: [{ effectiveFromIso: "2030-01-01", rateBasisPoints: 1800 }],
     escalation: {
       recoveryFeeRateBasisPoints: 2000,
-      calculationBase: EscalationCalculationBase.UNSPECIFIED,
+      calculationBase:
+        EscalationCalculationBase.COLLECTED_PRINCIPAL_AND_INDEXATION_INTEREST_AFTER_LAWSUIT_FILED,
       courtCostsPolicy: CourtCostsPolicy.UNSPECIFIED,
+      successFeeExclusions: [...CONFIRMED_SUCCESS_FEE_EXCLUSIONS],
+      collectionAllocationOrder: CollectionAllocationOrder.EXPENSES_THEN_PRINCIPAL,
+    },
+    platformFees: {
+      trustAccountProcessingFeeBasisPoints: 230,
+      committeeTransferFeeBasisPoints: 50,
     },
   };
 }

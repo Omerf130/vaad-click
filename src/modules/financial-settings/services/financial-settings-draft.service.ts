@@ -10,6 +10,10 @@ import {
   recordFinancialSettingsDraftDiscarded,
   recordFinancialSettingsDraftUpdated,
 } from "@/modules/audit/services/financial-settings-audit.service";
+import {
+  AmountsMonetaryBasis,
+  isGrossInclusiveVatBasis,
+} from "@/modules/financial-settings/domain/amounts-monetary-basis";
 import { CourtCostsPolicy } from "@/modules/financial-settings/domain/court-costs-policy";
 import { EscalationCalculationBase } from "@/modules/financial-settings/domain/escalation-calculation-base";
 import {
@@ -43,9 +47,11 @@ function mapAuditPersistenceError(error: unknown): never {
 
 type DraftContentFields = {
   currency?: CurrencyCode;
+  amountsMonetaryBasis?: AmountsMonetaryBasis;
   amounts?: DraftFinancialSettingsContentInput["amounts"];
   vatSchedule?: ReturnType<typeof mapVatScheduleInputToDates>;
   escalation?: DraftFinancialSettingsContentInput["escalation"];
+  platformFees?: DraftFinancialSettingsContentInput["platformFees"];
   notesInternal?: string;
 };
 
@@ -55,6 +61,9 @@ function buildDraftContentUpdate(content: DraftFinancialSettingsContentInput): D
   if (content.currency !== undefined) {
     update.currency = content.currency;
   }
+  if (content.amountsMonetaryBasis !== undefined) {
+    update.amountsMonetaryBasis = content.amountsMonetaryBasis;
+  }
   if (content.amounts !== undefined) {
     update.amounts = content.amounts;
   }
@@ -63,6 +72,9 @@ function buildDraftContentUpdate(content: DraftFinancialSettingsContentInput): D
   }
   if (content.escalation !== undefined) {
     update.escalation = content.escalation;
+  }
+  if (content.platformFees !== undefined) {
+    update.platformFees = content.platformFees;
   }
   if (content.notesInternal !== undefined) {
     update.notesInternal = content.notesInternal;
@@ -124,7 +136,17 @@ export async function createFinancialSettingsDraft(input: {
                       contentUpdate.escalation.recoveryFeeRateBasisPoints,
                   }
                 : {}),
+              ...(contentUpdate.escalation?.successFeeExclusions
+                ? { successFeeExclusions: contentUpdate.escalation.successFeeExclusions }
+                : {}),
+              ...(contentUpdate.escalation?.collectionAllocationOrder
+                ? {
+                    collectionAllocationOrder:
+                      contentUpdate.escalation.collectionAllocationOrder,
+                  }
+                : {}),
             },
+            ...(contentUpdate.platformFees ? { platformFees: contentUpdate.platformFees } : {}),
             notesInternal: contentUpdate.notesInternal,
           },
         ],
@@ -154,12 +176,38 @@ export async function createFinancialSettingsDraftFromPublished(input: {
   correlationId?: string;
 }) {
   assertLawyerAdmin(input.context);
-  const source = await requirePublishedFinancialSettingsVersion({
+  await requirePublishedFinancialSettingsVersion({
     context: input.context,
     settingsVersionId: input.sourceSettingsVersionId,
   });
 
   await connectMongo();
+
+  const sourceDoc = await FinancialSettingsVersion.findOne({
+    settingsVersionId: input.sourceSettingsVersionId,
+    status: FinancialSettingsVersionStatus.PUBLISHED,
+  }).lean();
+
+  if (!sourceDoc) {
+    throw new FinancialSettingsError(
+      FinancialSettingsErrorCode.SOURCE_NOT_PUBLISHED,
+      "Published financial settings version was not found",
+    );
+  }
+
+  const sourceBasis =
+    sourceDoc.amountsMonetaryBasis ?? AmountsMonetaryBasis.LEGACY_NET_EXCLUSIVE_VAT;
+  const clonedAmounts = isGrossInclusiveVatBasis(sourceBasis)
+    ? {
+        debtorTreatmentFeeGross: sourceDoc.amounts?.debtorTreatmentFeeGross,
+        committeeTreatmentFeeWhenDebtorWaivedGross:
+          sourceDoc.amounts?.committeeTreatmentFeeWhenDebtorWaivedGross,
+      }
+    : {
+        debtorTreatmentFeeExVat: sourceDoc.amounts?.debtorTreatmentFeeExVat,
+        committeeTreatmentFeeWhenDebtorWaivedExVat:
+          sourceDoc.amounts?.committeeTreatmentFeeWhenDebtorWaivedExVat,
+      };
   const session = await mongoose.startSession();
   const settingsVersionId = randomUUID();
 
@@ -185,12 +233,14 @@ export async function createFinancialSettingsDraftFromPublished(input: {
             status: FinancialSettingsVersionStatus.DRAFT,
             createdByUserId: new Types.ObjectId(input.context.user.id),
             revision: 1,
-            currency: source.currency,
-            amounts: source.amounts,
-            vatSchedule: source.vatSchedule,
-            escalation: source.escalation,
+            currency: sourceDoc.currency,
+            amountsMonetaryBasis: sourceBasis,
+            amounts: clonedAmounts,
+            vatSchedule: sourceDoc.vatSchedule,
+            escalation: sourceDoc.escalation,
+            ...(sourceDoc.platformFees ? { platformFees: sourceDoc.platformFees } : {}),
             provenance: {
-              clonedFromSettingsVersionId: source.settingsVersionId,
+              clonedFromSettingsVersionId: sourceDoc.settingsVersionId,
             },
           },
         ],
@@ -200,7 +250,7 @@ export async function createFinancialSettingsDraftFromPublished(input: {
       await recordFinancialSettingsDraftCreated({
         settingsVersionId,
         revision: 1,
-        clonedFromSettingsVersionId: source.settingsVersionId,
+        clonedFromSettingsVersionId: sourceDoc.settingsVersionId,
         context: input.context,
         correlationId: input.correlationId,
         session,
@@ -255,6 +305,8 @@ export async function updateFinancialSettingsDraft(input: {
       updatedSettingsVersionId = draft.settingsVersionId;
       const nextRevision = draft.revision + 1;
 
+      // Replacing `amounts` via $set drops legacy net / stale net-VAT fields. Do not combine
+      // $set on `amounts` with $unset on `amounts.*` — MongoDB rejects that as a path conflict.
       const updated = await FinancialSettingsVersion.findOneAndUpdate(
         {
           _id: draft._id,

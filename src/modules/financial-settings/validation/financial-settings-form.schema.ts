@@ -1,7 +1,10 @@
 import { z } from "zod";
 
+import { CollectionAllocationOrder } from "@/modules/financial-settings/domain/collection-allocation-order";
 import { CourtCostsPolicy } from "@/modules/financial-settings/domain/court-costs-policy";
 import { EscalationCalculationBase } from "@/modules/financial-settings/domain/escalation-calculation-base";
+import { CONFIRMED_SUCCESS_FEE_EXCLUSIONS } from "@/modules/financial-settings/domain/success-fee-exclusion";
+import { AmountsMonetaryBasis } from "@/modules/financial-settings/domain/amounts-monetary-basis";
 import type { DraftFinancialSettingsContentInput } from "@/modules/financial-settings/validation/financial-settings-content.schema";
 import { CurrencyCode } from "@/shared/financial/currency";
 import {
@@ -14,7 +17,9 @@ const isoDateField = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "תאריך לא ת
 export const draftFormFieldsSchema = z.object({
   revision: z.coerce.number().int().positive(),
   debtorTreatmentFeeShekels: z.string(),
-  committeeWaiverFeeShekels: z.string(),
+  committeeAssumedTreatmentFeeShekels: z.string(),
+  trustAccountProcessingFeePercent: z.string(),
+  committeeTransferFeePercent: z.string(),
   escalationPercent: z.string(),
   notesInternal: z.string().max(2000).optional(),
 });
@@ -50,9 +55,23 @@ export function mapDraftFormToContentInput(input: {
     fieldErrors.debtorTreatmentFeeShekels = [debtor.messageHe];
   }
 
-  const committee = parseShekelsStringToMinorUnits(input.fields.committeeWaiverFeeShekels);
+  const committee = parseShekelsStringToMinorUnits(input.fields.committeeAssumedTreatmentFeeShekels);
   if (!committee.ok) {
-    fieldErrors.committeeWaiverFeeShekels = [committee.messageHe];
+    fieldErrors.committeeAssumedTreatmentFeeShekels = [committee.messageHe];
+  }
+
+  const trustProcessing = parsePercentStringToBasisPoints(
+    input.fields.trustAccountProcessingFeePercent,
+  );
+  if (!trustProcessing.ok) {
+    fieldErrors.trustAccountProcessingFeePercent = [trustProcessing.messageHe];
+  }
+
+  const committeeTransfer = parsePercentStringToBasisPoints(
+    input.fields.committeeTransferFeePercent,
+  );
+  if (!committeeTransfer.ok) {
+    fieldErrors.committeeTransferFeePercent = [committeeTransfer.messageHe];
   }
 
   const escalation = parsePercentStringToBasisPoints(input.fields.escalationPercent);
@@ -82,7 +101,7 @@ export function mapDraftFormToContentInput(input: {
     return { ok: false, fieldErrors };
   }
 
-  if (!debtor.ok || !committee.ok || !escalation.ok) {
+  if (!debtor.ok || !committee.ok || !escalation.ok || !trustProcessing.ok || !committeeTransfer.ok) {
     return { ok: false, fieldErrors };
   }
 
@@ -91,18 +110,26 @@ export function mapDraftFormToContentInput(input: {
     revision: input.fields.revision,
     content: {
       currency: CurrencyCode.ILS,
+      amountsMonetaryBasis: AmountsMonetaryBasis.GROSS_INCLUSIVE_VAT,
       amounts: {
-        debtorTreatmentFeeExVat: { currency: CurrencyCode.ILS, amountMinor: debtor.scaledInteger },
-        committeeTreatmentFeeWhenDebtorWaivedExVat: {
+        debtorTreatmentFeeGross: { currency: CurrencyCode.ILS, amountMinor: debtor.scaledInteger },
+        committeeTreatmentFeeWhenDebtorWaivedGross: {
           currency: CurrencyCode.ILS,
           amountMinor: committee.scaledInteger,
         },
       },
       vatSchedule,
+      platformFees: {
+        trustAccountProcessingFeeBasisPoints: trustProcessing.scaledInteger,
+        committeeTransferFeeBasisPoints: committeeTransfer.scaledInteger,
+      },
       escalation: {
         recoveryFeeRateBasisPoints: escalation.scaledInteger,
-        calculationBase: EscalationCalculationBase.UNSPECIFIED,
+        calculationBase:
+          EscalationCalculationBase.COLLECTED_PRINCIPAL_AND_INDEXATION_INTEREST_AFTER_LAWSUIT_FILED,
         courtCostsPolicy: CourtCostsPolicy.UNSPECIFIED,
+        successFeeExclusions: [...CONFIRMED_SUCCESS_FEE_EXCLUSIONS],
+        collectionAllocationOrder: CollectionAllocationOrder.EXPENSES_THEN_PRINCIPAL,
       },
       notesInternal: input.fields.notesInternal,
     },

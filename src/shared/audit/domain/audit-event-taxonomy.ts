@@ -43,6 +43,10 @@ export const AuditEventType = {
   BUILDING_MANAGEMENT_COMPANY_LINKED: "building.management_company.linked",
   BUILDING_MANAGEMENT_COMPANY_UNLINKED: "building.management_company.unlinked",
   BUILDING_DUPLICATE_ADDRESS_EXCEPTION: "building.record.duplicate_exception_created",
+  BUILDING_COMMITTEE_ENGAGEMENT_PROPOSED_TERMS_CAPTURED:
+    "building.committee_engagement.proposed_terms_captured",
+  BUILDING_COMMITTEE_ENGAGEMENT_PROPOSED_TERMS_REPLACED:
+    "building.committee_engagement.proposed_terms_replaced",
   BUILDING_VERIFICATION_STATUS_CHANGED: "building.verification_status.changed",
   MANAGEMENT_COMPANY_RECORD_CREATED: "management_company.record.created",
   MANAGEMENT_COMPANY_RECORD_UPDATED: "management_company.record.updated",
@@ -56,6 +60,12 @@ export const AuditEventType = {
   LAWYER_APPROVAL_DENIED: "lawyer_approval.letter.denied",
   LEGAL_DOCUMENT_GENERATED: "legal_document.letter.generated",
   LEGAL_DOCUMENT_DELIVERED: "legal_document.letter.delivered",
+  LEGAL_DOCUMENT_ASSET_UPLOAD_INITIATED: "legal_document.asset.upload_initiated",
+  LEGAL_DOCUMENT_ASSET_UPLOAD_COMPLETED: "legal_document.asset.upload_completed",
+  LEGAL_DOCUMENT_ASSET_UPLOAD_REJECTED: "legal_document.asset.upload_rejected",
+  LEGAL_DOCUMENT_ASSET_DOWNLOADED: "legal_document.asset.downloaded",
+  LEGAL_DOCUMENT_ASSET_SOFT_DELETED: "legal_document.asset.soft_deleted",
+  LEGAL_DOCUMENT_ASSET_QUARANTINED: "legal_document.asset.quarantined",
   DEBTOR_ACCESS_LINK_ISSUED: "debtor_access.link.issued",
   DEBTOR_DISPUTE_FILED: "debtor_access.dispute.filed",
   PAYMENT_RECORDED: "payment.transaction.recorded",

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { AmountsMonetaryBasis } from "@/modules/financial-settings/domain/amounts-monetary-basis";
 import { CourtCostsPolicy } from "@/modules/financial-settings/domain/court-costs-policy";
 import { EscalationCalculationBase } from "@/modules/financial-settings/domain/escalation-calculation-base";
 import { FINANCIAL_SETTINGS_SNAPSHOT_DISCLAIMER } from "@/modules/financial-settings/domain/financial-settings-snapshot";
@@ -17,6 +18,7 @@ const publishedVersion: PublishedFinancialSettingsVersion = {
   publishedAt: new Date("2026-10-01T00:00:00Z"),
   currency: "ILS",
   amounts: {
+    amountsMonetaryBasis: AmountsMonetaryBasis.LEGACY_NET_EXCLUSIVE_VAT,
     debtorTreatmentFeeExVat: { currency: "ILS", amountMinor: 100 },
     committeeTreatmentFeeWhenDebtorWaivedExVat: { currency: "ILS", amountMinor: 200 },
   },
@@ -28,6 +30,10 @@ const publishedVersion: PublishedFinancialSettingsVersion = {
     recoveryFeeRateBasisPoints: 2000,
     calculationBase: EscalationCalculationBase.UNSPECIFIED,
     courtCostsPolicy: CourtCostsPolicy.UNSPECIFIED,
+  },
+  platformFees: {
+    trustAccountProcessingFeeBasisPoints: 230,
+    committeeTransferFeeBasisPoints: 50,
   },
 };
 
@@ -48,11 +54,19 @@ describe("financial settings snapshot materialization", () => {
     expect(entry.rateBasisPoints).toBe(1800);
   });
 
+  it("rejects materialization when platform fees are missing", () => {
+    const legacy = { ...publishedVersion, platformFees: undefined };
+    expect(() =>
+      materializeFinancialSettingsSnapshot(legacy, startOfDayJerusalem("2026-07-01")),
+    ).toThrow();
+  });
+
   it("does not perform billing calculations", () => {
     const snapshot = materializeFinancialSettingsSnapshot(
       publishedVersion,
       startOfDayJerusalem("2026-07-01"),
     );
     expect(Object.keys(snapshot)).not.toContain("totalDueMinor");
+    expect(snapshot.amountsMonetaryBasis).toBe(AmountsMonetaryBasis.LEGACY_NET_EXCLUSIVE_VAT);
   });
 });

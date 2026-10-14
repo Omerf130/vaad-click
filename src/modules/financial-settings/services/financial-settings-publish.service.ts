@@ -9,6 +9,7 @@ import {
   FinancialSettingsErrorCode,
 } from "@/modules/financial-settings/domain/financial-settings-errors";
 import { FinancialSettingsVersionStatus } from "@/modules/financial-settings/domain/financial-settings-version-status";
+import { AmountsMonetaryBasis } from "@/modules/financial-settings/domain/amounts-monetary-basis";
 import { toPublishedFinancialSettingsVersion } from "@/modules/financial-settings/domain/published-financial-settings-version";
 import { FinancialSettingsVersion } from "@/modules/financial-settings/infra/financial-settings-version.model";
 import { assertLawyerAdmin } from "@/modules/financial-settings/services/assert-lawyer-admin";
@@ -94,9 +95,11 @@ export async function publishFinancialSettingsDraft(input: {
             publishedAt,
             publishedByUserId: new Types.ObjectId(input.context.user.id),
             currency: parsed.currency,
+            amountsMonetaryBasis: AmountsMonetaryBasis.GROSS_INCLUSIVE_VAT,
             amounts: parsed.amounts,
             vatSchedule,
             escalation: parsed.escalation,
+            platformFees: parsed.platformFees,
             notesInternal: parsed.notesInternal,
           },
         },

@@ -7,6 +7,11 @@ import {
   listActiveManagementCompaniesForLinking,
   listEligibleBuildingRepresentatives,
 } from "@/modules/buildings/services/admin-building-query.service";
+import { getAdminCommitteeEngagementForBuilding } from "@/modules/committee-engagements/services/committee-engagement.service";
+import {
+  getDocumentStorageUiState,
+  listBuildingDocumentAssetsForLawyerAdmin,
+} from "@/modules/document-assets/services/document-asset.service";
 import { BuildingDetailPanels } from "@/modules/buildings/ui/BuildingDetailPanels";
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
 
@@ -18,11 +23,21 @@ export default async function AdminBuildingDetailPage({ params }: PageProps) {
   const context = await requireLawyerAdminPortal();
   const { buildingId } = await params;
 
-  const [building, eligibleRepresentatives, managementCompanies] = await Promise.all([
+  const [
+    building,
+    eligibleRepresentatives,
+    managementCompanies,
+    committeeEngagement,
+    buildingDocuments,
+  ] = await Promise.all([
     getAdminBuildingDetail({ context, buildingId }),
     listEligibleBuildingRepresentatives({ buildingId }),
     listActiveManagementCompaniesForLinking(),
+    getAdminCommitteeEngagementForBuilding({ context, buildingId }),
+    listBuildingDocumentAssetsForLawyerAdmin({ context, buildingId }),
   ]);
+
+  const documentStorageState = getDocumentStorageUiState();
 
   if (!building) {
     notFound();
@@ -50,6 +65,9 @@ export default async function AdminBuildingDetailPage({ params }: PageProps) {
         building={building}
         eligibleRepresentatives={repOptions}
         managementCompanies={managementCompanies}
+        committeeEngagement={committeeEngagement}
+        buildingDocuments={buildingDocuments}
+        documentStorageState={documentStorageState}
       />
     </AdminPageFrame>
   );

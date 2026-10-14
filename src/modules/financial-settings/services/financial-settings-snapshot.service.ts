@@ -5,48 +5,38 @@ import {
   FINANCIAL_SETTINGS_SNAPSHOT_DISCLAIMER,
   type FinancialSettingsSnapshot,
 } from "@/modules/financial-settings/domain/financial-settings-snapshot";
+import { CONFIRMED_SUCCESS_FEE_EXCLUSIONS } from "@/modules/financial-settings/domain/success-fee-exclusion";
 import {
   FinancialSettingsError,
   FinancialSettingsErrorCode,
 } from "@/modules/financial-settings/domain/financial-settings-errors";
-import type { VatScheduleEntry } from "@/modules/financial-settings/domain/published-financial-settings-version";
+import { hasCompletePlatformFees } from "@/modules/financial-settings/domain/platform-fees";
+import { CollectionAllocationOrder } from "@/modules/financial-settings/domain/collection-allocation-order";
+import { resolveVatScheduleEntryForInstant } from "@/modules/financial-settings/domain/vat-schedule-resolution";
 
-export function resolveVatScheduleEntryForInstant(
-  schedule: VatScheduleEntry[],
-  asOf: Date,
-): VatScheduleEntry {
-  const sorted = [...schedule].sort(
-    (left, right) => left.effectiveFrom.getTime() - right.effectiveFrom.getTime(),
-  );
-
-  let selected: VatScheduleEntry | null = null;
-  for (const entry of sorted) {
-    if (entry.effectiveFrom.getTime() <= asOf.getTime()) {
-      selected = entry;
-    } else {
-      break;
-    }
-  }
-
-  if (!selected) {
-    throw new FinancialSettingsError(
-      FinancialSettingsErrorCode.VALIDATION,
-      "No VAT schedule entry applies at the requested instant",
-    );
-  }
-
-  return selected;
-}
+export { resolveVatScheduleEntryForInstant };
 
 export function materializeFinancialSettingsSnapshot(
   version: PublishedFinancialSettingsVersion,
   asOf: Date,
   materializedAt: Date = new Date(),
 ): FinancialSettingsSnapshot {
+  if (!hasCompletePlatformFees(version.platformFees)) {
+    throw new FinancialSettingsError(
+      FinancialSettingsErrorCode.VALIDATION,
+      "Published version is missing platform fee configuration",
+    );
+  }
+
   const resolvedVatScheduleEntry = resolveVatScheduleEntryForInstant(
     version.vatSchedule,
     asOf,
   );
+
+  const successFeeExclusions =
+    version.escalation.successFeeExclusions && version.escalation.successFeeExclusions.length > 0
+      ? version.escalation.successFeeExclusions
+      : [...CONFIRMED_SUCCESS_FEE_EXCLUSIONS];
 
   return {
     disclaimer: FINANCIAL_SETTINGS_SNAPSHOT_DISCLAIMER,
@@ -55,8 +45,16 @@ export function materializeFinancialSettingsSnapshot(
     effectiveFrom: version.effectiveFrom,
     publishedAt: version.publishedAt,
     currency: version.currency,
+    amountsMonetaryBasis: version.amounts.amountsMonetaryBasis,
     amounts: { ...version.amounts },
-    escalation: { ...version.escalation },
+    platformFees: { ...version.platformFees },
+    escalation: {
+      ...version.escalation,
+      successFeeExclusions,
+      collectionAllocationOrder:
+        version.escalation.collectionAllocationOrder ??
+        CollectionAllocationOrder.UNSPECIFIED,
+    },
     resolvedVatScheduleEntry: {
       effectiveFrom: resolvedVatScheduleEntry.effectiveFrom,
       rateBasisPoints: resolvedVatScheduleEntry.rateBasisPoints,

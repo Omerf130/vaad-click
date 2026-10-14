@@ -1,21 +1,28 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { ZodError } from "zod";
 
 import { resolveAuditCorrelationId } from "@/modules/audit/services/audit-correlation";
 import { CourtCostsPolicy } from "@/modules/financial-settings/domain/court-costs-policy";
-import { EscalationCalculationBase } from "@/modules/financial-settings/domain/escalation-calculation-base";
 import {
   FinancialSettingsError,
   FinancialSettingsErrorCode,
 } from "@/modules/financial-settings/domain/financial-settings-errors";
+import { CollectionAllocationOrder } from "@/modules/financial-settings/domain/collection-allocation-order";
+import { EscalationCalculationBase } from "@/modules/financial-settings/domain/escalation-calculation-base";
+import { CONFIRMED_SUCCESS_FEE_EXCLUSIONS } from "@/modules/financial-settings/domain/success-fee-exclusion";
 import {
-  SUGGESTED_COMMITTEE_WAIVER_FEE_MINOR,
-  SUGGESTED_DEBTOR_TREATMENT_FEE_MINOR,
+  SUGGESTED_COMMITTEE_TRANSFER_FEE_BASIS_POINTS,
   SUGGESTED_ESCALATION_RECOVERY_BASIS_POINTS,
+  SUGGESTED_TRUST_ACCOUNT_PROCESSING_FEE_BASIS_POINTS,
 } from "@/modules/financial-settings/domain/suggested-initial-values";
-import { buildPublishPayloadFromSavedDraft } from "@/modules/financial-settings/presentation/draft-to-publish-payload";
+import {
+  buildPublishPayloadFromSavedDraft,
+  type SavedFinancialSettingsDraftForPublish,
+} from "@/modules/financial-settings/presentation/draft-to-publish-payload";
 import { mapFinancialSettingsErrorToHebrew } from "@/modules/financial-settings/presentation/financial-settings-messages.he";
+import { mapDraftFormZodErrorToFieldErrors } from "@/modules/financial-settings/presentation/map-zod-error-to-field-errors";
 import {
   createFinancialSettingsDraft,
   createFinancialSettingsDraftFromPublished,
@@ -89,20 +96,18 @@ export async function createFinancialSettingsDraftFormAction(
       published.length === 0
         ? {
             currency: CurrencyCode.ILS,
-            amounts: {
-              debtorTreatmentFeeExVat: {
-                currency: CurrencyCode.ILS,
-                amountMinor: SUGGESTED_DEBTOR_TREATMENT_FEE_MINOR,
-              },
-              committeeTreatmentFeeWhenDebtorWaivedExVat: {
-                currency: CurrencyCode.ILS,
-                amountMinor: SUGGESTED_COMMITTEE_WAIVER_FEE_MINOR,
-              },
+            platformFees: {
+              trustAccountProcessingFeeBasisPoints:
+                SUGGESTED_TRUST_ACCOUNT_PROCESSING_FEE_BASIS_POINTS,
+              committeeTransferFeeBasisPoints: SUGGESTED_COMMITTEE_TRANSFER_FEE_BASIS_POINTS,
             },
             escalation: {
               recoveryFeeRateBasisPoints: SUGGESTED_ESCALATION_RECOVERY_BASIS_POINTS,
-              calculationBase: EscalationCalculationBase.UNSPECIFIED,
+              calculationBase:
+                EscalationCalculationBase.COLLECTED_PRINCIPAL_AND_INDEXATION_INTEREST_AFTER_LAWSUIT_FILED,
               courtCostsPolicy: CourtCostsPolicy.UNSPECIFIED,
+              successFeeExclusions: [...CONFIRMED_SUCCESS_FEE_EXCLUSIONS],
+              collectionAllocationOrder: CollectionAllocationOrder.EXPENSES_THEN_PRINCIPAL,
             },
           }
         : undefined;
@@ -147,13 +152,23 @@ export async function updateFinancialSettingsDraftAction(
     const context = await guardMutation();
     const correlationId = await resolveAuditCorrelationId();
 
-    const fields = draftFormFieldsSchema.parse({
+    const fieldsResult = draftFormFieldsSchema.safeParse({
       revision: clampFormValue(formData.get("revision")),
       debtorTreatmentFeeShekels: clampFormValue(formData.get("debtorTreatmentFeeShekels")),
-      committeeWaiverFeeShekels: clampFormValue(formData.get("committeeWaiverFeeShekels")),
+      committeeAssumedTreatmentFeeShekels: clampFormValue(
+        formData.get("committeeAssumedTreatmentFeeShekels"),
+      ),
+      trustAccountProcessingFeePercent: clampFormValue(
+        formData.get("trustAccountProcessingFeePercent"),
+      ),
+      committeeTransferFeePercent: clampFormValue(formData.get("committeeTransferFeePercent")),
       escalationPercent: clampFormValue(formData.get("escalationPercent")),
       notesInternal: clampFormValue(formData.get("notesInternal")) || undefined,
     });
+    if (!fieldsResult.success) {
+      return { ok: false, fieldErrors: mapDraftFormZodErrorToFieldErrors(fieldsResult.error) };
+    }
+    const fields = fieldsResult.data;
 
     let vatRows;
     try {
@@ -184,7 +199,13 @@ export async function updateFinancialSettingsDraftAction(
     if (error instanceof FinancialSettingsError) {
       return handleFinancialSettingsError(error);
     }
-    return { ok: false, message: "נתונים לא תקינים." };
+    if (error instanceof ZodError) {
+      return { ok: false, fieldErrors: mapDraftFormZodErrorToFieldErrors(error) };
+    }
+    return {
+      ok: false,
+      message: "לא ניתן לשמור את הטיוטה. נסה/י שוב או רעננ/י את הדף.",
+    };
   }
 }
 
@@ -245,7 +266,10 @@ export async function publishFinancialSettingsDraftAction(
       };
     }
 
-    const payload = buildPublishPayloadFromSavedDraft(draft, effectiveFromIso);
+    const payload = buildPublishPayloadFromSavedDraft(
+      draft as SavedFinancialSettingsDraftForPublish,
+      effectiveFromIso,
+    );
     publishFinancialSettingsInputSchema.parse(payload);
 
     await publishFinancialSettingsDraft({

@@ -242,3 +242,43 @@ export async function recordManagementCompanyPrimaryUserLinked(
     { session: input.session },
   );
 }
+
+export async function recordCommitteeEngagementProposedTermsCaptured(
+  input: AuditBase & { buildingId: string; engagementId: string; settingsVersionId: string },
+) {
+  await writeAuditEventMandatory(
+    {
+      eventType: AuditEventType.BUILDING_COMMITTEE_ENGAGEMENT_PROPOSED_TERMS_CAPTURED,
+      actor: buildUserAuditActor(input.context),
+      action: "capture_proposed_committee_terms",
+      outcome: AuditOutcome.SUCCESS,
+      target: { entityType: "building", entityId: input.buildingId },
+      metadata: {
+        engagementId: input.engagementId,
+        settingsVersionId: input.settingsVersionId,
+      },
+      correlationId: input.correlationId,
+    },
+    { session: input.session },
+  );
+}
+
+export async function recordCommitteeEngagementProposedTermsReplaced(
+  input: AuditBase & { buildingId: string; engagementId: string; settingsVersionId: string },
+) {
+  await writeAuditEventMandatory(
+    {
+      eventType: AuditEventType.BUILDING_COMMITTEE_ENGAGEMENT_PROPOSED_TERMS_REPLACED,
+      actor: buildUserAuditActor(input.context),
+      action: "replace_proposed_committee_terms",
+      outcome: AuditOutcome.SUCCESS,
+      target: { entityType: "building", entityId: input.buildingId },
+      metadata: {
+        engagementId: input.engagementId,
+        settingsVersionId: input.settingsVersionId,
+      },
+      correlationId: input.correlationId,
+    },
+    { session: input.session },
+  );
+}

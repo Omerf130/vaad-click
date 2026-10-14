@@ -1,7 +1,11 @@
+import type { AmountsMonetaryBasis } from "@/modules/financial-settings/domain/amounts-monetary-basis";
+import type { CollectionAllocationOrder } from "@/modules/financial-settings/domain/collection-allocation-order";
 import type { CourtCostsPolicy } from "@/modules/financial-settings/domain/court-costs-policy";
 import type { EscalationCalculationBase } from "@/modules/financial-settings/domain/escalation-calculation-base";
+import type { PlatformFees } from "@/modules/financial-settings/domain/platform-fees";
+import type { PublishedFinancialSettingsAmounts } from "@/modules/financial-settings/domain/financial-settings-amounts";
+import type { SuccessFeeExclusion } from "@/modules/financial-settings/domain/success-fee-exclusion";
 import type { CurrencyCode } from "@/shared/financial/currency";
-import type { MoneyAmount } from "@/shared/financial/money.schema";
 
 /** Shown in docs/types — snapshots are not legal or tax determinations. */
 export const FINANCIAL_SETTINGS_SNAPSHOT_DISCLAIMER =
@@ -12,15 +16,12 @@ export type FinancialSettingsVatScheduleEntrySnapshot = {
   rateBasisPoints: number;
 };
 
-export type FinancialSettingsAmountsSnapshot = {
-  debtorTreatmentFeeExVat: MoneyAmount;
-  committeeTreatmentFeeWhenDebtorWaivedExVat: MoneyAmount;
-};
-
 export type FinancialSettingsEscalationSnapshot = {
   recoveryFeeRateBasisPoints: number;
   calculationBase: EscalationCalculationBase;
   courtCostsPolicy: CourtCostsPolicy;
+  successFeeExclusions: SuccessFeeExclusion[];
+  collectionAllocationOrder: CollectionAllocationOrder;
 };
 
 export type FinancialSettingsSnapshot = {
@@ -30,7 +31,9 @@ export type FinancialSettingsSnapshot = {
   effectiveFrom: Date;
   publishedAt: Date;
   currency: CurrencyCode;
-  amounts: FinancialSettingsAmountsSnapshot;
+  amountsMonetaryBasis: AmountsMonetaryBasis;
+  amounts: PublishedFinancialSettingsAmounts;
+  platformFees: PlatformFees;
   escalation: FinancialSettingsEscalationSnapshot;
   /** VAT row selected by technical lookup at asOf — not a legal VAT ruling. */
   resolvedVatScheduleEntry: FinancialSettingsVatScheduleEntrySnapshot;

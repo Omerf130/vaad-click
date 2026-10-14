@@ -1,40 +1,46 @@
 import "server-only";
 
+import { CollectionAllocationOrder } from "@/modules/financial-settings/domain/collection-allocation-order";
 import { CourtCostsPolicy } from "@/modules/financial-settings/domain/court-costs-policy";
 import { EscalationCalculationBase } from "@/modules/financial-settings/domain/escalation-calculation-base";
 import {
   FinancialSettingsError,
   FinancialSettingsErrorCode,
 } from "@/modules/financial-settings/domain/financial-settings-errors";
-import type { FinancialSettingsVersionDocument } from "@/modules/financial-settings/infra/financial-settings-version.model";
+import type { FinancialSettingsVersionAmounts } from "@/modules/financial-settings/domain/financial-settings-amounts";
+import {
+  CONFIRMED_SUCCESS_FEE_EXCLUSIONS,
+  type SuccessFeeExclusion,
+} from "@/modules/financial-settings/domain/success-fee-exclusion";
+import { derivePublishAmountsFromGrossDraft } from "@/modules/financial-settings/presentation/derive-publish-gross-amounts";
 import type { PublishFinancialSettingsInput } from "@/modules/financial-settings/validation/financial-settings-content.schema";
 import { CurrencyCode } from "@/shared/financial/currency";
 import { jerusalemIsoDateFromInstant } from "@/shared/time/jerusalem-calendar";
 
-type DraftLean = Pick<
-  FinancialSettingsVersionDocument,
-  | "currency"
-  | "amounts"
-  | "vatSchedule"
-  | "escalation"
-  | "notesInternal"
-  | "revision"
->;
+export type SavedFinancialSettingsDraftForPublish = {
+  revision: number;
+  currency?: CurrencyCode | string;
+  amountsMonetaryBasis?: string | null;
+  amounts?: FinancialSettingsVersionAmounts | null;
+  vatSchedule?: { effectiveFrom: Date; rateBasisPoints: number }[];
+  escalation?: {
+    recoveryFeeRateBasisPoints?: number;
+    calculationBase?: string;
+    courtCostsPolicy?: string;
+    successFeeExclusions?: string[];
+    collectionAllocationOrder?: string;
+  };
+  platformFees?: {
+    trustAccountProcessingFeeBasisPoints?: number | null;
+    committeeTransferFeeBasisPoints?: number | null;
+  };
+  notesInternal?: string | null;
+};
 
 export function buildPublishPayloadFromSavedDraft(
-  draft: DraftLean,
+  draft: SavedFinancialSettingsDraftForPublish,
   effectiveFromIso: string,
 ): PublishFinancialSettingsInput {
-  if (
-    !draft.amounts?.debtorTreatmentFeeExVat ||
-    !draft.amounts?.committeeTreatmentFeeWhenDebtorWaivedExVat
-  ) {
-    throw new FinancialSettingsError(
-      FinancialSettingsErrorCode.VALIDATION,
-      "Draft is missing treatment fee amounts",
-    );
-  }
-
   if (!draft.vatSchedule?.length) {
     throw new FinancialSettingsError(
       FinancialSettingsErrorCode.VALIDATION,
@@ -49,33 +55,60 @@ export function buildPublishPayloadFromSavedDraft(
     );
   }
 
+  const draftPlatformFees = draft.platformFees;
+  if (
+    !draftPlatformFees ||
+    typeof draftPlatformFees.trustAccountProcessingFeeBasisPoints !== "number" ||
+    typeof draftPlatformFees.committeeTransferFeeBasisPoints !== "number"
+  ) {
+    throw new FinancialSettingsError(
+      FinancialSettingsErrorCode.VALIDATION,
+      "Draft is missing platform fee rates",
+    );
+  }
+
+  const calculationBase =
+    (draft.escalation.calculationBase as EscalationCalculationBase | undefined) ??
+    EscalationCalculationBase.UNSPECIFIED;
+  const collectionAllocationOrder =
+    (draft.escalation.collectionAllocationOrder as CollectionAllocationOrder | undefined) ??
+    CollectionAllocationOrder.UNSPECIFIED;
+  const successFeeExclusions: SuccessFeeExclusion[] =
+    draft.escalation.successFeeExclusions && draft.escalation.successFeeExclusions.length > 0
+      ? (draft.escalation.successFeeExclusions as SuccessFeeExclusion[])
+      : [...CONFIRMED_SUCCESS_FEE_EXCLUSIONS];
+
+  const currency = (draft.currency ?? CurrencyCode.ILS) as CurrencyCode;
+  const amounts = derivePublishAmountsFromGrossDraft({
+    currency,
+    amounts: draft.amounts,
+    amountsMonetaryBasis: draft.amountsMonetaryBasis,
+    vatSchedule: draft.vatSchedule,
+    effectiveFromIso,
+  });
+
   return {
     revision: draft.revision,
     effectiveFromIso,
-    currency: (draft.currency ?? CurrencyCode.ILS) as CurrencyCode,
-    amounts: {
-      debtorTreatmentFeeExVat: {
-        currency: draft.amounts.debtorTreatmentFeeExVat.currency as CurrencyCode,
-        amountMinor: draft.amounts.debtorTreatmentFeeExVat.amountMinor,
-      },
-      committeeTreatmentFeeWhenDebtorWaivedExVat: {
-        currency: draft.amounts.committeeTreatmentFeeWhenDebtorWaivedExVat
-          .currency as CurrencyCode,
-        amountMinor: draft.amounts.committeeTreatmentFeeWhenDebtorWaivedExVat.amountMinor,
-      },
-    },
+    currency,
+    amounts,
     vatSchedule: draft.vatSchedule.map((entry) => ({
       effectiveFromIso: jerusalemIsoDateFromInstant(entry.effectiveFrom),
       rateBasisPoints: entry.rateBasisPoints,
     })),
     escalation: {
       recoveryFeeRateBasisPoints: draft.escalation.recoveryFeeRateBasisPoints,
-      calculationBase:
-        (draft.escalation.calculationBase as EscalationCalculationBase | undefined) ??
-        EscalationCalculationBase.UNSPECIFIED,
+      calculationBase,
       courtCostsPolicy:
         (draft.escalation.courtCostsPolicy as CourtCostsPolicy | undefined) ??
         CourtCostsPolicy.UNSPECIFIED,
+      successFeeExclusions,
+      collectionAllocationOrder,
+    },
+    platformFees: {
+      trustAccountProcessingFeeBasisPoints:
+        draftPlatformFees.trustAccountProcessingFeeBasisPoints,
+      committeeTransferFeeBasisPoints: draftPlatformFees.committeeTransferFeeBasisPoints,
     },
     notesInternal: draft.notesInternal ?? undefined,
   };

@@ -1,5 +1,7 @@
 export const EscalationCalculationBase = {
   UNSPECIFIED: "unspecified",
+  COLLECTED_PRINCIPAL_AND_INDEXATION_INTEREST_AFTER_LAWSUIT_FILED:
+    "collected_principal_indexation_interest_after_lawsuit_filed",
 } as const;
 
 export type EscalationCalculationBase =

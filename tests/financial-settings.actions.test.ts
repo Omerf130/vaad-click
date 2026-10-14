@@ -49,7 +49,7 @@ describe("financial settings server actions", () => {
     mockPublish.mockResolvedValue(undefined);
   });
 
-  it("applies suggested initial values only when no published versions exist", async () => {
+  it("applies suggested percentage defaults only when no published versions exist", async () => {
     mockHistory.mockResolvedValue([]);
     const { createFinancialSettingsDraftFormAction } = await import(
       "@/modules/financial-settings/actions/financial-settings.actions"
@@ -62,12 +62,18 @@ describe("financial settings server actions", () => {
     expect(mockCreateDraft).toHaveBeenCalledWith(
       expect.objectContaining({
         initial: expect.objectContaining({
-          amounts: expect.objectContaining({
-            debtorTreatmentFeeExVat: expect.objectContaining({ amountMinor: 27700 }),
+          platformFees: expect.objectContaining({
+            trustAccountProcessingFeeBasisPoints: 230,
+            committeeTransferFeeBasisPoints: 50,
+          }),
+          escalation: expect.objectContaining({
+            recoveryFeeRateBasisPoints: 2000,
           }),
         }),
       }),
     );
+    const call = mockCreateDraft.mock.calls[0]?.[0] as { initial?: { amounts?: unknown } };
+    expect(call.initial?.amounts).toBeUndefined();
   });
 
   it("does not apply suggested values when published versions exist", async () => {

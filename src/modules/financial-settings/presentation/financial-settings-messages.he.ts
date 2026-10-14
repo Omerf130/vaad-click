@@ -24,7 +24,15 @@ export const FINANCIAL_SETTINGS_UI_COPY = {
     "אני מאשר/ת שסקרתי את ההגדרות ומבין/ה שגרסה שפורסמה אינה ניתנת לעריכה.",
   publishEffectiveDate: "תאריך תחילת תוקף (לוח עברי/לועזי — ישראל)",
   courtCostsUnresolved: "מדיניות עלויות משפט: טרם הוגדרה (יוגדר בהמשך)",
-  escalationBaseUnresolved: "בסיס חישוב אחוז הגבייה: טרם הוגדר (יוגדר בהמשך)",
+  escalationBaseUnresolved:
+    "דמי הצלחה (20%): על קרן, הצמדה וריבית שנגבו בפועל לאחר הגשת התביעה — ללא שכ\"ט, הוצאות משפט, אגרות או הוצאות מכתב התראה. גבייה חלקית: הוצאות ואז קרן.",
+  grossInclusiveFieldLabel: "כולל מע\"מ",
+  legacyDraftGrossReentryBanner:
+    "טיוטה זו נשענת על סכומים נטו (לפני מע\"מ) מגרסה היסטורית. יש להזין מחדש את דמי הטיפול כסכום כולל מע\"מ לפני פרסום — לא יבוצע המרה אוטומטית.",
+  legacyPublishedAmountBadge: "לפני מע\"מ (גרסה היסטורית)",
+  grossPublishedAmountBadge: "כולל מע\"מ",
+  platformFeesNote:
+    "שתי העמלות נשמרות בנפרד — לא מחברים לתצוגה או לחיוב עד לשלב התשלומים.",
   mustSaveBeforePublish: "יש לשמור את הטיוטה לפני פרסום.",
   unsavedDraftHint: "יש שינויים שלא נשמרו — שמור/י לפני פרסום.",
   publishReviewTitle: "סקירה לפני פרסום",
@@ -48,6 +56,8 @@ export function mapFinancialSettingsErrorToHebrew(
       return "כבר קיימת גרסה עם אותו תאריך תחילת תוקף.";
     case FinancialSettingsErrorCode.VALIDATION:
       return "נתונים לא תקינים. בדק/י את השדות ונסה/י שוב.";
+    case FinancialSettingsErrorCode.LEGACY_DRAFT_REQUIRES_GROSS_AMOUNTS:
+      return "יש להזין דמי טיפול כסכום כולל מע\"מ ולשמור לפני פרסום.";
     case FinancialSettingsErrorCode.AUDIT_PERSISTENCE:
       return "לא ניתן להשלים את הפעולה. נסה/י שוב מאוחר יותר.";
     case FinancialSettingsErrorCode.SOURCE_NOT_PUBLISHED:

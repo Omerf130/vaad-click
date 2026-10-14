@@ -16,7 +16,9 @@ export const FINANCIAL_SETTINGS_TAB_LABELS: Record<FinancialSettingsTabId, strin
 
 const FEES_FIELDS = new Set([
   "debtorTreatmentFeeShekels",
-  "committeeWaiverFeeShekels",
+  "committeeAssumedTreatmentFeeShekels",
+  "trustAccountProcessingFeePercent",
+  "committeeTransferFeePercent",
   "escalationPercent",
   "notesInternal",
 ]);

@@ -23,6 +23,7 @@ import {
   evaluatePublishReviewEligibility,
   shouldShowPublishReviewDialog,
 } from "@/modules/financial-settings/presentation/publish-review-visibility";
+import { isGrossInclusiveVatBasis } from "@/modules/financial-settings/domain/amounts-monetary-basis";
 import type {
   DraftViewModel,
   PublishedVersionSummary,
@@ -52,7 +53,13 @@ export function FinancialSettingsDraftWorkspace({
 }: FinancialSettingsDraftWorkspaceProps) {
   const [userTabId, setUserTabId] = useState<FinancialSettingsTabId>("fees");
   const [debtorFee, setDebtorFee] = useState(draft.debtorTreatmentFeeShekels);
-  const [committeeFee, setCommitteeFee] = useState(draft.committeeWaiverFeeShekels);
+  const [committeeFee, setCommitteeFee] = useState(draft.committeeAssumedTreatmentFeeShekels);
+  const [trustProcessingFee, setTrustProcessingFee] = useState(
+    draft.trustAccountProcessingFeePercent,
+  );
+  const [committeeTransferFee, setCommitteeTransferFee] = useState(
+    draft.committeeTransferFeePercent,
+  );
   const [escalationPercent, setEscalationPercent] = useState(draft.escalationPercent);
   const [notesInternal, setNotesInternal] = useState(draft.notesInternal);
   const [vatRows, setVatRows] = useState<VatRowState[]>(
@@ -86,7 +93,10 @@ export function FinancialSettingsDraftWorkspace({
   const savedDraftSnapshot = useMemo(() => draft, [draft]);
   const vatScheduleJson = JSON.stringify(vatRows);
   const reviewVisible = shouldShowPublishReviewDialog(reviewOpen);
-  const reviewEligibility = evaluatePublishReviewEligibility({ isDirty });
+  const reviewEligibility = evaluatePublishReviewEligibility({
+    isDirty,
+    requiresGrossAmountReentry: draft.requiresGrossAmountReentry,
+  });
 
   const validationTabId =
     saveState.fieldErrors && Object.keys(saveState.fieldErrors).length > 0
@@ -96,7 +106,10 @@ export function FinancialSettingsDraftWorkspace({
 
   const openReview = () => {
     setReviewBlockedMessage(null);
-    const eligibility = evaluatePublishReviewEligibility({ isDirty });
+    const eligibility = evaluatePublishReviewEligibility({
+      isDirty,
+      requiresGrossAmountReentry: draft.requiresGrossAmountReentry,
+    });
     if (!eligibility.allowed) {
       setReviewBlockedMessage(eligibility.reasonHe ?? FINANCIAL_SETTINGS_UI_COPY.mustSaveBeforePublish);
       setUserTabId("publish");
@@ -113,9 +126,24 @@ export function FinancialSettingsDraftWorkspace({
           {FINANCIAL_SETTINGS_UI_COPY.suggestedBanner}
         </p>
       ) : null}
+      {draft.requiresGrossAmountReentry ? (
+        <p className={[styles.banner, styles.bannerWarning].join(" ")}>
+          {FINANCIAL_SETTINGS_UI_COPY.legacyDraftGrossReentryBanner}
+          {draft.legacyDebtorNetShekels ? (
+            <>
+              {" "}
+              (ערכים היסטוריים נטו: חייב {draft.legacyDebtorNetShekels} ₪
+              {draft.legacyCommitteeNetShekels
+                ? ` · ועד ${draft.legacyCommitteeNetShekels} ₪`
+                : ""}
+              )
+            </>
+          ) : null}
+        </p>
+      ) : null}
       <div className={styles.field}>
         <label className={styles.label} htmlFor="debtorTreatmentFeeShekels">
-          דמי טיפול לחייב (₪, לפני מע&quot;מ)
+          דמי טיפול לחייב (₪, {FINANCIAL_SETTINGS_UI_COPY.grossInclusiveFieldLabel})
         </label>
         {draft.showSuggestedValueHints ? (
           <p className={styles.hint}>{FINANCIAL_SETTINGS_UI_COPY.suggestedFieldHint}</p>
@@ -138,12 +166,15 @@ export function FinancialSettingsDraftWorkspace({
         ) : null}
       </div>
       <div className={styles.field}>
-        <label className={styles.label} htmlFor="committeeWaiverFeeShekels">
-          דמי טיפול מהוועד בהיעדר גבייה מהחייב (₪, לפני מע&quot;מ)
+        <label className={styles.label} htmlFor="committeeAssumedTreatmentFeeShekels">
+          דמי טיפול שמועד הוועד לשאת בהם (₪, {FINANCIAL_SETTINGS_UI_COPY.grossInclusiveFieldLabel})
         </label>
+        <p className={styles.hint}>
+          סכום לחיוב הוועד כאשר החייב פטור מדמי הטיפול — לאחר אישור משפטי (יושק בהמשך).
+        </p>
         <input
-          id="committeeWaiverFeeShekels"
-          name="committeeWaiverFeeShekels"
+          id="committeeAssumedTreatmentFeeShekels"
+          name="committeeAssumedTreatmentFeeShekels"
           className={styles.input}
           value={committeeFee}
           onChange={(event) => {
@@ -154,16 +185,71 @@ export function FinancialSettingsDraftWorkspace({
           required
           form="financial-settings-save-form"
         />
-        {saveState.fieldErrors?.committeeWaiverFeeShekels ? (
+        {saveState.fieldErrors?.committeeAssumedTreatmentFeeShekels ? (
           <p className={styles.fieldError}>
-            {saveState.fieldErrors.committeeWaiverFeeShekels[0]}
+            {saveState.fieldErrors.committeeAssumedTreatmentFeeShekels[0]}
+          </p>
+        ) : null}
+      </div>
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="trustAccountProcessingFeePercent">
+          עמלת עיבוד ותשלום דרך חשבון נאמנות (%)
+        </label>
+        {draft.showSuggestedValueHints ? (
+          <p className={styles.hint}>{FINANCIAL_SETTINGS_UI_COPY.suggestedFieldHint}</p>
+        ) : null}
+        <input
+          id="trustAccountProcessingFeePercent"
+          name="trustAccountProcessingFeePercent"
+          className={styles.input}
+          value={trustProcessingFee}
+          onChange={(event) => {
+            setTrustProcessingFee(event.target.value);
+            markDirty();
+          }}
+          inputMode="decimal"
+          required
+          form="financial-settings-save-form"
+        />
+        {saveState.fieldErrors?.trustAccountProcessingFeePercent ? (
+          <p className={styles.fieldError}>
+            {saveState.fieldErrors.trustAccountProcessingFeePercent[0]}
+          </p>
+        ) : null}
+      </div>
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="committeeTransferFeePercent">
+          עמלת העברה בנקאית לוועד הבית (%)
+        </label>
+        {draft.showSuggestedValueHints ? (
+          <p className={styles.hint}>{FINANCIAL_SETTINGS_UI_COPY.suggestedFieldHint}</p>
+        ) : null}
+        <input
+          id="committeeTransferFeePercent"
+          name="committeeTransferFeePercent"
+          className={styles.input}
+          value={committeeTransferFee}
+          onChange={(event) => {
+            setCommitteeTransferFee(event.target.value);
+            markDirty();
+          }}
+          inputMode="decimal"
+          required
+          form="financial-settings-save-form"
+        />
+        {saveState.fieldErrors?.committeeTransferFeePercent ? (
+          <p className={styles.fieldError}>
+            {saveState.fieldErrors.committeeTransferFeePercent[0]}
           </p>
         ) : null}
       </div>
       <div className={styles.field}>
         <label className={styles.label} htmlFor="escalationPercent">
-          אחוז גבייה בהליך משפטי
+          דמי הצלחה (%)
         </label>
+        <p className={styles.hint}>
+          ברירת מחדל מוצעת: 20%. {FINANCIAL_SETTINGS_UI_COPY.escalationBaseUnresolved}
+        </p>
         <input
           id="escalationPercent"
           name="escalationPercent"
@@ -425,6 +511,7 @@ export function FinancialSettingsDraftWorkspace({
         open={reviewVisible}
         savedDraft={savedDraftSnapshot}
         effectiveFromIso={effectiveFromIso}
+        vatRows={savedDraftSnapshot.vatRows}
         revision={draft.revision}
         confirmPublish={confirmPublish}
         onConfirmPublishChange={setConfirmPublish}
@@ -463,6 +550,7 @@ function VersionTable({
             <th scope="col">תחילת תוקף</th>
             <th scope="col">דמי חייב (₪)</th>
             <th scope="col">דמי וועד (₪)</th>
+            <th scope="col">מע&quot;מ</th>
             <th scope="col">גבייה (%)</th>
             <th scope="col">סטטוס</th>
           </tr>
@@ -473,7 +561,12 @@ function VersionTable({
               <td>{row.versionNumber}</td>
               <td>{row.effectiveFromIso}</td>
               <td>{row.debtorTreatmentFeeShekels}</td>
-              <td>{row.committeeWaiverFeeShekels}</td>
+              <td>{row.committeeAssumedTreatmentFeeShekels}</td>
+              <td>
+                {isGrossInclusiveVatBasis(row.amountsMonetaryBasis)
+                  ? FINANCIAL_SETTINGS_UI_COPY.grossPublishedAmountBadge
+                  : FINANCIAL_SETTINGS_UI_COPY.legacyPublishedAmountBadge}
+              </td>
               <td>{row.escalationPercent}</td>
               <td>
                 <StatusBadge label={statusLabel} variant={statusVariant} />

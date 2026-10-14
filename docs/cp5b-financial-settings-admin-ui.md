@@ -6,9 +6,10 @@ Lawyer-admin page: `/app/admin/financial-settings`.
 
 When **zero published versions** exist, creating a new draft pre-fills (via Server Action only):
 
-- 277 ₪ ex-VAT debtor treatment fee
-- 200 ₪ ex-VAT committee waiver fee
-- 20% escalation recovery rate
+- 277 ₪ ex-VAT debtor treatment fee (suggested)
+- 2.3% trust processing + 0.5% committee transfer fees (suggested, separate fields)
+- 20% success fee ex-VAT (suggested)
+- Committee-assumed treatment fee: **no suggested default** (CP6D) — lawyer enters explicitly
 
 Not applied on clone or when published history exists. **No VAT default.** Not auto-published.
 

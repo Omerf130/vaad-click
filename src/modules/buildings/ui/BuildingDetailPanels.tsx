@@ -16,12 +16,22 @@ import {
 import { formatBuildingOrganizationalStatusHe } from "@/modules/buildings/presentation/building-labels.he";
 import type { AdminBuildingDetail } from "@/modules/buildings/services/admin-building-query.service";
 import type { EligibleRepresentativeOption } from "@/modules/buildings/services/admin-building-query.service";
+import { BuildingCommitteeEngagementPanel } from "@/modules/committee-engagements/ui/BuildingCommitteeEngagementPanel";
+import type {
+  AdminDocumentAssetListItem,
+  DocumentStorageUiState,
+} from "@/modules/document-assets/presentation/document-asset-view.types";
+import { BuildingDocumentsPanel } from "@/modules/document-assets/ui/BuildingDocumentsPanel";
+import type { AdminCommitteeEngagementView } from "@/modules/committee-engagements/services/committee-engagement.service";
 import styles from "@/modules/users/ui/AdminUsers.module.scss";
 
 type BuildingDetailPanelsProps = {
   building: AdminBuildingDetail;
   eligibleRepresentatives: EligibleRepresentativeOption[];
   managementCompanies: { managementCompanyId: string; displayName: string }[];
+  committeeEngagement: AdminCommitteeEngagementView | null;
+  buildingDocuments: AdminDocumentAssetListItem[];
+  documentStorageState: DocumentStorageUiState;
 };
 
 const initial: AdminBuildingActionState = { ok: false };
@@ -30,6 +40,9 @@ export function BuildingDetailPanels({
   building,
   eligibleRepresentatives,
   managementCompanies,
+  committeeEngagement,
+  buildingDocuments,
+  documentStorageState,
 }: BuildingDetailPanelsProps) {
   const [confirm, setConfirm] = useState<"removeRep" | "archive" | "unlink" | null>(null);
   const [updateState, updateAction, updatePending] = useActionState(updateBuildingFormAction, initial);
@@ -148,6 +161,17 @@ export function BuildingDetailPanels({
           </>
         ) : null}
       </section>
+
+      <BuildingCommitteeEngagementPanel
+        buildingId={building.buildingId}
+        engagement={committeeEngagement}
+      />
+
+      <BuildingDocumentsPanel
+        buildingId={building.buildingId}
+        documents={buildingDocuments}
+        storageState={documentStorageState}
+      />
 
       <section className={styles.detailCard}>
         <h2 className={styles.workspaceTitle}>חברת ניהול</h2>

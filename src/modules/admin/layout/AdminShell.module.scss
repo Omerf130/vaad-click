@@ -8,7 +8,9 @@ $admin-sidebar-fixed-width: 280px;
   direction: ltr;
   grid-template-columns: minmax(0, 1fr) $admin-sidebar-fixed-width;
   grid-template-areas: "main sidebar";
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background: $color-bg-page;
 }
 
@@ -25,6 +27,14 @@ $admin-sidebar-fixed-width: 280px;
   flex-direction: column;
   padding: $space-5 $space-3;
   gap: $space-4;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .brandBlock {
@@ -105,6 +115,9 @@ $admin-sidebar-fixed-width: 280px;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  overflow-y: auto;
+  height: 100vh;
+  max-height: 100vh;
 }
 
 .topBar {
@@ -147,10 +160,16 @@ $admin-sidebar-fixed-width: 280px;
     grid-template-areas:
       "sidebar"
       "main";
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .mainColumn {
     grid-column: auto;
+    height: auto;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .sidebar {
@@ -159,6 +178,10 @@ $admin-sidebar-fixed-width: 280px;
     min-width: 0;
     max-width: none;
     padding: $space-4;
+    position: static;
+    height: auto;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .navList {

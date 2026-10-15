@@ -1,4 +1,5 @@
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { BackToPublicHomeLink } from "@/components/navigation/BackToPublicHomeLink";
 import styles from "@/modules/admin/layout/AdminShell.module.scss";
 
 export type AdminTopBarProps = {
@@ -17,6 +18,7 @@ export function AdminTopBar({ pageTitle, userFullName, userEmail }: AdminTopBarP
         </p>
       </div>
       <div className={styles.topBarActions}>
+        <BackToPublicHomeLink />
         <LogoutButton />
       </div>
     </header>

@@ -1,0 +1,209 @@
+@use "../../../../styles/tokens" as *;
+@use "../../../../styles/breakpoints" as *;
+
+.activeFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  align-items: center;
+  margin-bottom: $space-4;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  padding: $space-1 $space-3;
+  border-radius: $radius-pill;
+  background: $color-bg-subtle;
+  border: 1px solid $color-border;
+  font-size: $font-size-sm;
+}
+
+.filters {
+  display: grid;
+  gap: $space-4;
+  margin-bottom: $space-6;
+
+  @media (min-width: $breakpoint-md) {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    align-items: end;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.label {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text-muted;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font: inherit;
+  background: $color-bg-surface;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-sm;
+
+  th,
+  td {
+    padding: $space-3;
+    text-align: right;
+    border-bottom: 1px solid $color-border;
+    vertical-align: top;
+  }
+
+  th {
+    background: $color-bg-subtle;
+    font-weight: 600;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.metaLine {
+  margin: 0 0 $space-3;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.pagination {
+  display: flex;
+  gap: $space-3;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: $space-4;
+}
+
+.detailGrid {
+  display: grid;
+  gap: $space-6;
+}
+
+.section {
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  padding: $space-4;
+  background: $color-bg-surface;
+}
+
+.sectionTitle {
+  margin: 0 0 $space-3;
+  font-size: $font-size-md;
+  font-weight: 700;
+}
+
+.definitionList {
+  display: grid;
+  gap: $space-2;
+  margin: 0;
+
+  div {
+    display: grid;
+    gap: $space-1;
+
+    @media (min-width: $breakpoint-md) {
+      grid-template-columns: 11rem 1fr;
+    }
+  }
+
+  dt {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.partyCard {
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  padding: $space-3;
+  margin-top: $space-3;
+}
+
+.bannerInfo {
+  margin: 0 0 $space-4;
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+  font-size: $font-size-sm;
+}
+
+.bannerWarning {
+  background: $color-warning-bg;
+  color: $color-warning-text;
+}
+
+.bannerSuccess {
+  background: $color-success-bg;
+  color: $color-success-text;
+}
+
+.feedbackSuccess,
+.feedbackError {
+  margin: 0 0 $space-4;
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+}
+
+.feedbackSuccess {
+  background: $color-success-bg;
+  color: $color-success-text;
+}
+
+.feedbackError {
+  background: $color-error-bg;
+  color: $color-error-text;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  margin-top: $space-4;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 5rem;
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font: inherit;
+  resize: vertical;
+}
+
+.flagList {
+  margin: $space-2 0 0;
+  padding-right: $space-4;
+}
+
+.linkRow {
+  margin: 0 0 $space-4;
+  font-size: $font-size-sm;
+}

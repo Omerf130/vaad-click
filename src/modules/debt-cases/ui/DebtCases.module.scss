@@ -1,0 +1,159 @@
+@use "../../../styles/tokens" as *;
+
+.section {
+  margin-top: $space-6;
+  padding-top: $space-5;
+  border-top: 1px solid $color-border;
+}
+
+.title {
+  margin: 0 0 $space-3;
+  font-size: $font-size-xl;
+}
+
+.meta {
+  margin: 0 0 $space-4;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  margin-bottom: $space-4;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-sm;
+
+  th,
+  td {
+    padding: $space-2 $space-3;
+    text-align: right;
+    border-bottom: 1px solid $color-border;
+  }
+
+  th {
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  a {
+    color: $color-accent;
+    font-weight: 600;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  margin-top: $space-4;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+.fieldGrid {
+  display: grid;
+  gap: $space-4;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.label {
+  display: block;
+  margin-bottom: $space-1;
+  font-weight: 600;
+  font-size: $font-size-sm;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font: inherit;
+  background: $color-bg-surface;
+}
+
+.inputInvalid,
+.selectInvalid,
+.textareaInvalid {
+  border-color: $color-error-text;
+  box-shadow: 0 0 0 1px $color-error-text;
+}
+
+.validationSummary {
+  margin: 0 0 $space-4;
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  background: $color-error-bg;
+  color: $color-error-text;
+  font-size: $font-size-sm;
+
+  ul {
+    margin: $space-2 0 0;
+    padding-right: $space-4;
+  }
+}
+
+.textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.fieldError {
+  margin: $space-1 0 0;
+  color: $color-error-text;
+  font-size: $font-size-sm;
+}
+
+.feedbackSuccess {
+  color: $color-success-text;
+  font-weight: 600;
+}
+
+.feedbackError {
+  color: $color-error-text;
+  font-weight: 600;
+}
+
+.flags {
+  padding: $space-4;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+}
+
+.flagItem {
+  margin: 0 0 $space-2;
+  font-size: $font-size-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.readonlyBanner {
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+  margin-bottom: $space-4;
+}
+
+.subsectionTitle {
+  margin: 0 0 $space-3;
+  font-size: $font-size-lg;
+}

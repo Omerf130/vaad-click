@@ -31,9 +31,8 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   {
     id: "debt_cases",
     labelHe: "תיקי חוב",
-    href: null,
-    status: "planned",
-    unavailableReasonHe: "יושק ב-checkpoint עתידי",
+    href: "/app/admin/debt-cases",
+    status: "implemented",
   },
   {
     id: "lawyer_approvals",
@@ -95,6 +94,9 @@ export function isAdminNavItemActive(pathname: string, item: AdminNavItem): bool
       pathname === "/app/admin/management-companies" ||
       pathname.startsWith("/app/admin/management-companies/")
     );
+  }
+  if (item.href === "/app/admin/debt-cases") {
+    return pathname === "/app/admin/debt-cases" || pathname.startsWith("/app/admin/debt-cases/");
   }
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }

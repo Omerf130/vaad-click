@@ -1,0 +1,200 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.page {
+  max-width: 72rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: $font-size-2xl;
+  font-weight: 700;
+}
+
+.heroMeta {
+  margin: 0;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+}
+
+.heroAddress {
+  margin: 0;
+  color: $color-text;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: $space-4;
+
+  @include md-down {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.metricCard {
+  background: $color-bg-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  padding: $space-4;
+}
+
+.metricValue {
+  margin: 0;
+  font-size: $font-size-2xl;
+  font-weight: 700;
+}
+
+.metricLabel {
+  margin: $space-1 0 0;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+}
+
+.section {
+  background: $color-bg-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  padding: $space-5;
+}
+
+.sectionTitle {
+  margin: 0 0 $space-4;
+  font-size: $font-size-lg;
+  font-weight: 700;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+}
+
+.actionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.actionItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  padding: $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.actionMeta {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.moduleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $space-4;
+
+  @include md-down {
+    grid-template-columns: 1fr;
+  }
+}
+
+.moduleTile,
+.moduleTileDisabled {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: $space-4;
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  min-height: 8rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.moduleTile {
+  background: $color-bg-surface;
+  transition: border-color $transition-fast;
+
+  &:hover {
+    border-color: $color-accent;
+  }
+}
+
+.moduleTileDisabled {
+  background: $color-bg-subtle;
+  color: $color-text-muted;
+  cursor: not-allowed;
+}
+
+.moduleTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.moduleDescription {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+}
+
+.moduleBadge {
+  align-self: flex-start;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  padding: $space-1 $space-2;
+  border-radius: $radius-pill;
+  background: $color-neutral-bg;
+  color: $color-neutral-text;
+}
+
+.buildingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-4;
+
+  @include md-down {
+    grid-template-columns: 1fr;
+  }
+}
+
+.buildingCard {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  padding: $space-4;
+  background: $color-bg-surface;
+}
+
+.buildingCardTitle {
+  margin: 0 0 $space-2;
+  font-size: $font-size-lg;
+  font-weight: 700;
+}
+
+.buildingCardMeta {
+  margin: 0 0 $space-3;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.emptyState {
+  margin: 0;
+  color: $color-text-muted;
+}

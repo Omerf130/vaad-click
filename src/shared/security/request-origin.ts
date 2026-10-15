@@ -36,6 +36,18 @@ function allowedMutationOrigins(): string[] {
   return [...origins];
 }
 
+/** Dev-only: allow the active server Host (e.g. localhost:3001 when 3000 is taken). */
+function developmentRequestHostOrigin(hostHeader: string | null): string | null {
+  if (getAppEnv() !== "development" || !hostHeader?.trim()) {
+    return null;
+  }
+  const host = hostHeader.split(",")[0]?.trim();
+  if (!host) {
+    return null;
+  }
+  return normalizeOrigin(`http://${host}`);
+}
+
 /** Validates Origin/Referer for cookie-authenticated mutations (CSRF defense in depth). */
 export async function assertSameOriginMutationRequest(): Promise<void> {
   const headerStore = await headers();
@@ -46,7 +58,15 @@ export async function assertSameOriginMutationRequest(): Promise<void> {
     (origin && normalizeOrigin(origin)) ||
     (referer ? normalizeOrigin(referer) : null);
 
-  if (!actual || !allowedMutationOrigins().includes(actual)) {
+  const allowed = new Set(allowedMutationOrigins());
+  const hostOrigin = developmentRequestHostOrigin(
+    headerStore.get("x-forwarded-host") ?? headerStore.get("host"),
+  );
+  if (hostOrigin) {
+    allowed.add(hostOrigin);
+  }
+
+  if (!actual || !allowed.has(actual)) {
     throw new Error("Cross-origin request rejected");
   }
 }

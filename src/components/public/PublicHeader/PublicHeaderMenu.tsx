@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useId, useState } from "react";
+
 import { ButtonLink } from "@/components/ui/Button/ButtonLink";
 import { homepageHeader } from "@/content/homepage";
+import type { PublicHeaderNavAction } from "@/shared/navigation/public-header-auth-nav";
 import { shouldCloseMobileMenuOnAnchorClick } from "@/shared/navigation/mobile-menu";
 import styles from "./PublicHeader.module.scss";
 
@@ -11,7 +13,11 @@ const navItems = [
   { href: "#who-for", label: homepageHeader.navWhoFor },
 ] as const;
 
-export function PublicHeaderMenu() {
+type Props = {
+  authActions: PublicHeaderNavAction[];
+};
+
+export function PublicHeaderMenu({ authActions }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const panelId = useId();
 
@@ -58,12 +64,17 @@ export function PublicHeaderMenu() {
         </nav>
 
         <div className={styles.actions}>
-          <ButtonLink href="/login" variant="ghost" size="sm">
-            {homepageHeader.loginLabel}
-          </ButtonLink>
-          <ButtonLink href="/register" variant="primary" size="sm">
-            {homepageHeader.registerLabel}
-          </ButtonLink>
+          {authActions.map((action) => (
+            <ButtonLink
+              key={`${action.href}-${action.label}`}
+              href={action.href}
+              variant={action.variant}
+              size="sm"
+              onClick={closeMenu}
+            >
+              {action.label}
+            </ButtonLink>
+          ))}
         </div>
       </div>
     </>

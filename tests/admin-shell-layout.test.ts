@@ -40,6 +40,25 @@ describe("admin single-header layout structure", () => {
     expect(shell).toMatch(/AdminTopBar/);
     expect(shell).not.toMatch(/app-shell/);
   });
+
+  it("keeps admin sidebar independently scrollable on desktop", () => {
+    const styles = readFileSync(
+      join(process.cwd(), "src", "modules", "admin", "layout", "AdminShell.module.scss"),
+      "utf8",
+    );
+    expect(styles).toMatch(/\.sidebar[\s\S]*overflow-y:\s*auto/);
+    expect(styles).toMatch(/\.mainColumn[\s\S]*overflow-y:\s*auto/);
+  });
+
+  it("includes back-to-home navigation in portal and admin headers", () => {
+    const portal = readAppFile("(portal)/layout.tsx");
+    const topBar = readFileSync(
+      join(process.cwd(), "src", "modules", "admin", "layout", "AdminTopBar.tsx"),
+      "utf8",
+    );
+    expect(portal).toMatch(/BackToPublicHomeLink/);
+    expect(topBar).toMatch(/BackToPublicHomeLink/);
+  });
 });
 
 describe("lawyer admin access boundaries (layout wiring)", () => {
@@ -51,6 +70,8 @@ describe("lawyer admin access boundaries (layout wiring)", () => {
       "(lawyer-admin)/admin/users/page.tsx",
       "(lawyer-admin)/admin/settings/page.tsx",
       "(lawyer-admin)/admin/financial-settings/page.tsx",
+      "(lawyer-admin)/admin/debt-cases/page.tsx",
+      "(lawyer-admin)/admin/debt-cases/[debtCaseId]/page.tsx",
     ];
     for (const page of pages) {
       const source = readAppFile(page);

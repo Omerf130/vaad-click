@@ -55,6 +55,8 @@ const buildingSchema = new Schema(
     duplicateException: { type: duplicateExceptionSchema, default: null },
     unitCount: { type: Number, min: 0, default: null },
     averageMonthlyVaadFeeMinor: { type: Number, min: 0, default: null },
+    /** Lawyer-admin only; enables streamlined review tier when legal readiness passes (CP8.1A). */
+    legacyFastTrackEligible: { type: Boolean, default: false },
     createdByUserId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     archivedAt: { type: Date, default: null },
   },

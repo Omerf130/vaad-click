@@ -38,6 +38,10 @@ vi.mock("@/shared/db/connect", () => ({
   connectMongo: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/modules/debt-cases/services/pending-building-onboarding.service", () => ({
+  createPendingBuildingOnboardingRequest: vi.fn().mockResolvedValue({ onboardingRequestId: "onb-1" }),
+}));
+
 describe("registerPublicUser audit transaction", () => {
   beforeEach(() => {
     vi.clearAllMocks();

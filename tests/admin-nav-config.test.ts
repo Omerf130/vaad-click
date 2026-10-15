@@ -14,13 +14,14 @@ describe("admin navigation configuration", () => {
       "buildings",
       "management_companies",
       "users",
+      "debt_cases",
       "settings",
     ]);
   });
 
   it("marks future modules as planned without hrefs", () => {
     const planned = ADMIN_NAV_ITEMS.filter((item) => item.status === "planned");
-    expect(planned.length).toBeGreaterThanOrEqual(5);
+    expect(planned.length).toBeGreaterThanOrEqual(4);
     for (const item of planned) {
       expect(item.href).toBeNull();
       expect(item.unavailableReasonHe).toBeTruthy();

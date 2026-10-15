@@ -1,0 +1,23 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/breakpoints" as *;
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  white-space: nowrap;
+}
+
+.labelShort {
+  display: none;
+}
+
+@include md-down {
+  .labelFull {
+    display: none;
+  }
+
+  .labelShort {
+    display: inline;
+  }
+}

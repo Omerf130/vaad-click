@@ -12,6 +12,7 @@ import { createServerSession } from "@/modules/auth/services/session.service";
 import { AccountStatus } from "@/modules/users/domain/account-status";
 import { assertPublicRegistrationRole } from "@/modules/users/domain/role-assignment";
 import { User } from "@/modules/users/infra/user.model";
+import { createPendingBuildingOnboardingRequest } from "@/modules/debt-cases/services/pending-building-onboarding.service";
 import { connectMongo } from "@/shared/db/connect";
 import { AuditWriteFailedError } from "@/shared/audit/errors/audit-errors";
 import { hashPassword } from "@/shared/security/password";
@@ -90,6 +91,12 @@ export async function registerPublicUser(
       }
 
       userId = user._id.toString();
+
+      await createPendingBuildingOnboardingRequest({
+        targetUserId: userId,
+        createdByUserId: userId,
+        session: mongoSession,
+      });
 
       await recordAuthRegistrationSuccess({
         userId,

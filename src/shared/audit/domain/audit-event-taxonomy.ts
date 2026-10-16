@@ -66,6 +66,24 @@ export const AuditEventType = {
   LAWYER_APPROVAL_GRANTED: "lawyer_approval.letter.approved",
   LAWYER_APPROVAL_DENIED: "lawyer_approval.letter.denied",
   LEGAL_DOCUMENT_GENERATED: "legal_document.letter.generated",
+  LEGAL_DOCUMENT_WARNING_LETTER_DRAFT_CREATED: "legal_document.warning_letter_draft.created",
+  LEGAL_DOCUMENT_WARNING_LETTER_DRAFT_INVALIDATED:
+    "legal_document.warning_letter_draft.invalidated",
+  LEGAL_DOCUMENT_WARNING_LETTER_DRAFT_REGENERATED:
+    "legal_document.warning_letter_draft.regenerated",
+  LEGAL_DOCUMENT_WARNING_LETTER_DRAFT_EDITED: "legal_document.warning_letter_draft.edited",
+  LEGAL_DOCUMENT_WARNING_LETTER_WORDING_APPROVED:
+    "legal_document.warning_letter_draft.wording_approved",
+  LEGAL_DOCUMENT_WARNING_LETTER_WORDING_RETURNED:
+    "legal_document.warning_letter_draft.wording_returned",
+  LEGAL_DOCUMENT_WARNING_LETTER_TEMPLATE_VARIANT_APPROVED:
+    "legal_document.warning_letter_template_variant.approved",
+  LEGAL_DOCUMENT_WARNING_LETTER_FINALIZED:
+    "legal_document.warning_letter.finalized",
+  LEGAL_DOCUMENT_WARNING_LETTER_FINALIZATION_BLOCKED:
+    "legal_document.warning_letter.finalization_blocked",
+  LEGAL_DOCUMENT_WARNING_LETTER_DELIVERY_RECORDED:
+    "legal_document.warning_letter.delivery_recorded",
   LEGAL_DOCUMENT_DELIVERED: "legal_document.letter.delivered",
   LEGAL_DOCUMENT_ASSET_UPLOAD_INITIATED: "legal_document.asset.upload_initiated",
   LEGAL_DOCUMENT_ASSET_UPLOAD_COMPLETED: "legal_document.asset.upload_completed",

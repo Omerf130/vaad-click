@@ -73,6 +73,17 @@ vi.mock("@/modules/debt-cases/services/debt-case-period-claim.service", () => ({
   releaseClaimsForTerminalCase: (...args: unknown[]) => mockReleaseClaims(...args),
 }));
 
+const mockSyncWarningLetterDraft = vi.fn().mockResolvedValue({
+  draftId: "draft-1",
+  created: true,
+  draftRevision: 1,
+});
+
+vi.mock("@/modules/warning-letters/services/warning-letter-draft.service", () => ({
+  syncInitialWarningLetterDraftForApprovedCase: (...args: unknown[]) =>
+    mockSyncWarningLetterDraft(...args),
+}));
+
 const lawyerContext: AuthenticatedContext = {
   user: {
     id: "aaaaaaaaaaaaaaaaaaaaaaaa",

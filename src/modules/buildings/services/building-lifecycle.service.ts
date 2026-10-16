@@ -196,6 +196,18 @@ export async function updateBuildingRecord(input: {
         session,
       });
 
+      if (addressChanged) {
+        const { invalidateActiveWarningLetterDraftsForBuilding } = await import(
+          "@/modules/warning-letters/services/warning-letter-draft-invalidation.service"
+        );
+        await invalidateActiveWarningLetterDraftsForBuilding({
+          context: input.context,
+          buildingId: parsed.buildingId,
+          session,
+          correlationId: input.correlationId,
+        });
+      }
+
       if (addressChanged && parsed.duplicateAddressExceptionReason) {
         await recordDuplicateAddressException({
           context: input.context,

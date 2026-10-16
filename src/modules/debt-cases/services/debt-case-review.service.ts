@@ -20,6 +20,7 @@ import {
   recordDebtCaseReturned,
 } from "@/modules/debt-cases/services/debt-case-audit.service";
 import { loadBuildingLegalReadinessForDebtCase } from "@/modules/debt-cases/services/debt-case-legal-readiness.loader";
+import { syncInitialWarningLetterDraftForApprovedCase } from "@/modules/warning-letters/services/warning-letter-draft.service";
 import { releaseClaimsForTerminalCase } from "@/modules/debt-cases/services/debt-case-period-claim.service";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 import { AuditWriteFailedError } from "@/shared/audit/errors/audit-errors";
@@ -256,6 +257,13 @@ export async function approveDebtCaseForLetterPrep(input: {
         ),
         correlationId: input.correlationId,
         session,
+      });
+
+      await syncInitialWarningLetterDraftForApprovedCase({
+        context: input.context,
+        debtCaseId: doc.debtCaseId,
+        session,
+        correlationId: input.correlationId,
       });
     });
   } catch (error) {

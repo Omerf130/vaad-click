@@ -122,6 +122,16 @@ export async function publishFinancialSettingsDraft(input: {
         correlationId: input.correlationId,
         session,
       });
+
+      const { invalidateActiveWarningLetterDraftsForFinancialSettingsPublish } = await import(
+        "@/modules/warning-letters/services/warning-letter-draft-invalidation.service"
+      );
+      await invalidateActiveWarningLetterDraftsForFinancialSettingsPublish({
+        context: input.context,
+        publishedSettingsVersionId: draft.settingsVersionId,
+        session,
+        correlationId: input.correlationId,
+      });
     });
   } catch (error) {
     mapPublishError(error);

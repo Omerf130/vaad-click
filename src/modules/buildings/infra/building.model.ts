@@ -57,6 +57,8 @@ const buildingSchema = new Schema(
     averageMonthlyVaadFeeMinor: { type: Number, min: 0, default: null },
     /** Lawyer-admin only; enables streamlined review tier when legal readiness passes (CP8.1A). */
     legacyFastTrackEligible: { type: Boolean, default: false },
+    /** Lawyer-marked: building has basis to charge debtor treatment fee on warning letter (CP8.4B). */
+    treatmentFeeEligible: { type: Boolean, default: false },
     createdByUserId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     archivedAt: { type: Date, default: null },
   },

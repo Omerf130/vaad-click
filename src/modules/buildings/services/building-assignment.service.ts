@@ -236,6 +236,16 @@ export async function linkBuildingToManagementCompany(input: {
         correlationId: input.correlationId,
         session,
       });
+
+      const { invalidateActiveWarningLetterDraftsForBuilding } = await import(
+        "@/modules/warning-letters/services/warning-letter-draft-invalidation.service"
+      );
+      await invalidateActiveWarningLetterDraftsForBuilding({
+        context: input.context,
+        buildingId: parsed.buildingId,
+        session,
+        correlationId: input.correlationId,
+      });
     });
   } catch (error) {
     mapAuditError(error);
@@ -281,6 +291,16 @@ export async function unlinkBuildingFromManagementCompany(input: {
         managementCompanyId: parsed.managementCompanyId,
         correlationId: input.correlationId,
         session,
+      });
+
+      const { invalidateActiveWarningLetterDraftsForBuilding } = await import(
+        "@/modules/warning-letters/services/warning-letter-draft-invalidation.service"
+      );
+      await invalidateActiveWarningLetterDraftsForBuilding({
+        context: input.context,
+        buildingId: parsed.buildingId,
+        session,
+        correlationId: input.correlationId,
       });
     });
   } catch (error) {

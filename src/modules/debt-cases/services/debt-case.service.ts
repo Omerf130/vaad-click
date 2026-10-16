@@ -39,6 +39,8 @@ import {
   buildPendingUserDraftListFilter,
   resolveAuthorizedBuildingIdForDraftCreate,
 } from "@/modules/debt-cases/services/debt-case-authorization.service";
+import { WarningLetterDraftInvalidationReason } from "@/modules/warning-letters/domain/warning-letter-draft-invalidation-reason";
+import { maybeInvalidateWarningLetterDraftOnDebtCaseChange } from "@/modules/warning-letters/services/warning-letter-draft-invalidation.service";
 import {
   recordDebtCaseDraftCreated,
   recordDebtCaseDraftUpdated,
@@ -387,6 +389,16 @@ export async function updateDebtCase(input: {
           session,
         });
       }
+
+      await maybeInvalidateWarningLetterDraftOnDebtCaseChange({
+        context: input.context,
+        debtCase: mapDebtCaseDocumentToRecord(updated),
+        session,
+        correlationId: input.correlationId,
+        reason: reviewInvalidated
+          ? WarningLetterDraftInvalidationReason.DEBT_CASE_REVIEW_INVALIDATED
+          : WarningLetterDraftInvalidationReason.DEBT_CASE_MATERIAL_EDIT,
+      });
     });
   } catch (error) {
     if (error instanceof DebtCaseError) {

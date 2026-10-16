@@ -79,6 +79,10 @@ vi.mock("@/shared/db/connect", () => ({
   connectMongo: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/modules/warning-letters/services/warning-letter-draft-invalidation.service", () => ({
+  invalidateActiveWarningLetterDraftsForBuilding: vi.fn().mockResolvedValue(undefined),
+}));
+
 function lawyerContext(): AuthenticatedContext {
   return {
     user: {

@@ -19,10 +19,35 @@ import {
 } from "@/modules/debt-cases/ui/DebtCaseStatusBadges";
 import type { LawyerDebtCaseDetailBundle } from "@/modules/debt-cases/services/lawyer-debt-case-query.service";
 import { LawyerDebtCaseReviewActions } from "@/modules/debt-cases/ui/lawyer/LawyerDebtCaseReviewActions";
+import type { WarningLetterDraftDetailResult } from "@/modules/warning-letters/services/warning-letter-draft.service";
+import type { WarningLetterDeliveryRecordView } from "@/modules/warning-letters/services/warning-letter-delivery.service";
+import type { WarningLetterFinalDocumentView } from "@/modules/warning-letters/services/warning-letter-finalization.service";
+import type { WarningLetterLegalReadinessChecklist } from "@/modules/warning-letters/services/warning-letter-legal-readiness-checklist.service";
+import { WarningLetterLawyerDraftWorkspace } from "@/modules/warning-letters/ui/WarningLetterLawyerDraftWorkspace";
+import { WarningLetterLegalReadinessChecklistPanel } from "@/modules/warning-letters/ui/WarningLetterLegalReadinessChecklistPanel";
+import { WarningLetterLifecyclePanel } from "@/modules/warning-letters/ui/WarningLetterLifecyclePanel";
+import { WarningLetterDraftLegalApprovalStatus } from "@/modules/warning-letters/domain/warning-letter-draft-legal-approval-status";
+import { WarningLetterDraftStatus } from "@/modules/warning-letters/domain/warning-letter-draft-status";
+import { WarningLetterPreviewUnavailable } from "@/modules/warning-letters/ui/WarningLetterPreviewUnavailable";
 import styles from "@/modules/debt-cases/ui/lawyer/LawyerDebtCasesAdmin.module.scss";
 
 type Props = {
   bundle: LawyerDebtCaseDetailBundle;
+  warningLetterDraftDetail?: WarningLetterDraftDetailResult | null;
+  warningLetterDraftErrorHe?: string | null;
+  warningLetterApprovalBlockersHe?: string[];
+  warningLetterRevisionHistory?: Array<{
+    draftId: string;
+    draftRevision: number;
+    status: WarningLetterDraftStatus;
+    legalWordingApprovalStatus: WarningLetterDraftLegalApprovalStatus;
+    manuallyEdited: boolean;
+    createdAtIso: string;
+    contentSha256Prefix: string;
+  }>;
+  warningLetterLegalChecklist?: WarningLetterLegalReadinessChecklist | null;
+  warningLetterFinalDocument?: WarningLetterFinalDocumentView | null;
+  warningLetterDeliveryRecords?: WarningLetterDeliveryRecordView[];
 };
 
 function formatDateTime(iso: string | null | undefined): string {
@@ -35,7 +60,16 @@ function formatDateTime(iso: string | null | undefined): string {
   });
 }
 
-export function LawyerDebtCaseReviewDetail({ bundle }: Props) {
+export function LawyerDebtCaseReviewDetail({
+  bundle,
+  warningLetterDraftDetail,
+  warningLetterDraftErrorHe,
+  warningLetterApprovalBlockersHe = [],
+  warningLetterRevisionHistory = [],
+  warningLetterLegalChecklist = null,
+  warningLetterFinalDocument = null,
+  warningLetterDeliveryRecords = [],
+}: Props) {
   const { record, buildingDisplayName, buildingCity, legalReadiness, canPerformReviewActions } =
     bundle;
   const owners = record.parties.propertyOwners;
@@ -267,6 +301,37 @@ export function LawyerDebtCaseReviewDetail({ bundle }: Props) {
           אין פעולות בדיקה זמינות במצב הנוכחי של התיק.
         </p>
       )}
+
+      {warningLetterLegalChecklist ? (
+        <>
+          <p className={styles.linkRow}>
+            <Link href="/app/admin/warning-letter-templates">אישור גרסאות תבנית (גלובלי)</Link>
+          </p>
+          <WarningLetterLegalReadinessChecklistPanel checklist={warningLetterLegalChecklist} />
+          <WarningLetterLifecyclePanel
+            debtCaseId={record.debtCaseId}
+            buildingId={record.buildingId}
+            draftId={warningLetterDraftDetail?.draft?.draftId ?? null}
+            checklist={warningLetterLegalChecklist}
+            finalDocument={warningLetterFinalDocument}
+            deliveryRecords={warningLetterDeliveryRecords}
+            debtorDisplayName={formatLegalDebtorHe(record.parties.legalDebtorDesignation)}
+          />
+        </>
+      ) : null}
+
+      {warningLetterDraftErrorHe ? (
+        <WarningLetterPreviewUnavailable messageHe={warningLetterDraftErrorHe} />
+      ) : null}
+      {warningLetterDraftDetail ? (
+        <WarningLetterLawyerDraftWorkspace
+          detail={warningLetterDraftDetail}
+          debtCaseId={record.debtCaseId}
+          buildingId={record.buildingId}
+          approvalBlockersHe={warningLetterApprovalBlockersHe}
+          revisionHistory={warningLetterRevisionHistory}
+        />
+      ) : null}
     </div>
   );
 }

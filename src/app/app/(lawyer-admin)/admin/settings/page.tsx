@@ -20,6 +20,15 @@ export default async function AdminSettingsHubPage() {
           </ButtonLink>
         }
       />
+      <AdminModuleCard
+        title="ניסוחי מכתב התראה"
+        description="אישור גרסאות ניסוח משפטי גלובלי (לא אישור ניסוח לתיק בודד)."
+        footer={
+          <ButtonLink href="/app/admin/warning-letter-templates" variant="secondary" size="sm">
+            פתיחת אישורי תבנית
+          </ButtonLink>
+        }
+      />
     </AdminPageFrame>
   );
 }

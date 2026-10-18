@@ -42,6 +42,10 @@ vi.mock("@/modules/debt-cases/services/pending-building-onboarding.service", () 
   createPendingBuildingOnboardingRequest: vi.fn().mockResolvedValue({ onboardingRequestId: "onb-1" }),
 }));
 
+vi.mock("@/modules/notifications/services/notification-dispatch.service", () => ({
+  notifyLawyerAdminsAccountRegistrationPending: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe("registerPublicUser audit transaction", () => {
   beforeEach(() => {
     vi.clearAllMocks();

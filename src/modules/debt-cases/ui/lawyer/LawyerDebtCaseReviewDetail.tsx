@@ -107,7 +107,7 @@ export function LawyerDebtCaseReviewDetail({
 
   const overviewPanel = (
     <>
-      <section className={styles.section} aria-labelledby="parties-title">
+      <section id="case-parties" className={styles.section} aria-labelledby="parties-title">
         <h2 id="parties-title" className={styles.sectionTitle}>
           צדדים
         </h2>
@@ -185,7 +185,7 @@ export function LawyerDebtCaseReviewDetail({
         ) : null}
       </section>
 
-      <section className={styles.section} aria-labelledby="debt-title">
+      <section id="case-debt" className={styles.section} aria-labelledby="debt-title">
         <h2 id="debt-title" className={styles.sectionTitle}>
           פרטי חוב
         </h2>
@@ -215,7 +215,11 @@ export function LawyerDebtCaseReviewDetail({
         ) : null}
       </section>
 
-      <section className={styles.section} aria-labelledby="readiness-title">
+      <section
+        id="case-legal-readiness"
+        className={styles.section}
+        aria-labelledby="readiness-title"
+      >
         <h2 id="readiness-title" className={styles.sectionTitle}>
           מוכנות משפטית
         </h2>
@@ -366,7 +370,7 @@ export function LawyerDebtCaseReviewDetail({
         <Link href={`/app/admin/buildings/${record.buildingId}`}>פרטי בניין</Link>
       </p>
 
-      <header className={workspaceStyles.caseHeader}>
+      <header id="case-overview" className={workspaceStyles.caseHeader}>
         <div className={workspaceStyles.caseHeaderMain}>
           <h1 className={workspaceStyles.caseHeaderTitle}>{caseTitle}</h1>
           <div className={workspaceStyles.caseHeaderBadges}>

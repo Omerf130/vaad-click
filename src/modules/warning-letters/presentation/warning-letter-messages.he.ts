@@ -18,6 +18,12 @@ export function formatWarningLetterErrorHe(code: WarningLetterErrorCode): string
       return "חסר מספר דירה להצגת המכתב.";
     case WarningLetterErrorCode.MISSING_MANAGEMENT_COMPANY_NAME:
       return "חסר שם חברת ניהול לנוסח המכתב.";
+    case WarningLetterErrorCode.MISSING_DEBT_PERIOD:
+      return "חסרה תקופת חוב בתיק.";
+    case WarningLetterErrorCode.MISSING_PRINCIPAL:
+      return "חסר סכום קרן החוב.";
+    case WarningLetterErrorCode.INCOMPLETE_OPERATIVE_SNAPSHOT:
+      return "נתוני המכתב אינם שלמים.";
     default:
       return "לא ניתן להציג תצוגה מקדימה של המכתב.";
   }

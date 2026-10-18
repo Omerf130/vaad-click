@@ -47,6 +47,7 @@ import {
   recordDebtCaseReviewInvalidatedByEdit,
   recordDebtCaseSubmitted,
 } from "@/modules/debt-cases/services/debt-case-audit.service";
+import { notifyLawyerAdminsDebtCaseSubmitted } from "@/modules/notifications/services/notification-dispatch.service";
 import { loadDebtCaseDuplicateCandidates } from "@/modules/debt-cases/services/debt-case-duplicate-query.service";
 import { loadBuildingLegalReadinessForDebtCase } from "@/modules/debt-cases/services/debt-case-legal-readiness.loader";
 import {
@@ -637,6 +638,15 @@ export async function submitDebtCaseForLawyerReview(input: {
         lawyerReviewStatus: nextReview,
         validationFlagCodes: flags.map((f) => f.code),
         correlationId: input.correlationId,
+        session,
+      });
+
+      await notifyLawyerAdminsDebtCaseSubmitted({
+        debtCaseId: doc.debtCaseId,
+        buildingId: doc.buildingId,
+        revision: updated.revision,
+        apartmentLabel: apt.apartmentNumberDisplay || "—",
+        resubmitted: fromStatus === DebtCaseWorkflowStatus.RETURNED_FOR_COMPLETION,
         session,
       });
     });

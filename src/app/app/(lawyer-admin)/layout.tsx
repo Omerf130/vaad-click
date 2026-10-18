@@ -1,4 +1,5 @@
 import { AdminShell } from "@/modules/admin/layout/AdminShell";
+import { countUnreadNotifications } from "@/modules/notifications/services/notification-query.service";
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
 
 export default async function LawyerAdminAppLayout({
@@ -6,10 +7,15 @@ export default async function LawyerAdminAppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = await requireLawyerAdminPortal();
+  const context = await requireLawyerAdminPortal();
+  const initialUnreadNotifications = await countUnreadNotifications(context);
 
   return (
-    <AdminShell userFullName={user.fullName} userEmail={user.email ?? ""}>
+    <AdminShell
+      userFullName={context.user.fullName}
+      userEmail={context.user.email ?? ""}
+      initialUnreadNotifications={initialUnreadNotifications}
+    >
       {children}
     </AdminShell>
   );

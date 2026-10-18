@@ -120,6 +120,15 @@ export function formatDebtPeriodDisplayHe(start: string | null, end: string | nu
   return `${start} – ${end}`;
 }
 
+/** Stable SSR/client formatting for debt-case timestamps (Israel timezone). */
+export function formatDebtCaseInstantHe(iso: string): string {
+  return new Intl.DateTimeFormat("he-IL", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "Asia/Jerusalem",
+  }).format(new Date(iso));
+}
+
 export function parseNisInputToMinorUnits(value: string): number | null {
   const normalized = value.replace(/,/g, "").trim();
   if (!normalized) {

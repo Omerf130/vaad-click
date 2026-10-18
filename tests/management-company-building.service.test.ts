@@ -59,6 +59,11 @@ vi.mock("@/shared/db/connect", () => ({
   connectMongo: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/modules/notifications/services/notification-dispatch.service", () => ({
+  notifyLawyerAdminsBuildingCreatedByMc: vi.fn().mockResolvedValue(undefined),
+  notifyMcBuildingRecorded: vi.fn().mockResolvedValue(undefined),
+}));
+
 const COMPANY_PUBLIC_ID = "22222222-2222-4222-8222-222222222222";
 const COMPANY_DOC_ID = "507f1f77bcf86cd799439012";
 

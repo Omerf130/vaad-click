@@ -28,12 +28,24 @@ export function isValidIsraeliIdChecksum(nineDigits: string): boolean {
   return sum % 10 === 0;
 }
 
+/** Strip non-digits and left-pad to 9 digits (official teudat zehut format). */
+export function normalizeIsraeliIdDigits(raw: string): string | null {
+  const digits = digitsOnly(raw);
+  if (digits.length === 0) {
+    return null;
+  }
+  if (digits.length > 9) {
+    return null;
+  }
+  return digits.padStart(9, "0");
+}
+
 export function validateIsraeliIdNumber(raw: string): {
   ok: boolean;
   normalized: string | null;
 } {
-  const normalized = digitsOnly(raw);
-  if (!isValidIsraeliIdChecksum(normalized)) {
+  const normalized = normalizeIsraeliIdDigits(raw);
+  if (!normalized || !isValidIsraeliIdChecksum(normalized)) {
     return { ok: false, normalized: null };
   }
   return { ok: true, normalized };
@@ -65,23 +77,55 @@ export function validateIdentityDocument(input: {
   }
 }
 
+export type OptionalIdentityValidationFailure =
+  | { code: "missing_document_type" }
+  | { code: "missing_document_number" }
+  | { code: "invalid_israeli_id" }
+  | { code: "invalid_company_hp" };
+
+export type OptionalIdentityValidationResult =
+  | {
+      ok: true;
+      normalized: string | null;
+      documentType: DebtCaseIdentityDocumentType | null;
+    }
+  | {
+      ok: false;
+      failure: OptionalIdentityValidationFailure;
+    };
+
 /** Optional identity at submission — type and number must appear together. */
 export function validateOptionalIdentityDocument(input: {
   documentType: DebtCaseIdentityDocumentType | null | undefined;
   documentNumber: string | null | undefined;
-}): { ok: boolean; normalized: string | null; documentType: DebtCaseIdentityDocumentType | null } {
+}): OptionalIdentityValidationResult {
   const type = input.documentType ?? null;
   const number = input.documentNumber?.trim() ?? "";
   if (!type && !number) {
     return { ok: true, normalized: null, documentType: null };
   }
-  if (!type || !number) {
-    return { ok: false, normalized: null, documentType: null };
+  if (!type && number) {
+    return { ok: false, failure: { code: "missing_document_type" } };
   }
-  const validated = validateIdentityDocument({ documentType: type, documentNumber: number });
+  if (type && !number) {
+    return { ok: false, failure: { code: "missing_document_number" } };
+  }
+  const validated = validateIdentityDocument({
+    documentType: type as DebtCaseIdentityDocumentType,
+    documentNumber: number,
+  });
+  if (!validated.ok) {
+    return {
+      ok: false,
+      failure:
+        type === DebtCaseIdentityDocumentType.ISRAELI_ID
+          ? { code: "invalid_israeli_id" }
+          : { code: "invalid_company_hp" },
+    };
+  }
   return {
-    ok: validated.ok,
+    ok: true,
     normalized: validated.normalized,
-    documentType: validated.ok ? type : null,
+    documentType: type,
   };
 }

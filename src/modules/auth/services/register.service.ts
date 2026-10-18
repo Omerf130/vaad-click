@@ -13,6 +13,7 @@ import { AccountStatus } from "@/modules/users/domain/account-status";
 import { assertPublicRegistrationRole } from "@/modules/users/domain/role-assignment";
 import { User } from "@/modules/users/infra/user.model";
 import { createPendingBuildingOnboardingRequest } from "@/modules/debt-cases/services/pending-building-onboarding.service";
+import { notifyLawyerAdminsAccountRegistrationPending } from "@/modules/notifications/services/notification-dispatch.service";
 import { connectMongo } from "@/shared/db/connect";
 import { AuditWriteFailedError } from "@/shared/audit/errors/audit-errors";
 import { hashPassword } from "@/shared/security/password";
@@ -102,6 +103,12 @@ export async function registerPublicUser(
         userId,
         role: input.role,
         correlationId: options?.correlationId,
+        session: mongoSession,
+      });
+
+      await notifyLawyerAdminsAccountRegistrationPending({
+        registeredUserId: userId,
+        registeredUserFullName: input.fullName,
         session: mongoSession,
       });
 

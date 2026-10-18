@@ -55,6 +55,11 @@ vi.mock("@/shared/db/connect", () => ({
   connectMongo: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/modules/notifications/services/notification-dispatch.service", () => ({
+  notifyUserAccountApproved: vi.fn().mockResolvedValue(undefined),
+  notifyUserAccountRejected: vi.fn().mockResolvedValue(undefined),
+}));
+
 function lawyerContext(): AuthenticatedContext {
   return {
     user: {

@@ -116,9 +116,29 @@ export function LawyerDebtCaseReviewActions({ debtCaseId, revision }: Props) {
       </p>
 
       {feedback?.message ? (
-        <p className={feedback.ok ? styles.feedbackSuccess : styles.feedbackError} role="status">
-          {feedback.message}
-        </p>
+        <div
+          className={feedback.ok ? styles.feedbackSuccess : styles.feedbackError}
+          role="status"
+          aria-live="polite"
+        >
+          <p>{feedback.message}</p>
+          {!feedback.ok && feedback.requirements && feedback.requirements.length > 0 ? (
+            <ul className={styles.requirementsList}>
+              {feedback.requirements.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          ) : null}
+          {!feedback.ok && feedback.sectionIds && feedback.sectionIds.length > 0 ? (
+            <p className={styles.requirementsHint}>
+              {[...new Set(feedback.sectionIds)].map((sectionId) => (
+                <a key={sectionId} href={`#${sectionId}`} className={styles.sectionJumpLink}>
+                  מעבר לפרק הרלוונטי ↓
+                </a>
+              ))}
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       <div className={styles.actionsRow}>

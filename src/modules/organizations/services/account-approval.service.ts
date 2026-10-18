@@ -17,6 +17,10 @@ import { UserRole } from "@/modules/users/domain/user-role";
 import { User } from "@/modules/users/infra/user.model";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 import { AuditWriteFailedError } from "@/shared/audit/errors/audit-errors";
+import {
+  notifyUserAccountApproved,
+  notifyUserAccountRejected,
+} from "@/modules/notifications/services/notification-dispatch.service";
 import { connectMongo } from "@/shared/db/connect";
 
 function mapAuditError(error: unknown): never {
@@ -78,6 +82,10 @@ export async function approveRegisteredAccount(input: {
         correlationId: input.correlationId,
         session,
       });
+      await notifyUserAccountApproved({
+        targetUserId: input.targetUserId,
+        session,
+      });
     });
   } catch (error) {
     mapAuditError(error);
@@ -116,6 +124,10 @@ export async function rejectRegisteredAccount(input: {
         context: input.context,
         targetUserId: input.targetUserId,
         correlationId: input.correlationId,
+        session,
+      });
+      await notifyUserAccountRejected({
+        targetUserId: input.targetUserId,
         session,
       });
     });

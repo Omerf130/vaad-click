@@ -176,6 +176,12 @@ describe("debtCaseSubmitInputSchema", () => {
       ],
     });
     expect(result.success).toBe(false);
+    if (!result.success) {
+      const typeIssue = result.error.issues.find(
+        (issue) => issue.path.join(".") === "propertyOwners.0.identityDocumentType",
+      );
+      expect(typeIssue?.message).toBe("נדרש לבחור סוג מסמך זיהוי");
+    }
   });
 
   it("validates Israeli ID only when type is israeli_id", () => {
@@ -190,6 +196,12 @@ describe("debtCaseSubmitInputSchema", () => {
       ],
     });
     expect(invalidHpAsId.success).toBe(false);
+    if (!invalidHpAsId.success) {
+      const idIssue = invalidHpAsId.error.issues.find(
+        (issue) => issue.path.join(".") === "propertyOwners.0.identityNumber",
+      );
+      expect(idIssue?.message).toBe("מספר ת.ז. לא תקין");
+    }
 
     const validHp = debtCaseSubmitInputSchema.safeParse({
       ...baseSubmit,

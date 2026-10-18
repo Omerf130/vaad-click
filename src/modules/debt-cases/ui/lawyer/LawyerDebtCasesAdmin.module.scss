@@ -181,6 +181,23 @@
   color: $color-error-text;
 }
 
+.requirementsList {
+  margin: $space-2 0 0;
+  padding-inline-start: $space-5;
+  font-size: $font-size-sm;
+}
+
+.requirementsHint {
+  margin: $space-2 0 0;
+  font-size: $font-size-sm;
+}
+
+.sectionJumpLink {
+  color: inherit;
+  text-decoration: underline;
+  margin-inline-end: $space-3;
+}
+
 .actionsRow {
   display: flex;
   flex-wrap: wrap;

@@ -10,6 +10,8 @@ export function mapDebtCaseErrorToHebrew(code: DebtCaseErrorCode): string {
       return "הנתונים אינם תקינים או שיש חסימת בדיקה.";
     case DebtCaseErrorCode.INVALID_STATUS_TRANSITION:
       return "לא ניתן לשנות את סטטוס התיק במצב הנוכחי.";
+    case DebtCaseErrorCode.INVALID_REVIEW_TRANSITION:
+      return "לא ניתן לבצע פעולת בדיקה זו — התיק כבר לא ממתין לאישור עורך דין.";
     case DebtCaseErrorCode.SUBMIT_NOT_ALLOWED:
       return "לא ניתן להגיש תיק לבדיקה בחשבון זה.";
     case DebtCaseErrorCode.EDIT_NOT_ALLOWED:

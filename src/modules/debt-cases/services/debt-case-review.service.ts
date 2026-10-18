@@ -11,7 +11,10 @@ import {
 import { DebtCaseLawyerReviewStatus } from "@/modules/debt-cases/domain/debt-case-lawyer-review-status";
 import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 import { DebtCase } from "@/modules/debt-cases/infra/debt-case.model";
-import { mapDebtCaseDocumentToListItem } from "@/modules/debt-cases/persistence/debt-case.mapper";
+import {
+  mapDebtCaseDocumentToListItem,
+  mapDebtCaseDocumentToRecord,
+} from "@/modules/debt-cases/persistence/debt-case.mapper";
 import type { DebtCaseListItem } from "@/modules/debt-cases/persistence/debt-case.mapper";
 import { assertLawyerAdminDebtCaseReview } from "@/modules/debt-cases/services/debt-case-authorization.service";
 import {
@@ -24,6 +27,7 @@ import { syncInitialWarningLetterDraftForApprovedCase } from "@/modules/warning-
 import { releaseClaimsForTerminalCase } from "@/modules/debt-cases/services/debt-case-period-claim.service";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 import { AuditWriteFailedError } from "@/shared/audit/errors/audit-errors";
+import { notifyOperatorsDebtCaseReviewOutcome } from "@/modules/notifications/services/notification-dispatch.service";
 import { connectMongo } from "@/shared/db/connect";
 
 function mapAuditPersistenceError(error: unknown): never {
@@ -127,6 +131,16 @@ export async function returnDebtCaseForCompletion(input: {
         correlationId: input.correlationId,
         session,
       });
+
+      await notifyOperatorsDebtCaseReviewOutcome({
+        debtCaseId: doc.debtCaseId,
+        buildingId: doc.buildingId,
+        revision: updated.revision,
+        apartmentLabel: doc.apartmentNumberDisplay || "—",
+        outcome: "returned",
+        submitterUserId: doc.submittedByUserId?.toString() ?? null,
+        session,
+      });
     });
   } catch (error) {
     if (error instanceof DebtCaseError) {
@@ -198,6 +212,16 @@ export async function rejectDebtCase(input: {
         correlationId: input.correlationId,
         session,
       });
+
+      await notifyOperatorsDebtCaseReviewOutcome({
+        debtCaseId: doc.debtCaseId,
+        buildingId: doc.buildingId,
+        revision: updated.revision,
+        apartmentLabel: doc.apartmentNumberDisplay || "—",
+        outcome: "rejected",
+        submitterUserId: doc.submittedByUserId?.toString() ?? null,
+        session,
+      });
     });
   } catch (error) {
     if (error instanceof DebtCaseError) {
@@ -259,11 +283,24 @@ export async function approveDebtCaseForLetterPrep(input: {
         session,
       });
 
+      const approvedRecord = mapDebtCaseDocumentToRecord(updated);
+
       await syncInitialWarningLetterDraftForApprovedCase({
         context: input.context,
         debtCaseId: doc.debtCaseId,
+        debtCaseRecord: approvedRecord,
         session,
         correlationId: input.correlationId,
+      });
+
+      await notifyOperatorsDebtCaseReviewOutcome({
+        debtCaseId: doc.debtCaseId,
+        buildingId: doc.buildingId,
+        revision: updated.revision,
+        apartmentLabel: doc.apartmentNumberDisplay || "—",
+        outcome: "approved",
+        submitterUserId: doc.submittedByUserId?.toString() ?? null,
+        session,
       });
     });
   } catch (error) {

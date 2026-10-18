@@ -1,5 +1,6 @@
 import type { DebtCaseRecord } from "@/modules/debt-cases/domain/debt-case-record.types";
 import {
+  formatDebtCaseInstantHe,
   formatDebtPeriodDisplayHe,
   formatDebtTypeHe,
   formatLegalDebtorHe,
@@ -80,7 +81,7 @@ export function OperatorDebtCaseOverviewPanel({
         {record.submittedAtIso ? (
           <div>
             <dt>הוגש לבדיקה</dt>
-            <dd>{new Date(record.submittedAtIso).toLocaleString("he-IL")}</dd>
+            <dd>{formatDebtCaseInstantHe(record.submittedAtIso)}</dd>
           </div>
         ) : null}
       </dl>

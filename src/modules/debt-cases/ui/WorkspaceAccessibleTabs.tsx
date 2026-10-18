@@ -80,6 +80,7 @@ export function WorkspaceAccessibleTabs({
                   tabRefs.current[index] = node;
                 }}
                 type="button"
+                suppressHydrationWarning
                 role="tab"
                 id={tabId}
                 aria-selected={selected}

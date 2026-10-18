@@ -2,9 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
-import { DebtCaseError } from "@/modules/debt-cases/domain/debt-case-errors";
-import { mapDebtCaseErrorToHebrew } from "@/modules/debt-cases/presentation/debt-case-messages.he";
 import type { AdminDebtCaseReviewActionState } from "@/modules/debt-cases/presentation/admin-debt-case-review-action-state";
+import { mapLawyerDebtCaseReviewActionError } from "@/modules/debt-cases/presentation/lawyer-debt-case-review-error-map";
 import {
   approveDebtCaseForLetterPrep,
   rejectDebtCase,
@@ -23,13 +22,7 @@ function adminDebtCaseQueuePath() {
 }
 
 function handleError(error: unknown): AdminDebtCaseReviewActionState {
-  if (error instanceof DebtCaseError) {
-    return { ok: false, code: error.code, message: mapDebtCaseErrorToHebrew(error.code) };
-  }
-  if (error instanceof Error && error.message === "Cross-origin request rejected") {
-    return { ok: false, message: "הבקשה נדחתה." };
-  }
-  return { ok: false, message: "לא ניתן להשלים את הפעולה." };
+  return mapLawyerDebtCaseReviewActionError(error);
 }
 
 async function runReviewMutation(input: {

@@ -25,6 +25,10 @@ import {
 } from "@/modules/organizations/services/organization-audit.service";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 import { AuditWriteFailedError } from "@/shared/audit/errors/audit-errors";
+import {
+  notifyLawyerAdminsBuildingCreatedByMc,
+  notifyMcBuildingRecorded,
+} from "@/modules/notifications/services/notification-dispatch.service";
 import { connectMongo } from "@/shared/db/connect";
 
 function mapAuditError(error: unknown): never {
@@ -96,6 +100,19 @@ export async function createBuildingForManagementCompany(input: {
         buildingId,
         managementCompanyId: company.managementCompanyId,
         correlationId: input.correlationId,
+        session,
+      });
+
+      await notifyLawyerAdminsBuildingCreatedByMc({
+        buildingId,
+        buildingDisplayName: parsed.displayName,
+        managementCompanyObjectId: company.managementCompanyObjectId,
+        session,
+      });
+      await notifyMcBuildingRecorded({
+        buildingId,
+        buildingDisplayName: parsed.displayName,
+        managementCompanyObjectId: company.managementCompanyObjectId,
         session,
       });
     });

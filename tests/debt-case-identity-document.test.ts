@@ -28,14 +28,32 @@ describe("debt case identity document", () => {
       validateOptionalIdentityDocument({
         documentType: DebtCaseIdentityDocumentType.ISRAELI_ID,
         documentNumber: null,
-      }).ok,
-    ).toBe(false);
+      }),
+    ).toMatchObject({ ok: false, failure: { code: "missing_document_number" } });
     expect(
       validateOptionalIdentityDocument({
         documentType: null,
         documentNumber: "000000018",
-      }).ok,
-    ).toBe(false);
+      }),
+    ).toMatchObject({ ok: false, failure: { code: "missing_document_type" } });
+  });
+
+  it("pads leading zeros for Israeli ID before checksum", () => {
+    expect(
+      validateOptionalIdentityDocument({
+        documentType: DebtCaseIdentityDocumentType.ISRAELI_ID,
+        documentNumber: "00000018",
+      }),
+    ).toMatchObject({ ok: true, normalized: "000000018" });
+  });
+
+  it("strips whitespace and non-digits before validation", () => {
+    expect(
+      validateOptionalIdentityDocument({
+        documentType: DebtCaseIdentityDocumentType.ISRAELI_ID,
+        documentNumber: " 000-000-018 ",
+      }),
+    ).toMatchObject({ ok: true, normalized: "000000018" });
   });
 
   it("does not treat invalid-checksum 9 digits as Israeli ID", () => {

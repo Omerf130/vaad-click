@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Types } from "mongoose";
+
 import { DebtCaseErrorCode } from "@/modules/debt-cases/domain/debt-case-errors";
 import { DebtCaseLawyerReviewStatus } from "@/modules/debt-cases/domain/debt-case-lawyer-review-status";
 import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
@@ -84,6 +86,12 @@ vi.mock("@/modules/warning-letters/services/warning-letter-draft.service", () =>
     mockSyncWarningLetterDraft(...args),
 }));
 
+const mockNotifyOutcome = vi.fn().mockResolvedValue(undefined);
+
+vi.mock("@/modules/notifications/services/notification-dispatch.service", () => ({
+  notifyOperatorsDebtCaseReviewOutcome: (...args: unknown[]) => mockNotifyOutcome(...args),
+}));
+
 const lawyerContext: AuthenticatedContext = {
   user: {
     id: "aaaaaaaaaaaaaaaaaaaaaaaa",
@@ -104,6 +112,47 @@ const repContext: AuthenticatedContext = {
 
 const CASE_ID = "33333333-3333-4333-8333-333333333333";
 const BUILDING_ID = "11111111-1111-4111-8111-111111111111";
+const USER_OID = new Types.ObjectId("507f1f77bcf86cd799439011");
+
+function mockUpdatedApprovedDoc(revision: number) {
+  return {
+    debtCaseId: CASE_ID,
+    buildingId: BUILDING_ID,
+    workflowStatus: DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW,
+    lawyerReviewStatus: DebtCaseLawyerReviewStatus.APPROVED_FOR_LETTER_PREP,
+    revision,
+    apartmentNumberDisplay: "12",
+    apartmentKeyNormalized: "12",
+    validationFlags: [],
+    legalHoldReasons: [],
+    debtType: "regular_vaad",
+    principalAmountMinor: 50_000,
+    periodStartMonth: "2024-01",
+    periodEndMonth: "2024-06",
+    letterDeliveryStatus: "not_sent",
+    paymentStatus: "unpaid",
+    createdByUserId: USER_OID,
+    updatedByUserId: USER_OID,
+    submittedAt: new Date("2024-06-01T10:00:00.000Z"),
+    createdAt: new Date("2024-05-01T10:00:00.000Z"),
+    updatedAt: new Date("2024-06-02T10:00:00.000Z"),
+    parties: {
+      propertyOwners: [
+        {
+          fullName: "ישראל ישראלי",
+          identityDocumentType: null,
+          identityNumber: null,
+          mobileE164: "+972501111111",
+          email: null,
+        },
+      ],
+      occupancyType: "owner",
+      legalDebtorDesignation: "property_owners",
+      tenant: null,
+      postalAddress: null,
+    },
+  };
+}
 
 function chainLean(rows: unknown[]) {
   return {
@@ -323,7 +372,7 @@ describe("lawyer debt case review workspace", () => {
       revision: 1,
       validationFlags: [],
     });
-    mockFindOneAndUpdate.mockResolvedValue({ revision: 2 });
+    mockFindOneAndUpdate.mockResolvedValue(mockUpdatedApprovedDoc(2));
     mockLoadReadiness.mockResolvedValue({
       legalTreatmentAllowed: false,
       holdReasons: ["poa_not_signed"],
@@ -341,6 +390,48 @@ describe("lawyer debt case review workspace", () => {
     });
 
     expect(mockRecordApproved).toHaveBeenCalled();
+    expect(mockSyncWarningLetterDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        debtCaseRecord: expect.objectContaining({
+          lawyerReviewStatus: DebtCaseLawyerReviewStatus.APPROVED_FOR_LETTER_PREP,
+        }),
+      }),
+    );
+    expect(mockNotifyOutcome).toHaveBeenCalledWith(
+      expect.objectContaining({ outcome: "approved", debtCaseId: CASE_ID }),
+    );
+  });
+
+  it("does not notify operators when approve transaction fails", async () => {
+    mockFindOne.mockResolvedValue({
+      debtCaseId: CASE_ID,
+      buildingId: BUILDING_ID,
+      workflowStatus: DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW,
+      lawyerReviewStatus: DebtCaseLawyerReviewStatus.PENDING,
+      revision: 1,
+      validationFlags: [],
+      apartmentNumberDisplay: "12",
+    });
+    mockFindOneAndUpdate.mockResolvedValue(null);
+    mockLoadReadiness.mockResolvedValue({
+      legalTreatmentAllowed: true,
+      holdReasons: [],
+      streamlinedReviewEligible: false,
+    });
+
+    const { approveDebtCaseForLetterPrep } = await import(
+      "@/modules/debt-cases/services/debt-case-review.service"
+    );
+
+    await expect(
+      approveDebtCaseForLetterPrep({
+        context: lawyerContext,
+        debtCaseId: CASE_ID,
+        expectedRevision: 1,
+      }),
+    ).rejects.toMatchObject({ code: DebtCaseErrorCode.REVISION_CONFLICT });
+
+    expect(mockNotifyOutcome).not.toHaveBeenCalled();
   });
 });
 

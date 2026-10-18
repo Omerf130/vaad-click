@@ -9,9 +9,16 @@ export type AdminTopBarProps = {
   userFullName: string;
   userEmail: string;
   navToggle?: ReactNode;
+  notificationBell?: ReactNode;
 };
 
-export function AdminTopBar({ pageTitle, userFullName, userEmail, navToggle }: AdminTopBarProps) {
+export function AdminTopBar({
+  pageTitle,
+  userFullName,
+  userEmail,
+  navToggle,
+  notificationBell,
+}: AdminTopBarProps) {
   return (
     <header className={styles.topBar}>
       <div>
@@ -22,6 +29,7 @@ export function AdminTopBar({ pageTitle, userFullName, userEmail, navToggle }: A
         </p>
       </div>
       <div className={styles.topBarActions}>
+        {notificationBell}
         <BackToPublicHomeLink />
         <LogoutButton />
       </div>

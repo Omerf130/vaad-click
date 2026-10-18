@@ -64,12 +64,44 @@ function refineOptionalIdentity(
     documentType: data.identityDocumentType,
     documentNumber: data.identityNumber,
   });
-  if (!result.ok) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "מסמך זיהוי לא תקין",
-      path: [...pathPrefix, "identityNumber"],
-    });
+  if (result.ok) {
+    return;
+  }
+  switch (result.failure.code) {
+    case "missing_document_type":
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "נדרש לבחור סוג מסמך זיהוי",
+        path: [...pathPrefix, "identityDocumentType"],
+      });
+      return;
+    case "missing_document_number":
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "נדרש מספר זיהוי",
+        path: [...pathPrefix, "identityNumber"],
+      });
+      return;
+    case "invalid_israeli_id":
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "מספר ת.ז. לא תקין",
+        path: [...pathPrefix, "identityNumber"],
+      });
+      return;
+    case "invalid_company_hp":
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "מספר ח.פ. לא תקין",
+        path: [...pathPrefix, "identityNumber"],
+      });
+      return;
+    default:
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "מסמך זיהוי לא תקין",
+        path: [...pathPrefix, "identityNumber"],
+      });
   }
 }
 
@@ -302,6 +334,9 @@ function mapOwnerInputToParty(
     documentType: owner.identityDocumentType,
     documentNumber: owner.identityNumber,
   });
+  if (!identity.ok) {
+    throw new Error("identity validation failed after schema refinement");
+  }
   return {
     fullName: owner.fullName,
     identityDocumentType: identity.documentType,
@@ -320,6 +355,9 @@ function mapTenantInputToParty(tenant: z.infer<typeof tenantSubmitSchema>): Tena
     documentType: tenant.identityDocumentType,
     documentNumber: tenant.identityNumber,
   });
+  if (!identity.ok) {
+    throw new Error("identity validation failed after schema refinement");
+  }
   return {
     fullName: tenant.fullName,
     identityDocumentType: identity.documentType,

@@ -3,6 +3,8 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 import { BackToPublicHomeLink } from "@/components/navigation/BackToPublicHomeLink";
 import { AccountStatus } from "@/modules/users/domain/account-status";
 import { UserRole } from "@/modules/users/domain/user-role";
+import { countUnreadNotifications } from "@/modules/notifications/services/notification-query.service";
+import { NotificationBell } from "@/modules/notifications/ui/NotificationBell";
 import { PortalOperatorNav } from "@/modules/portal/ui/PortalOperatorNav";
 import { requireAuthenticatedPortalSession } from "@/shared/auth/require-access";
 import { getAccessibleBuildingPublicIds } from "@/shared/auth/building-access";
@@ -10,6 +12,7 @@ import styles from "../app-shell.module.scss";
 
 export default async function PortalAppLayout({ children }: { children: React.ReactNode }) {
   const context = await requireAuthenticatedPortalSession();
+  const initialUnreadNotifications = await countUnreadNotifications(context);
 
   let primaryBuildingId: string | null = null;
   if (
@@ -26,6 +29,10 @@ export default async function PortalAppLayout({ children }: { children: React.Re
         <Container className={styles.headerInner}>
           <span className={styles.brand}>ועד בקליק — אזור מפעילים</span>
           <div className={styles.headerActions}>
+            <NotificationBell
+              initialUnreadCount={initialUnreadNotifications}
+              fullListHref="/app/notifications"
+            />
             <BackToPublicHomeLink />
             <LogoutButton />
           </div>

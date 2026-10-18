@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
+import { AccountStatus } from "@/modules/users/domain/account-status";
 import { formatAdminUserDateTime } from "@/modules/users/presentation/format-admin-user-date";
 import {
   accountStatusBadgeVariant,
@@ -16,6 +19,12 @@ type AdminUserDetailSectionsProps = {
 export function AdminUserDetailSections({ user }: AdminUserDetailSectionsProps) {
   return (
     <div className={styles.detailGrid}>
+      {user.accountStatus === AccountStatus.PENDING_APPROVAL ? (
+        <p className={styles.metaLine} role="status">
+          חשבון זה ממתין לאישור מנהל המשרד. לאחר אישור, יש להשלים שיוך לבניין או לחברת ניהול בנפרד.{" "}
+          <Link href="/app/admin/users?view=pending">חזרה לתור ממתינים</Link>
+        </p>
+      ) : null}
       <section className={styles.detailCard} aria-labelledby="user-detail-heading">
         <h2 id="user-detail-heading" className={styles.workspaceTitle}>
           פרטי חשבון

@@ -1,3 +1,4 @@
+import { INITIAL_WARNING_TEMPLATE_VERSION_ID } from "@/modules/warning-letters/domain/warning-letter-type";
 import { WarningLetterDraftInvalidationReason } from "@/modules/warning-letters/domain/warning-letter-draft-invalidation-reason";
 import { WarningLetterDraftLegalApprovalStatus } from "@/modules/warning-letters/domain/warning-letter-draft-legal-approval-status";
 import { WarningLetterDraftLoadState } from "@/modules/warning-letters/domain/warning-letter-draft-load-state";
@@ -108,4 +109,11 @@ export function formatWarningLetterDraftErrorHe(code: WarningLetterDraftErrorCod
     default:
       return "לא ניתן לטפל בטיוטת המכתב.";
   }
+}
+
+export function formatWarningLetterTemplateVersionDisplayHe(templateVersionId: string): string {
+  if (templateVersionId === INITIAL_WARNING_TEMPLATE_VERSION_ID) {
+    return "מכתב התראה ראשון";
+  }
+  return "גרסת תבנית מותאמת";
 }

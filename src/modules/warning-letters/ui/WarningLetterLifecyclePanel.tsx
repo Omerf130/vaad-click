@@ -26,6 +26,7 @@ type Props = {
   finalDocument: WarningLetterFinalDocumentView | null;
   deliveryRecords: WarningLetterDeliveryRecordView[];
   debtorDisplayName: string;
+  embedded?: boolean;
 };
 
 const initialState: WarningLetterLifecycleActionState = { ok: false };
@@ -38,6 +39,7 @@ export function WarningLetterLifecyclePanel({
   finalDocument,
   deliveryRecords,
   debtorDisplayName,
+  embedded = false,
 }: Props) {
   const [finalizeState, dispatchFinalize, finalizePending] = useActionState(
     finalizeWarningLetterFormAction,
@@ -52,11 +54,22 @@ export function WarningLetterLifecyclePanel({
     initialState,
   );
 
+  const Wrapper = embedded ? "div" : "section";
+  const wrapperProps = embedded
+    ? { className: styles.lifecycleEmbedded }
+    : {
+        className: styles.section,
+        "aria-labelledby": "wl-lifecycle-title" as const,
+      };
+
   return (
-    <section className={styles.section} aria-labelledby="wl-lifecycle-title">
-      <h3 id="wl-lifecycle-title" className={styles.sectionTitle}>
+    <Wrapper {...wrapperProps}>
+      <h3 id={embedded ? undefined : "wl-lifecycle-title"} className={styles.sectionTitle}>
         סגירה והגשה (ללא שליחה אוטומטית)
       </h3>
+      <p className={styles.metaLine}>
+        תיעוד הגשה ידני — לא שליחת הודעה. אין הפעלה אוטומטית של ווטסאפ, SMS או דוא&quot;ל.
+      </p>
 
       {[finalizeState, deliveryState, detailsState].map(
         (state, index) =>
@@ -170,6 +183,6 @@ export function WarningLetterLifecyclePanel({
           ))}
         </ul>
       ) : null}
-    </section>
+    </Wrapper>
   );
 }

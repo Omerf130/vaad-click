@@ -13,6 +13,11 @@ export const DOCUMENT_ASSET_UI_COPY = {
   createdColumn: "נוצר",
   sizeColumn: "גודל",
   documentIdColumn: "מזהה",
+  debtCaseSectionTitle: "מסמכים ונספחים",
+  debtCaseEmptyPortal:
+    "אין מסמכים המוצגים בתיק זה. העלאה וצפייה יופעלו כאשר אחסון מאובטח יוגדר במערכת.",
+  debtCaseUploadNotAvailable: "העלאת מסמך לתיק (לא זמין)",
+  displayNameColumn: "שם קובץ",
 } as const;
 
 const CLASSIFICATION_LABELS: Record<DocumentClassification, string> = {

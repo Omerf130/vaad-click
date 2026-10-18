@@ -20,9 +20,21 @@ import {
   formatWarningLetterDraftLoadStateHe,
   formatWarningLetterDraftStatusHe,
   formatWarningLetterLegalApprovalStatusHe,
+  formatWarningLetterTemplateVersionDisplayHe,
 } from "@/modules/warning-letters/presentation/warning-letter-draft-messages.he";
 import type { WarningLetterDraftDetailResult } from "@/modules/warning-letters/services/warning-letter-draft.service";
+import type { WarningLetterDeliveryRecordView } from "@/modules/warning-letters/services/warning-letter-delivery.service";
+import type { WarningLetterFinalDocumentView } from "@/modules/warning-letters/services/warning-letter-finalization.service";
+import type { WarningLetterLegalReadinessChecklist } from "@/modules/warning-letters/services/warning-letter-legal-readiness-checklist.service";
 import { WarningLetterDocumentView } from "@/modules/warning-letters/ui/WarningLetterDocumentView";
+import { WarningLetterLifecyclePanel } from "@/modules/warning-letters/ui/WarningLetterLifecyclePanel";
+import { WarningLetterReadinessGroupedPanel } from "@/modules/warning-letters/ui/WarningLetterReadinessGroupedPanel";
+import tabStyles from "@/modules/warning-letters/ui/WarningLetterCaseTab.module.scss";
+import {
+  WorkspaceAccessibleTabs,
+  type WorkspaceTabDefinition,
+} from "@/modules/debt-cases/ui/WorkspaceAccessibleTabs";
+import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
 import {
   buildWarningLetterDraftSaveFormDataFromChanged,
   collectClauseDraftsFromInlineEditors,
@@ -45,12 +57,29 @@ type RevisionRow = {
   contentSha256Prefix: string;
 };
 
+const WL_SUBTAB_LETTER = "letter";
+const WL_SUBTAB_READINESS = "readiness";
+const WL_SUBTAB_MANAGEMENT = "management";
+
+type WarningLetterLifecycleBundle = {
+  debtCaseId: string;
+  buildingId: string;
+  draftId: string | null;
+  checklist: WarningLetterLegalReadinessChecklist;
+  finalDocument: WarningLetterFinalDocumentView | null;
+  deliveryRecords: WarningLetterDeliveryRecordView[];
+  debtorDisplayName: string;
+};
+
 type Props = {
   detail: WarningLetterDraftDetailResult;
   debtCaseId: string;
   buildingId: string;
   approvalBlockersHe: string[];
   revisionHistory: RevisionRow[];
+  presentation?: "monolith" | "tabs";
+  checklist?: WarningLetterLegalReadinessChecklist | null;
+  lifecycle?: WarningLetterLifecycleBundle | null;
 };
 
 function ActionFeedback({ state }: { state: WarningLetterDraftActionState }) {
@@ -70,7 +99,11 @@ export function WarningLetterLawyerDraftWorkspace({
   buildingId,
   approvalBlockersHe,
   revisionHistory,
+  presentation = "monolith",
+  checklist = null,
+  lifecycle = null,
 }: Props) {
+  const [activeSubTab, setActiveSubTab] = useState(WL_SUBTAB_LETTER);
   const draft = detail.draft;
   const [isEditing, setIsEditing] = useState(false);
   const [clauseDrafts, setClauseDrafts] = useState<Record<string, string>>({});
@@ -284,85 +317,81 @@ export function WarningLetterLawyerDraftWorkspace({
     });
   };
 
-  return (
-    <section className={styles.previewSection} aria-labelledby="warning-letter-lawyer-workspace">
-      <h2 id="warning-letter-lawyer-workspace" className={styles.previewTitle}>
-        טיוטת מכתב התראה — עורך דין
-      </h2>
+  const letterReference = draft?.letterCaseReference ?? detail.letterCaseReference ?? "—";
 
-      <p className={styles.metaLine} role="status">
-        {loadStateHe}
-      </p>
+  const metaListBlock = draft ? (
+    <dl className={styles.metaList}>
+      <div>
+        <dt>מספר תיק מכתב</dt>
+        <dd>{letterReference}</dd>
+      </div>
+      <div>
+        <dt>גרסת טיוטה</dt>
+        <dd>{draft.draftRevision}</dd>
+      </div>
+      <div>
+        <dt>סטטוס שמירה</dt>
+        <dd>
+          {formatWarningLetterDraftStatusHe(draft.status, {
+            isCurrentForCase: draft.isCurrentForCase,
+          })}
+        </dd>
+      </div>
+      <div>
+        <dt>אישור נוסח</dt>
+        <dd>{formatWarningLetterLegalApprovalStatusHe(draft.legalWordingApprovalStatus)}</dd>
+      </div>
+      <div>
+        <dt>גרסת תבנית</dt>
+        <dd>
+          {formatWarningLetterTemplateVersionDisplayHe(draft.templateVersionId)}
+          <details className={tabStyles.technicalDetails}>
+            <summary>מזהה טכני</summary>
+            <code>{draft.templateVersionId}</code>
+          </details>
+        </dd>
+      </div>
+      <div>
+        <dt>עריכה ידנית</dt>
+        <dd>{draft.manuallyEdited ? "כן — דריסת ניסוח משפטי לתיק זה" : "לא"}</dd>
+      </div>
+    </dl>
+  ) : detail.letterCaseReference ? (
+    <p className={styles.metaLine}>
+      מספר תיק מכתב: {detail.letterCaseReference}
+    </p>
+  ) : null;
 
-      {draft ? (
-        <dl className={styles.metaList}>
-          <div>
-            <dt>מספר תיק מכתב</dt>
-            <dd>
-              <code>{draft.letterCaseReference}</code>
-            </dd>
-          </div>
-          <div>
-            <dt>גרסת טיוטה</dt>
-            <dd>{draft.draftRevision}</dd>
-          </div>
-          <div>
-            <dt>סטטוס שמירה</dt>
-            <dd>
-              {formatWarningLetterDraftStatusHe(draft.status, {
-                isCurrentForCase: draft.isCurrentForCase,
-              })}
-            </dd>
-          </div>
-          <div>
-            <dt>אישור נוסח</dt>
-            <dd>{formatWarningLetterLegalApprovalStatusHe(draft.legalWordingApprovalStatus)}</dd>
-          </div>
-          <div>
-            <dt>גרסת תבנית</dt>
-            <dd>{draft.templateVersionId}</dd>
-          </div>
-          <div>
-            <dt>עריכה ידנית</dt>
-            <dd>{draft.manuallyEdited ? "כן — דריסת ניסוח משפטי לתיק זה" : "לא"}</dd>
-          </div>
-        </dl>
-      ) : detail.letterCaseReference ? (
-        <p className={styles.metaLine}>
-          מספר תיק מכתב: <code>{detail.letterCaseReference}</code>
-        </p>
-      ) : null}
+  const approvalBlockersBlock =
+    approvalBlockersHe.length > 0 ? (
+      <div className={styles.incompleteWarning} role="status">
+        <p>חסימות לאישור נוסח:</p>
+        <ul>
+          {approvalBlockersHe.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      </div>
+    ) : null;
 
-      {approvalBlockersHe.length > 0 ? (
-        <div className={styles.incompleteWarning} role="status">
-          <p>חסימות לאישור נוסח:</p>
-          <ul>
-            {approvalBlockersHe.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+  const regenerateBlock = needsRegenerate ? (
+    <form action={regenerateAction} className={styles.regenerateForm}>
+      <input type="hidden" name="debtCaseId" value={debtCaseId} />
+      <Button type="submit" disabled={regeneratePending}>
+        {regeneratePending ? "מסנכרן…" : "יצירת/סנכרון גרסת טיוטה מעודכנת"}
+      </Button>
+      <ActionFeedback state={regenerateState} />
+    </form>
+  ) : null;
 
-      {needsRegenerate ? (
-        <form action={regenerateAction} className={styles.regenerateForm}>
-          <input type="hidden" name="debtCaseId" value={debtCaseId} />
-          <Button type="submit" disabled={regeneratePending}>
-            {regeneratePending ? "מסנכרן…" : "יצירת/סנכרון גרסת טיוטה מעודכנת"}
-          </Button>
-          <ActionFeedback state={regenerateState} />
-        </form>
-      ) : null}
+  const editStartBlock =
+    canEdit && !isEditing ? (
+      <Button type="button" onClick={startEditing}>
+        עריכת טיוטה
+      </Button>
+    ) : null;
 
-      {canEdit && !isEditing ? (
-        <p className={styles.linkRow}>
-          <Button type="button" onClick={startEditing}>
-            עריכת טיוטה
-          </Button>
-        </p>
-      ) : null}
-
-      {showDocument ? (
+  const documentPreviewBlock = showDocument ? (
         <>
           {!isEditing ? (
             <p className={styles.bannerSuccess} role="status">
@@ -454,9 +483,9 @@ export function WarningLetterLawyerDraftWorkspace({
         <p className={styles.incompleteWarning} role="status">
           תצוגת גוף המכתב תופיע לאחר סנכרון טיוטה פעילה מעודכנת.
         </p>
-      ) : null}
+      ) : null;
 
-      {canApprove ? (
+  const approveBlock = canApprove ? (
         <form action={approveAction} className={styles.regenerateForm}>
           <input type="hidden" name="debtCaseId" value={debtCaseId} />
           <input type="hidden" name="draftId" value={draft!.draftId} />
@@ -472,9 +501,9 @@ export function WarningLetterLawyerDraftWorkspace({
           </Button>
           <ActionFeedback state={approveState} />
         </form>
-      ) : null}
+      ) : null;
 
-      {canReturn ? (
+  const returnBlock = canReturn ? (
         <form action={returnAction} className={styles.regenerateForm}>
           <input type="hidden" name="debtCaseId" value={debtCaseId} />
           <input type="hidden" name="draftId" value={draft!.draftId} />
@@ -487,9 +516,10 @@ export function WarningLetterLawyerDraftWorkspace({
           </Button>
           <ActionFeedback state={returnState} />
         </form>
-      ) : null}
+      ) : null;
 
-      {revisionHistory.length > 0 ? (
+  const revisionHistoryBlock =
+    revisionHistory.length > 0 ? (
         <details className={styles.historyDetails}>
           <summary>היסטוריית גרסאות (עורך דין)</summary>
           <table className={styles.historyTable}>
@@ -515,7 +545,184 @@ export function WarningLetterLawyerDraftWorkspace({
             </tbody>
           </table>
         </details>
-      ) : null}
+      ) : null;
+
+  if (presentation === "tabs") {
+    const readinessChecklist = checklist ?? lifecycle?.checklist ?? null;
+    const finalizationBlocked = readinessChecklist && !readinessChecklist.finalizationAllowed;
+
+    const wlTabs: WorkspaceTabDefinition[] = [
+      {
+        id: WL_SUBTAB_LETTER,
+        label: "המכתב",
+        panel: (
+          <div>
+            <div className={tabStyles.letterTabHeader}>
+              <p className={tabStyles.letterTabMeta}>
+                {letterReference} · גרסה {draft?.draftRevision ?? "—"} · {loadStateHe}
+              </p>
+              {editStartBlock}
+            </div>
+            {needsRegenerate ? (
+              <p className={styles.metaLine} role="status">
+                נדרש סנכרון טיוטה —{" "}
+                <button
+                  type="button"
+                  className={tabStyles.inlineLink}
+                  onClick={() => setActiveSubTab(WL_SUBTAB_MANAGEMENT)}
+                >
+                  עבור לניהול טיוטה
+                </button>
+              </p>
+            ) : null}
+            {documentPreviewBlock}
+          </div>
+        ),
+      },
+      {
+        id: WL_SUBTAB_READINESS,
+        label: "מוכנות משפטית",
+        panel: readinessChecklist ? (
+          <WarningLetterReadinessGroupedPanel checklist={readinessChecklist} />
+        ) : (
+          <p className={styles.metaLine}>נתוני מוכנות משפטית אינם זמינים לתיק זה.</p>
+        ),
+      },
+      {
+        id: WL_SUBTAB_MANAGEMENT,
+        label: "ניהול טיוטה",
+        panel: (
+          <div className={tabStyles.managementStack}>
+            <p className={styles.metaLine} role="status">
+              {loadStateHe}
+            </p>
+            {metaListBlock}
+            {approvalBlockersBlock}
+            {regenerateBlock}
+            {approveBlock}
+            {returnBlock}
+            {lifecycle ? (
+              <WarningLetterLifecyclePanel
+                embedded
+                debtCaseId={lifecycle.debtCaseId}
+                buildingId={lifecycle.buildingId}
+                draftId={lifecycle.draftId}
+                checklist={lifecycle.checklist}
+                finalDocument={lifecycle.finalDocument}
+                deliveryRecords={lifecycle.deliveryRecords}
+                debtorDisplayName={lifecycle.debtorDisplayName}
+              />
+            ) : null}
+            {revisionHistoryBlock}
+          </div>
+        ),
+      },
+    ];
+
+    return (
+      <div className={tabStyles.root}>
+        <header className={tabStyles.statusHeader}>
+          <div>
+            <h2 className={tabStyles.statusTitle}>מכתב התראה · {letterReference}</h2>
+            <div className={tabStyles.statusBadges}>
+              {draft ? (
+                <StatusBadge variant="neutral" label={`גרסת טיוטה ${draft.draftRevision}`} />
+              ) : null}
+              <StatusBadge
+                variant={
+                  detail.loadState === WarningLetterDraftLoadState.ACTIVE_CURRENT
+                    ? "success"
+                    : "warning"
+                }
+                label={
+                  detail.loadState === WarningLetterDraftLoadState.ACTIVE_CURRENT
+                    ? "טיוטה מעודכנת"
+                    : "טיוטה — דורש טיפול"
+                }
+              />
+              {draft ? (
+                <StatusBadge
+                  variant={
+                    draft.legalWordingApprovalStatus ===
+                    WarningLetterDraftLegalApprovalStatus.APPROVED
+                      ? "success"
+                      : "warning"
+                  }
+                  label={formatWarningLetterLegalApprovalStatusHe(draft.legalWordingApprovalStatus)}
+                />
+              ) : null}
+              {readinessChecklist ? (
+                <StatusBadge
+                  variant={readinessChecklist.finalizationAllowed ? "success" : "warning"}
+                  label={
+                    readinessChecklist.finalizationAllowed
+                      ? "סגירה — מותרת"
+                      : "סגירה — חסומה"
+                  }
+                />
+              ) : null}
+            </div>
+            <p className={tabStyles.statusMeta}>
+              תיעוד הגשה ידני אינו שליחת הודעה לחייב. שליחה אוטומטית — לא פעילה.
+            </p>
+          </div>
+        </header>
+
+        {finalizationBlocked ? (
+          <p className={tabStyles.statusWarning} role="status">
+            לא ניתן לסגור מסמך סופי עד השלמת דרישות המוכנות.{" "}
+            <button
+              type="button"
+              className={tabStyles.inlineLink}
+              onClick={() => setActiveSubTab(WL_SUBTAB_READINESS)}
+            >
+              הצגת סיבות
+            </button>
+          </p>
+        ) : null}
+
+        {!finalizationBlocked && approvalBlockersHe.length > 0 ? (
+          <p className={tabStyles.statusWarning} role="status">
+            אישור נוסח חסום — {approvalBlockersHe.length} חסימות פעילות.{" "}
+            <button
+              type="button"
+              className={tabStyles.inlineLink}
+              onClick={() => setActiveSubTab(WL_SUBTAB_READINESS)}
+            >
+              פירוט במוכנות משפטית
+            </button>
+          </p>
+        ) : null}
+
+        <WorkspaceAccessibleTabs
+          tabs={wlTabs}
+          activeTabId={activeSubTab}
+          onTabChange={setActiveSubTab}
+          ariaLabel="מכתב התראה"
+          mountHiddenPanels
+        />
+      </div>
+    );
+  }
+
+  return (
+    <section className={styles.previewSection} aria-labelledby="warning-letter-lawyer-workspace">
+      <h2 id="warning-letter-lawyer-workspace" className={styles.previewTitle}>
+        טיוטת מכתב התראה — עורך דין
+      </h2>
+
+      <p className={styles.metaLine} role="status">
+        {loadStateHe}
+      </p>
+
+      {metaListBlock}
+      {approvalBlockersBlock}
+      {regenerateBlock}
+      {canEdit && !isEditing ? <p className={styles.linkRow}>{editStartBlock}</p> : null}
+      {documentPreviewBlock}
+      {approveBlock}
+      {returnBlock}
+      {revisionHistoryBlock}
     </section>
   );
 }

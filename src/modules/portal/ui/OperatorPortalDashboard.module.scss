@@ -308,6 +308,19 @@
   @extend .section;
 }
 
+.lifecycleEmbedded {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.subsectionTitlePortal {
+  margin: 0 0 $space-3;
+  font-size: $font-size-md;
+  font-weight: 700;
+}
+
 .lifecycleGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -19,6 +19,10 @@ import { buildWarningLetterLegalReadinessChecklist } from "@/modules/warning-let
 import { listWarningLetterDeliveryRecords } from "@/modules/warning-letters/services/warning-letter-delivery.service";
 import { loadWarningLetterFinalDocumentForCase } from "@/modules/warning-letters/services/warning-letter-finalization.service";
 import { loadAdminDebtCaseActivity } from "@/modules/admin/services/admin-activity.service";
+import {
+  getDocumentStorageUiState,
+  listDebtCaseDocumentAssetsForLawyerAdmin,
+} from "@/modules/document-assets/services/document-asset.service";
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
 
 type PageProps = {
@@ -41,7 +45,15 @@ export default async function AdminDebtCaseReviewDetailPage({ params }: PageProp
   const { debtCaseId } = await params;
   const context = await requireLawyerAdminPortal();
   const bundle = await loadBundle(debtCaseId);
-  const caseActivity = await loadAdminDebtCaseActivity({ context, debtCaseId });
+  const [caseActivity, caseDocuments, documentStorageState] = await Promise.all([
+    loadAdminDebtCaseActivity({ context, debtCaseId }),
+    listDebtCaseDocumentAssetsForLawyerAdmin({
+      context,
+      debtCaseId,
+      buildingId: bundle.record.buildingId,
+    }),
+    Promise.resolve(getDocumentStorageUiState()),
+  ]);
   const title = `בדיקת תיק · דירה ${bundle.record.apartmentNumberDisplay || "—"}`;
 
   let warningLetterDraftDetail: WarningLetterDraftDetailResult | null = null;
@@ -110,6 +122,8 @@ export default async function AdminDebtCaseReviewDetailPage({ params }: PageProp
       <LawyerDebtCaseReviewDetail
         bundle={bundle}
         caseActivity={caseActivity}
+        caseDocuments={caseDocuments}
+        documentStorageState={documentStorageState}
         warningLetterDraftDetail={warningLetterDraftDetail}
         warningLetterDraftErrorHe={warningLetterDraftErrorHe}
         warningLetterApprovalBlockersHe={warningLetterApprovalBlockersHe}

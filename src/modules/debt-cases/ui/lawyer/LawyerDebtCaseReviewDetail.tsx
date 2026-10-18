@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
 import { DebtCaseOccupancyType } from "@/modules/debt-cases/domain/debt-case-occupancy-type";
@@ -24,18 +27,32 @@ import type { WarningLetterDeliveryRecordView } from "@/modules/warning-letters/
 import type { WarningLetterFinalDocumentView } from "@/modules/warning-letters/services/warning-letter-finalization.service";
 import type { WarningLetterLegalReadinessChecklist } from "@/modules/warning-letters/services/warning-letter-legal-readiness-checklist.service";
 import { WarningLetterLawyerDraftWorkspace } from "@/modules/warning-letters/ui/WarningLetterLawyerDraftWorkspace";
-import { WarningLetterLegalReadinessChecklistPanel } from "@/modules/warning-letters/ui/WarningLetterLegalReadinessChecklistPanel";
-import { WarningLetterLifecyclePanel } from "@/modules/warning-letters/ui/WarningLetterLifecyclePanel";
 import { WarningLetterDraftLegalApprovalStatus } from "@/modules/warning-letters/domain/warning-letter-draft-legal-approval-status";
+import { WarningLetterDraftLoadState } from "@/modules/warning-letters/domain/warning-letter-draft-load-state";
 import { WarningLetterDraftStatus } from "@/modules/warning-letters/domain/warning-letter-draft-status";
 import { WarningLetterPreviewUnavailable } from "@/modules/warning-letters/ui/WarningLetterPreviewUnavailable";
 import { AdminActivityTimeline } from "@/modules/admin/components/AdminActivityTimeline";
 import type { AdminActivityEntry } from "@/modules/admin/services/admin-activity.service";
+import type { AdminDocumentAssetListItem } from "@/modules/document-assets/presentation/document-asset-view.types";
+import type { DocumentStorageUiState } from "@/modules/document-assets/presentation/document-asset-view.types";
+import { DebtCaseDocumentsSection } from "@/modules/debt-cases/ui/DebtCaseDocumentsSection";
+import {
+  WorkspaceAccessibleTabs,
+  type WorkspaceTabDefinition,
+} from "@/modules/debt-cases/ui/WorkspaceAccessibleTabs";
+import workspaceStyles from "@/modules/debt-cases/ui/DebtCaseWorkspace.module.scss";
 import styles from "@/modules/debt-cases/ui/lawyer/LawyerDebtCasesAdmin.module.scss";
+
+const LAWYER_TAB_OVERVIEW = "overview";
+const LAWYER_TAB_DOCUMENTS = "documents";
+const LAWYER_TAB_ACTIVITY = "activity";
+const LAWYER_TAB_WARNING_LETTER = "warning-letter";
 
 type Props = {
   bundle: LawyerDebtCaseDetailBundle;
   caseActivity?: AdminActivityEntry[];
+  caseDocuments?: AdminDocumentAssetListItem[];
+  documentStorageState?: DocumentStorageUiState;
   warningLetterDraftDetail?: WarningLetterDraftDetailResult | null;
   warningLetterDraftErrorHe?: string | null;
   warningLetterApprovalBlockersHe?: string[];
@@ -73,70 +90,23 @@ export function LawyerDebtCaseReviewDetail({
   warningLetterFinalDocument = null,
   warningLetterDeliveryRecords = [],
   caseActivity = [],
+  caseDocuments = [],
+  documentStorageState = { configured: false, state: "storage_not_configured" },
 }: Props) {
   const { record, buildingDisplayName, buildingCity, legalReadiness, canPerformReviewActions } =
     bundle;
   const owners = record.parties.propertyOwners;
   const tenant = record.parties.tenant;
   const caseTitle = `דירה ${record.apartmentNumberDisplay || "—"} · ${buildingDisplayName}`;
+  const [activeTabId, setActiveTabId] = useState(LAWYER_TAB_OVERVIEW);
 
-  return (
-    <div className={styles.detailGrid}>
-      <p className={styles.linkRow}>
-        <Link href="/app/admin/debt-cases">חזרה לתור בדיקה</Link>
-        {" · "}
-        <Link href={`/app/admin/buildings/${record.buildingId}`}>פרטי בניין</Link>
-      </p>
+  const showWarningLetterTab =
+    warningLetterLegalChecklist != null ||
+    warningLetterDraftDetail != null ||
+    Boolean(warningLetterDraftErrorHe);
 
-      <section className={styles.section} aria-labelledby="case-overview-title">
-        <h2 id="case-overview-title" className={styles.sectionTitle}>
-          {caseTitle}
-        </h2>
-        <dl className={styles.definitionList}>
-          <div>
-            <dt>בניין</dt>
-            <dd>
-              {buildingDisplayName}
-              {buildingCity ? ` · ${buildingCity}` : ""}
-            </dd>
-          </div>
-          <div>
-            <dt>דירה</dt>
-            <dd>{record.apartmentNumberDisplay || "—"}</dd>
-          </div>
-          <div>
-            <dt>סטטוס תיק</dt>
-            <dd>
-              <DebtCaseWorkflowStatusBadge status={record.workflowStatus} />
-            </dd>
-          </div>
-          <div>
-            <dt>בדיקת עורך דין</dt>
-            <dd>
-              <DebtCaseLawyerReviewStatusBadge status={record.lawyerReviewStatus} />
-            </dd>
-          </div>
-          <div>
-            <dt>נוצר</dt>
-            <dd>{formatDateTime(record.createdAtIso)}</dd>
-          </div>
-          <div>
-            <dt>הוגש לבדיקה</dt>
-            <dd>{formatDateTime(record.submittedAtIso)}</dd>
-          </div>
-          <div>
-            <dt>סכום החוב</dt>
-            <dd>{formatMinorUnitsToNisDisplay(record.principalAmountMinor)} ₪</dd>
-          </div>
-          <div>
-            <dt>תקופת חוב</dt>
-            <dd>
-              {formatDebtPeriodDisplayHe(record.periodStartMonth, record.periodEndMonth)}
-            </dd>
-          </div>
-        </dl>
-      </section>
-
+  const overviewPanel = (
+    <>
       <section className={styles.section} aria-labelledby="parties-title">
         <h2 id="parties-title" className={styles.sectionTitle}>
           צדדים
@@ -297,52 +267,139 @@ export function LawyerDebtCaseReviewDetail({
           </>
         ) : null}
       </section>
+    </>
+  );
 
-      <section className={styles.section} aria-labelledby="case-activity-title">
-        <h2 id="case-activity-title" className={styles.sectionTitle}>
-          היסטוריית פעילות
-        </h2>
-        <AdminActivityTimeline items={caseActivity} linkDebtCases={false} />
-      </section>
-
-      {canPerformReviewActions ? (
-        <LawyerDebtCaseReviewActions debtCaseId={record.debtCaseId} revision={record.revision} />
-      ) : (
-        <p className={styles.bannerInfo} role="status">
-          אין פעולות בדיקה זמינות במצב הנוכחי של התיק.
-        </p>
-      )}
-
-      {warningLetterLegalChecklist ? (
-        <>
-          <p className={styles.linkRow}>
-            <Link href="/app/admin/warning-letter-templates">אישור גרסאות תבנית (גלובלי)</Link>
-          </p>
-          <WarningLetterLegalReadinessChecklistPanel checklist={warningLetterLegalChecklist} />
-          <WarningLetterLifecyclePanel
-            debtCaseId={record.debtCaseId}
-            buildingId={record.buildingId}
-            draftId={warningLetterDraftDetail?.draft?.draftId ?? null}
-            checklist={warningLetterLegalChecklist}
-            finalDocument={warningLetterFinalDocument}
-            deliveryRecords={warningLetterDeliveryRecords}
-            debtorDisplayName={formatLegalDebtorHe(record.parties.legalDebtorDesignation)}
-          />
-        </>
-      ) : null}
-
+  const warningLetterPanel = (
+    <div className={workspaceStyles.tabPanelStack}>
       {warningLetterDraftErrorHe ? (
         <WarningLetterPreviewUnavailable messageHe={warningLetterDraftErrorHe} />
       ) : null}
       {warningLetterDraftDetail ? (
         <WarningLetterLawyerDraftWorkspace
+          presentation="tabs"
           detail={warningLetterDraftDetail}
           debtCaseId={record.debtCaseId}
           buildingId={record.buildingId}
           approvalBlockersHe={warningLetterApprovalBlockersHe}
           revisionHistory={warningLetterRevisionHistory}
+          checklist={warningLetterLegalChecklist}
+          lifecycle={
+            warningLetterLegalChecklist
+              ? {
+                  debtCaseId: record.debtCaseId,
+                  buildingId: record.buildingId,
+                  draftId: warningLetterDraftDetail.draft?.draftId ?? null,
+                  checklist: warningLetterLegalChecklist,
+                  finalDocument: warningLetterFinalDocument,
+                  deliveryRecords: warningLetterDeliveryRecords,
+                  debtorDisplayName: formatLegalDebtorHe(record.parties.legalDebtorDesignation),
+                }
+              : null
+          }
+        />
+      ) : warningLetterLegalChecklist ? (
+        <WarningLetterLawyerDraftWorkspace
+          presentation="tabs"
+          detail={{
+            loadState: WarningLetterDraftLoadState.NO_DRAFT_YET,
+            letterCaseReference: null,
+            latestDraftRevision: null,
+            invalidationReason: null,
+            invalidatedAtIso: null,
+            legalWordingApprovalStatus: WarningLetterDraftLegalApprovalStatus.NONE,
+            draft: null,
+          }}
+          debtCaseId={record.debtCaseId}
+          buildingId={record.buildingId}
+          approvalBlockersHe={warningLetterApprovalBlockersHe}
+          revisionHistory={warningLetterRevisionHistory}
+          checklist={warningLetterLegalChecklist}
+          lifecycle={{
+            debtCaseId: record.debtCaseId,
+            buildingId: record.buildingId,
+            draftId: null,
+            checklist: warningLetterLegalChecklist,
+            finalDocument: warningLetterFinalDocument,
+            deliveryRecords: warningLetterDeliveryRecords,
+            debtorDisplayName: formatLegalDebtorHe(record.parties.legalDebtorDesignation),
+          }}
         />
       ) : null}
+    </div>
+  );
+
+  const lawyerTabs: WorkspaceTabDefinition[] = [
+    { id: LAWYER_TAB_OVERVIEW, label: "סקירת תיק", panel: overviewPanel },
+    {
+      id: LAWYER_TAB_DOCUMENTS,
+      label: "מסמכים",
+      panel: (
+        <DebtCaseDocumentsSection
+          variant="admin"
+          documents={caseDocuments}
+          storageState={documentStorageState}
+          embedded
+        />
+      ),
+    },
+    {
+      id: LAWYER_TAB_ACTIVITY,
+      label: "פעילות",
+      panel: <AdminActivityTimeline items={caseActivity} linkDebtCases={false} />,
+    },
+  ];
+
+  if (showWarningLetterTab) {
+    lawyerTabs.push({
+      id: LAWYER_TAB_WARNING_LETTER,
+      label: "מכתב התראה",
+      panel: warningLetterPanel,
+    });
+  }
+
+  return (
+    <div className={workspaceStyles.workspace}>
+      <p className={styles.linkRow}>
+        <Link href="/app/admin/debt-cases">חזרה לתור בדיקה</Link>
+        {" · "}
+        <Link href={`/app/admin/buildings/${record.buildingId}`}>פרטי בניין</Link>
+      </p>
+
+      <header className={workspaceStyles.caseHeader}>
+        <div className={workspaceStyles.caseHeaderMain}>
+          <h1 className={workspaceStyles.caseHeaderTitle}>{caseTitle}</h1>
+          <div className={workspaceStyles.caseHeaderBadges}>
+            <DebtCaseWorkflowStatusBadge status={record.workflowStatus} />
+            <DebtCaseLawyerReviewStatusBadge status={record.lawyerReviewStatus} />
+          </div>
+          <p className={workspaceStyles.caseHeaderMeta}>
+            {buildingDisplayName}
+            {buildingCity ? ` · ${buildingCity}` : ""} ·{" "}
+            {formatMinorUnitsToNisDisplay(record.principalAmountMinor)} ₪ ·{" "}
+            {formatDebtPeriodDisplayHe(record.periodStartMonth, record.periodEndMonth)} · הוגש:{" "}
+            {formatDateTime(record.submittedAtIso)}
+          </p>
+        </div>
+      </header>
+
+      <div className={workspaceStyles.lawyerReviewBar}>
+        {canPerformReviewActions ? (
+          <LawyerDebtCaseReviewActions debtCaseId={record.debtCaseId} revision={record.revision} />
+        ) : (
+          <p className={styles.bannerInfo} role="status">
+            אין פעולות בדיקה זמינות במצב הנוכחי של התיק.
+          </p>
+        )}
+      </div>
+
+      <WorkspaceAccessibleTabs
+        tabs={lawyerTabs}
+        activeTabId={activeTabId}
+        onTabChange={setActiveTabId}
+        ariaLabel="תוכן בדיקת תיק"
+        mountHiddenPanels
+      />
     </div>
   );
 }

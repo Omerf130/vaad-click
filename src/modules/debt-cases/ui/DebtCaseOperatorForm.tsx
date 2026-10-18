@@ -11,7 +11,6 @@ import { DebtCaseDebtType } from "@/modules/debt-cases/domain/debt-case-debt-typ
 import { DebtCaseIdentityDocumentType } from "@/modules/debt-cases/domain/debt-case-identity-document";
 import { DebtCaseOccupancyType } from "@/modules/debt-cases/domain/debt-case-occupancy-type";
 import { LegalDebtorDesignation } from "@/modules/debt-cases/domain/debt-case-parties";
-import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 import type { DebtCaseRecord } from "@/modules/debt-cases/domain/debt-case-record.types";
 import type { DebtCaseFormDefaults } from "@/modules/debt-cases/presentation/debt-case-form.defaults";
 import {
@@ -25,10 +24,6 @@ import {
 } from "@/modules/debt-cases/presentation/debt-case-operator-form-state";
 import { isOperatorDebtCaseEditable } from "@/modules/debt-cases/presentation/debt-case-editability";
 import { formatValidationSeverityHe } from "@/modules/debt-cases/presentation/debt-case-labels.he";
-import {
-  DebtCaseLawyerReviewStatusBadge,
-  DebtCaseWorkflowStatusBadge,
-} from "@/modules/debt-cases/ui/DebtCaseStatusBadges";
 import styles from "@/modules/debt-cases/ui/DebtCases.module.scss";
 
 const initial: PortalDebtCaseActionState = { ok: false };
@@ -37,6 +32,7 @@ type Props = {
   buildingId: string;
   record: DebtCaseRecord;
   defaults: DebtCaseFormDefaults;
+  compactLayout?: boolean;
 };
 
 function FieldError({ name, errors }: { name: string; errors?: Record<string, string> }) {
@@ -88,7 +84,12 @@ function hydrateFormFromDefaults(
   setDebtType(defaults.debtType);
 }
 
-export function DebtCaseOperatorForm({ buildingId, record, defaults }: Props) {
+export function DebtCaseOperatorForm({
+  buildingId,
+  record,
+  defaults,
+  compactLayout = false,
+}: Props) {
   const editable = isOperatorDebtCaseEditable(record);
   const [formValues, setFormValues] = useState(() => cloneDebtCaseFormDefaults(defaults));
   const [occupancyType, setOccupancyType] = useState(defaults.occupancyType);
@@ -178,23 +179,28 @@ export function DebtCaseOperatorForm({ buildingId, record, defaults }: Props) {
     },
   ];
 
+  function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
+    const native = event.nativeEvent as SubmitEvent;
+    const submitter = native.submitter;
+    if (
+      submitter instanceof HTMLButtonElement &&
+      submitter.name === "intent" &&
+      submitter.value === "submit"
+    ) {
+      const confirmed = window.confirm(
+        "לשלוח את התיק לבדיקת עורך הדין? לא ניתן לערוך את התיק לאחר השליחה עד להחזרה או החלטה.",
+      );
+      if (!confirmed) {
+        event.preventDefault();
+      }
+    }
+  }
+
   return (
     <div>
-      <p className={styles.meta}>
-        סטטוס: <DebtCaseWorkflowStatusBadge status={record.workflowStatus} /> · בדיקת עו&quot;ד:{" "}
-        <DebtCaseLawyerReviewStatusBadge status={record.lawyerReviewStatus} /> · מזהה:{" "}
-        {record.debtCaseId}
-      </p>
-
       {!editable ? (
         <p className={styles.readonlyBanner} role="status">
           התיק אינו ניתן לעריכה במצב הנוכחי (למשל לאחר שליחת מכתב או לאחר סגירה).
-        </p>
-      ) : null}
-
-      {record.workflowStatus === DebtCaseWorkflowStatus.RETURNED_FOR_COMPLETION ? (
-        <p className={styles.readonlyBanner}>
-          התיק הוחזר להשלמת פרטים — עדכנו ושלחו מחדש לבדיקת עורך הדין.
         </p>
       ) : null}
 
@@ -238,7 +244,11 @@ export function DebtCaseOperatorForm({ buildingId, record, defaults }: Props) {
         </div>
       ) : null}
 
-      <form action={formAction} className={styles.form}>
+      <form
+        action={formAction}
+        className={compactLayout ? `${styles.form} ${styles.formCompact}` : styles.form}
+        onSubmit={handleFormSubmit}
+      >
         <input type="hidden" name="buildingId" value={buildingId} />
         <input type="hidden" name="debtCaseId" value={record.debtCaseId} />
         <input type="hidden" name="revision" value={revision} />

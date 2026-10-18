@@ -1,0 +1,280 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  max-width: 52rem;
+}
+
+.caseHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-3;
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+}
+
+.caseHeaderTitle {
+  margin: 0 0 $space-2;
+  font-size: $font-size-lg;
+  font-weight: 700;
+  line-height: $line-height-tight;
+}
+
+.caseHeaderBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin-bottom: $space-2;
+}
+
+.caseHeaderMeta {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.caseHeaderActions {
+  flex-shrink: 0;
+}
+
+.returnBannerCompact {
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  border: 1px solid $color-border-strong;
+  background: $color-warning-bg;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+}
+
+.inlineTabLink {
+  margin-inline-start: $space-2;
+  padding: 0;
+  border: none;
+  background: none;
+  color: $color-accent;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+}
+
+.tabsRoot {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.tabListScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 (-$space-1);
+  padding: 0 $space-1;
+}
+
+.tabList {
+  display: inline-flex;
+  min-width: min-content;
+  gap: $space-1;
+  padding: $space-1;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+}
+
+.tab,
+.tabActive {
+  flex-shrink: 0;
+  padding: $space-2 $space-3;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  font: inherit;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text-muted;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+}
+
+.tabActive {
+  background: $color-bg-surface;
+  color: $color-text;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+}
+
+.tabPanel {
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.tabPanelStack {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.tabPanelBody {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.tabPanelSection {
+  margin: 0;
+}
+
+.tabPanelLead {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.subsectionTitle {
+  margin: 0 0 $space-3;
+  font-size: $font-size-md;
+  font-weight: 700;
+}
+
+.nextAction {
+  margin: 0;
+  padding: $space-3;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+}
+
+.section {
+  padding: $space-5;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+}
+
+.sectionTitle {
+  margin: 0 0 $space-4;
+  font-size: $font-size-lg;
+  font-weight: 700;
+}
+
+.sectionHint {
+  margin: (-$space-2) 0 $space-4;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-3 $space-4;
+
+  @include md-down {
+    grid-template-columns: 1fr;
+  }
+
+  dt {
+    margin: 0 0 $space-1;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+    font-size: $font-size-sm;
+  }
+}
+
+.docTable {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: $font-size-sm;
+
+  th,
+  td {
+    padding: $space-2 $space-3;
+    border-bottom: 1px solid $color-border;
+    text-align: right;
+  }
+
+  th {
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+}
+
+.docActions {
+  margin-top: $space-2;
+}
+
+.lawyerHeaderBlock {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.lawyerReviewBar {
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-subtle;
+}
+
+.lawyerBlockers {
+  margin: 0;
+  padding-right: $space-4;
+  font-size: $font-size-sm;
+  color: $color-warning-text;
+}
+
+.compactDefinitionList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-3 $space-4;
+  margin: 0;
+
+  @include md-down {
+    grid-template-columns: 1fr;
+  }
+
+  dt {
+    margin: 0 0 $space-1;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+    font-size: $font-size-sm;
+  }
+}

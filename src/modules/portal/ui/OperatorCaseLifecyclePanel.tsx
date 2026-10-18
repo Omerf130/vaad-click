@@ -15,6 +15,7 @@ import styles from "@/modules/portal/ui/OperatorPortalDashboard.module.scss";
 
 type Props = {
   record: DebtCaseRecord;
+  embedded?: boolean;
 };
 
 function formatLetterDeliveryHe(status: string, letterSentAtIso: string | null): string {
@@ -33,15 +34,26 @@ function formatLetterDeliveryHe(status: string, letterSentAtIso: string | null):
   return OPERATOR_LETTER_DELIVERY_NOT_ACTIVE_HE;
 }
 
-export function OperatorCaseLifecyclePanel({ record }: Props) {
+export function OperatorCaseLifecyclePanel({ record, embedded = false }: Props) {
   const showLetterPrepNote =
     record.lawyerReviewStatus === DebtCaseLawyerReviewStatus.APPROVED_FOR_LETTER_PREP;
 
+  const Wrapper = embedded ? "div" : "section";
+  const wrapperClass = embedded ? styles.lifecycleEmbedded : styles.lifecyclePanel;
+  const titleClass = embedded ? styles.subsectionTitlePortal : styles.sectionTitle;
+
   return (
-    <section className={styles.lifecyclePanel} aria-labelledby="case-lifecycle-title">
-      <h2 id="case-lifecycle-title" className={styles.sectionTitle}>
-        מצב התיק
-      </h2>
+    <Wrapper
+      className={wrapperClass}
+      aria-labelledby={embedded ? undefined : "case-lifecycle-title"}
+    >
+      {embedded ? (
+        <h3 className={titleClass}>מצב התיק</h3>
+      ) : (
+        <h2 id="case-lifecycle-title" className={titleClass}>
+          מצב התיק
+        </h2>
+      )}
       <dl className={styles.lifecycleGrid}>
         <div>
           <dt>סטטוס תיק</dt>
@@ -84,6 +96,6 @@ export function OperatorCaseLifecyclePanel({ record }: Props) {
           </ul>
         </div>
       ) : null}
-    </section>
+    </Wrapper>
   );
 }

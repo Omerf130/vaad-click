@@ -1,0 +1,186 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.statusHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-3;
+  padding: $space-3 $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+}
+
+.statusTitle {
+  margin: 0 0 $space-2;
+  font-size: $font-size-md;
+  font-weight: 700;
+}
+
+.statusMeta {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.statusBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin-bottom: $space-2;
+}
+
+.statusWarning {
+  margin: 0;
+  padding: $space-2 $space-3;
+  border-radius: $radius-sm;
+  border: 1px solid $color-border;
+  background: $color-bg-surface;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+}
+
+.inlineLink {
+  margin-inline-start: $space-2;
+  padding: 0;
+  border: none;
+  background: none;
+  color: $color-accent;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+}
+
+.letterTabHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  margin-bottom: $space-3;
+}
+
+.letterTabMeta {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.linkRow {
+  margin: 0 0 $space-3;
+  font-size: $font-size-sm;
+
+  a {
+    color: $color-accent;
+    font-weight: 600;
+  }
+}
+
+.readinessRoot {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.readinessIntro {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.gateSummaryCompact {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $space-3;
+  margin: 0;
+
+  @include md-down {
+    grid-template-columns: 1fr;
+  }
+
+  dt {
+    margin: 0 0 $space-1;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.countRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.readinessGroup {
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  padding: $space-2 $space-3;
+  background: $color-bg-surface;
+}
+
+.readinessGroupSummary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: $font-size-sm;
+}
+
+.readinessItemList {
+  margin: $space-3 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.readinessItemHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+  font-size: $font-size-sm;
+}
+
+.readinessDetail {
+  margin: $space-2 0 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.managementStack {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.technicalDetails {
+  margin-top: $space-2;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}

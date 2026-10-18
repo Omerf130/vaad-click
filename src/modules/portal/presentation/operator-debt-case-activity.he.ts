@@ -4,6 +4,8 @@ export function formatOperatorDebtCaseActivityTitleHe(eventType: string): string
   switch (eventType) {
     case AuditEventType.DEBT_CASE_DRAFT_CREATED:
       return "נוצרה טיוטת תיק";
+    case AuditEventType.DEBT_CASE_DRAFT_UPDATED:
+      return "טיוטת התיק עודכנה";
     case AuditEventType.DEBT_CASE_SUBMITTED:
       return "התיק הוגש לבדיקת עורך דין";
     case AuditEventType.DEBT_CASE_RETURNED:

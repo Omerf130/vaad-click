@@ -58,6 +58,22 @@
   gap: $space-5;
 }
 
+.formCompact {
+  gap: $space-4;
+
+  .fieldGrid {
+    gap: $space-3;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .actions {
+    margin-top: $space-3;
+  }
+}
+
 .fieldGrid {
   display: grid;
   gap: $space-4;

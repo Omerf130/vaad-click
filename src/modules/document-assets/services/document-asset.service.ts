@@ -30,10 +30,15 @@ import {
   recordDocumentAssetUploadRejected,
 } from "@/modules/document-assets/services/document-asset-audit.service";
 import { assertLawyerAdminOrganization } from "@/modules/organizations/services/assert-lawyer-admin";
+import {
+  formatDocumentClassificationHe,
+} from "@/modules/document-assets/presentation/document-messages.he";
 import type {
   AdminDocumentAssetListItem,
   DocumentStorageUiState,
+  PortalDocumentAssetListItem,
 } from "@/modules/document-assets/presentation/document-asset-view.types";
+import { getDebtCase } from "@/modules/debt-cases/services/debt-case.service";
 import type { InitiateDocumentUploadInput } from "@/modules/document-assets/validation/document-asset.schema";
 import {
   assertCp7UploadClassification,
@@ -92,6 +97,78 @@ export async function listBuildingDocumentAssetsForLawyerAdmin(input: {
     .sort({ createdAt: -1 })
     .lean();
 
+  return rows.map((row) => ({
+    documentAssetId: row.documentAssetId,
+    classification: row.classification as DocumentClassification,
+    status: row.status as DocumentAssetStatus,
+    createdAtIso: row.createdAt.toISOString(),
+    byteSize: row.byteSize ?? null,
+  }));
+}
+
+function mapPortalDocumentListItem(row: {
+  classification: string;
+  status: string;
+  createdAt: Date;
+  originalFilename?: string | null;
+  byteSize?: number | null;
+}): PortalDocumentAssetListItem {
+  const classification = row.classification as DocumentClassification;
+  const filename = row.originalFilename?.trim();
+  return {
+    classification,
+    status: row.status as DocumentAssetStatus,
+    createdAtIso: row.createdAt.toISOString(),
+    displayName: filename || formatDocumentClassificationHe(classification),
+    byteSize: row.byteSize ?? null,
+  };
+}
+
+async function listDebtCaseDocumentRows(debtCaseId: string, buildingId: string) {
+  await connectMongo();
+  return DocumentAsset.find({
+    buildingId,
+    ownerEntityType: DocumentOwnerEntityType.DEBT_CASE,
+    ownerEntityId: debtCaseId,
+    deletedAt: null,
+    status: { $ne: DocumentAssetStatus.SOFT_DELETED },
+  })
+    .sort({ createdAt: -1 })
+    .lean();
+}
+
+export async function listDebtCaseDocumentAssetsForCasePortal(input: {
+  context: AuthenticatedContext;
+  debtCaseId: string;
+}): Promise<PortalDocumentAssetListItem[]> {
+  const record = await getDebtCase({ context: input.context, debtCaseId: input.debtCaseId });
+  const rows = await listDebtCaseDocumentRows(input.debtCaseId, record.buildingId);
+  const visible: PortalDocumentAssetListItem[] = [];
+
+  for (const row of rows) {
+    try {
+      await authorizeDocumentAssetAccess({
+        context: input.context,
+        document: row,
+        intent: DocumentAssetAccessIntent.LIST,
+      });
+      visible.push(mapPortalDocumentListItem(row));
+    } catch {
+      // Document exists but is not visible to this operator — do not leak metadata.
+    }
+  }
+
+  return visible;
+}
+
+export async function listDebtCaseDocumentAssetsForLawyerAdmin(input: {
+  context: AuthenticatedContext;
+  debtCaseId: string;
+  buildingId: string;
+}): Promise<AdminDocumentAssetListItem[]> {
+  assertLawyerAdminOrganization(input.context);
+  await requireActiveBuilding(input.buildingId);
+  const rows = await listDebtCaseDocumentRows(input.debtCaseId, input.buildingId);
   return rows.map((row) => ({
     documentAssetId: row.documentAssetId,
     classification: row.classification as DocumentClassification,

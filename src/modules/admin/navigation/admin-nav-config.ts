@@ -35,6 +35,12 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
     status: "implemented",
   },
   {
+    id: "warning_letter_templates",
+    labelHe: "תבניות מכתב",
+    href: "/app/admin/warning-letter-templates",
+    status: "implemented",
+  },
+  {
     id: "lawyer_approvals",
     labelHe: "אישורי עורך דין",
     href: null,
@@ -97,6 +103,9 @@ export function isAdminNavItemActive(pathname: string, item: AdminNavItem): bool
   }
   if (item.href === "/app/admin/debt-cases") {
     return pathname === "/app/admin/debt-cases" || pathname.startsWith("/app/admin/debt-cases/");
+  }
+  if (item.href === "/app/admin/warning-letter-templates") {
+    return pathname.startsWith("/app/admin/warning-letter-templates");
   }
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }

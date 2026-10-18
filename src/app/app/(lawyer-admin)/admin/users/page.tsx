@@ -39,6 +39,10 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
     <AdminPageFrame
       title="משתמשים"
       subtitle="ניהול חשבונות שנרשמו בהרשמה הציבורית (נציג בניין וחברת ניהול). אישור מאפשר התחברות בלבד — שיוך לבניין מתבצע בנפרד."
+      breadcrumbs={[
+        { label: "סקירה", href: "/app/admin" },
+        { label: "משתמשים" },
+      ]}
     >
       <AdminUsersViewTabs
         activeView={params.view}

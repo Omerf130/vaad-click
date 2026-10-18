@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { ButtonLink } from "@/components/ui/Button/ButtonLink";
 import { createDebtCaseDraftFormAction } from "@/modules/debt-cases/actions/portal-debt-case.actions";
 import { BuildingDebtCasesCreateButton } from "@/modules/debt-cases/ui/BuildingDebtCasesCreateButton";
@@ -7,6 +5,8 @@ import { getPortalPlatformModules } from "@/modules/portal/presentation/portal-p
 import type { BuildingRepPortalDashboard as BuildingRepDashboardData } from "@/modules/portal/services/operator-portal-dashboard.service";
 import { OperatorDashboardActionItems } from "@/modules/portal/ui/OperatorDashboardActionItems";
 import { OperatorDashboardMetrics } from "@/modules/portal/ui/OperatorDashboardMetrics";
+import { OperatorDashboardWaitingList } from "@/modules/portal/ui/OperatorDashboardWaitingList";
+import { OperatorRecentActivityList } from "@/modules/portal/ui/OperatorRecentActivityList";
 import { PortalPlatformModulesGrid } from "@/modules/portal/ui/PortalPlatformModulesGrid";
 import { UserRole } from "@/modules/users/domain/user-role";
 import styles from "@/modules/portal/ui/OperatorPortalDashboard.module.scss";
@@ -17,7 +17,7 @@ type Props = {
 };
 
 export function BuildingRepPortalDashboard({ userFullName, data }: Props) {
-  const { building, metrics, actionItems } = data;
+  const { building, metrics, actionItems, waitingForLawyerItems, recentActivity } = data;
   const addressLine = [building.displayName, building.city].filter(Boolean).join(" · ");
   const modules = getPortalPlatformModules({
     role: UserRole.BUILDING_REP,
@@ -36,9 +36,26 @@ export function BuildingRepPortalDashboard({ userFullName, data }: Props) {
 
       <section className={styles.section} aria-labelledby="action-required-title">
         <h2 id="action-required-title" className={styles.sectionTitle}>
-          דורש טיפול
+          דורש את פעולתכם
         </h2>
+        <p className={styles.sectionHint}>
+          טיוטות והתיקים שהוחזרו מהעורך דין — יש להשלים ולהגיש מחדש.
+        </p>
         <OperatorDashboardActionItems items={actionItems} />
+      </section>
+
+      <section className={styles.section} aria-labelledby="waiting-lawyer-title">
+        <h2 id="waiting-lawyer-title" className={styles.sectionTitle}>
+          ממתין לבדיקת עורך דין
+        </h2>
+        <OperatorDashboardWaitingList items={waitingForLawyerItems} />
+      </section>
+
+      <section className={styles.section} aria-labelledby="recent-activity-title">
+        <h2 id="recent-activity-title" className={styles.sectionTitle}>
+          פעילות אחרונה
+        </h2>
+        <OperatorRecentActivityList items={recentActivity} />
       </section>
 
       <section className={styles.section} aria-labelledby="quick-actions-title">
@@ -51,10 +68,7 @@ export function BuildingRepPortalDashboard({ userFullName, data }: Props) {
             action={createDebtCaseDraftFormAction}
           />
           <ButtonLink href={`/app/buildings/${building.buildingId}`} variant="secondary">
-            כל תיקי החוב
-          </ButtonLink>
-          <ButtonLink href={`/app/buildings/${building.buildingId}`} variant="secondary">
-            פרטי בניין
+            תיקי החוב והבניין
           </ButtonLink>
         </div>
       </section>
@@ -64,9 +78,6 @@ export function BuildingRepPortalDashboard({ userFullName, data }: Props) {
           מודולי המערכת
         </h2>
         <PortalPlatformModulesGrid modules={modules} />
-        <p className={styles.heroMeta}>
-          <Link href="/app/buildings">כל הבניינים הנגישים</Link>
-        </p>
       </section>
     </div>
   );

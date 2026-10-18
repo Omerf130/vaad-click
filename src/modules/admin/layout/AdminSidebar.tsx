@@ -9,16 +9,24 @@ import {
 } from "@/modules/admin/navigation/admin-nav-config";
 import styles from "@/modules/admin/layout/AdminShell.module.scss";
 
-export function AdminSidebar() {
+type Props = {
+  expanded?: boolean;
+  onNavigate?: () => void;
+};
+
+export function AdminSidebar({ expanded = true, onNavigate }: Props) {
   const pathname = usePathname();
+  const sidebarClass = [styles.sidebar, expanded ? "" : styles.sidebarCollapsed]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <aside className={styles.sidebar} aria-label="ניווט מנהל משרד">
+    <aside className={sidebarClass} aria-label="ניווט מנהל משרד">
       <div className={styles.brandBlock}>
         <p className={styles.brandTitle}>ועד בקליק</p>
         <p className={styles.brandSubtitle}>ניהול משרד</p>
       </div>
-      <nav>
+      <nav id="admin-sidebar-nav">
         <ul className={styles.navList}>
           {ADMIN_NAV_ITEMS.map((item) => {
             const active = isAdminNavItemActive(pathname, item);
@@ -29,6 +37,7 @@ export function AdminSidebar() {
                     href={item.href}
                     className={active ? styles.navLinkActive : styles.navLink}
                     aria-current={active ? "page" : undefined}
+                    onClick={onNavigate}
                   >
                     {item.labelHe}
                   </Link>

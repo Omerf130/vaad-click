@@ -198,3 +198,284 @@
   margin: 0;
   color: $color-text-muted;
 }
+
+.sectionHint {
+  margin: (-$space-2) 0 $space-4;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.actionItemWaiting {
+  @extend .actionItem;
+  border-style: dashed;
+  background: $color-bg-subtle;
+}
+
+.waitingHint {
+  margin: $space-2 0 0;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.activityList {
+  @extend .actionList;
+}
+
+.activityItem {
+  @extend .actionItem;
+  align-items: flex-start;
+}
+
+.activityMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.activityTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.activityMeta {
+  margin: $space-1 0 0;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.activityDetail {
+  margin: $space-2 0 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  white-space: pre-wrap;
+}
+
+.buildingExplorer {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.buildingExplorerControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-4;
+  align-items: flex-end;
+}
+
+.searchLabel {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  min-width: 12rem;
+}
+
+.searchInput,
+.sortSelect {
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  background: $color-bg-surface;
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 1px;
+  }
+}
+
+.quickCreateSection {
+  @extend .section;
+}
+
+.quickCreateForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-4;
+  align-items: flex-end;
+}
+
+.feedbackError {
+  flex: 1 1 100%;
+  margin: 0;
+  color: $color-error-text;
+  font-size: $font-size-sm;
+}
+
+.lifecyclePanel {
+  @extend .section;
+}
+
+.lifecycleGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-4;
+  margin: 0;
+
+  @include md-down {
+    grid-template-columns: 1fr;
+  }
+
+  dt {
+    margin: 0 0 $space-1;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+    font-size: $font-size-sm;
+  }
+}
+
+.infoBanner {
+  margin: $space-4 0 0;
+  padding: $space-3;
+  border-radius: $radius-md;
+  background: $color-info-bg;
+  color: $color-info-text;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+}
+
+.warningBanner {
+  margin: $space-4 0 0;
+  padding: $space-3;
+  border-radius: $radius-md;
+  background: $color-warning-bg;
+  color: $color-warning-text;
+  font-size: $font-size-sm;
+}
+
+.validationFlagsBox {
+  margin-top: $space-4;
+  padding: $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+
+  ul {
+    margin: $space-2 0 0;
+    padding-right: $space-4;
+    font-size: $font-size-sm;
+  }
+}
+
+.label {
+  margin: 0;
+  font-weight: 600;
+  font-size: $font-size-sm;
+}
+
+.feedbackCallout {
+  margin-bottom: $space-4;
+  padding: $space-4;
+  border-radius: $radius-md;
+  border: 1px solid $color-border-strong;
+  background: $color-warning-bg;
+}
+
+.feedbackCalloutTitle {
+  margin: 0 0 $space-2;
+  font-weight: 700;
+  font-size: $font-size-sm;
+}
+
+.caseDetailLayout {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+  max-width: 48rem;
+}
+
+.buildingDetailLayout {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+  max-width: 56rem;
+}
+
+.buildingList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.addBuildingSection {
+  @extend .section;
+}
+
+.addBuildingHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-4;
+  margin-bottom: $space-4;
+
+  .sectionTitle {
+    margin-bottom: $space-2;
+  }
+
+  .sectionHint {
+    margin: 0;
+  }
+}
+
+.addBuildingForm {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.addBuildingFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-4;
+
+  @include md-down {
+    grid-template-columns: 1fr;
+  }
+}
+
+.feedbackSuccess {
+  margin: 0;
+  padding: $space-3;
+  border-radius: $radius-md;
+  background: $color-success-bg;
+  color: $color-success-text;
+  font-size: $font-size-sm;
+}
+
+.verificationBadge {
+  margin: 0 0 $space-3;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  color: $color-warning-text;
+}
+
+.buildingListLink {
+  display: block;
+  padding: $space-3 $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-surface;
+  text-decoration: none;
+  font-weight: 600;
+  color: $color-accent;
+
+  &:hover {
+    border-color: $color-accent;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+}

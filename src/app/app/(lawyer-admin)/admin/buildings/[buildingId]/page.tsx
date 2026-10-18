@@ -59,6 +59,11 @@ export default async function AdminBuildingDetailPage({ params }: PageProps) {
     <AdminPageFrame
       title={building.displayName}
       subtitle={building.buildingId}
+      breadcrumbs={[
+        { label: "סקירה", href: "/app/admin" },
+        { label: "בניינים", href: "/app/admin/buildings" },
+        { label: building.displayName },
+      ]}
       toolbar={<Link href="/app/admin/buildings">חזרה לרשימה</Link>}
     >
       <BuildingDetailPanels

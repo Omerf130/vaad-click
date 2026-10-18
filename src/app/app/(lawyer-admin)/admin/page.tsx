@@ -7,6 +7,11 @@ import {
   getAdminDashboardStats,
   listPendingRegistrationPreviews,
 } from "@/modules/admin/dashboard/admin-dashboard-stats.service";
+import { loadAdminDashboardRecentActivity } from "@/modules/admin/services/admin-activity.service";
+import {
+  getAdminOperationalCounts,
+  listAdminAttentionItems,
+} from "@/modules/admin/services/admin-dashboard-queues.service";
 import { SessionAuthStage } from "@/modules/auth/domain/session-types";
 import {
   getCurrentFinancialSettingsDraft,
@@ -20,13 +25,17 @@ export default async function LawyerAdminDashboardPage() {
   const context = await requireLawyerAdminPortal();
   const asOf = new Date();
 
-  const [stats, pendingPreview, published, draft, applicable] = await Promise.all([
-    getAdminDashboardStats(context),
-    listPendingRegistrationPreviews(context),
-    getPublishedFinancialSettingsHistory({ context }),
-    getCurrentFinancialSettingsDraft({ context }),
-    resolveApplicableFinancialSettingsVersion({ context, asOf }),
-  ]);
+  const [stats, operational, attentionItems, recentActivity, pendingPreview, published, draft, applicable] =
+    await Promise.all([
+      getAdminDashboardStats(context),
+      getAdminOperationalCounts(context),
+      listAdminAttentionItems(context),
+      loadAdminDashboardRecentActivity({ context }),
+      listPendingRegistrationPreviews(context),
+      getPublishedFinancialSettingsHistory({ context }),
+      getCurrentFinancialSettingsDraft({ context }),
+      resolveApplicableFinancialSettingsVersion({ context, asOf }),
+    ]);
 
   const productionBlocked =
     isProduction() && context.session.authStage !== SessionAuthStage.MFA_COMPLETE;
@@ -38,6 +47,9 @@ export default async function LawyerAdminDashboardPage() {
     >
       <AdminDashboardOverview
         stats={stats}
+        operational={operational}
+        attentionItems={attentionItems}
+        recentActivity={recentActivity}
         pendingPreview={pendingPreview}
         productionBlocked={productionBlocked}
         financial={{

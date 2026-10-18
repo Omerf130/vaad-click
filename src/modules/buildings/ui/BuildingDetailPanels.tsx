@@ -13,7 +13,10 @@ import {
   updateBuildingFormAction,
   type AdminBuildingActionState,
 } from "@/modules/buildings/actions/admin-building.actions";
-import { formatBuildingOrganizationalStatusHe } from "@/modules/buildings/presentation/building-labels.he";
+import {
+  formatBuildingOrganizationalStatusHe,
+  formatLawyerVerificationStatusHe,
+} from "@/modules/buildings/presentation/building-labels.he";
 import type { AdminBuildingDetail } from "@/modules/buildings/services/admin-building-query.service";
 import type { EligibleRepresentativeOption } from "@/modules/buildings/services/admin-building-query.service";
 import { BuildingCommitteeEngagementPanel } from "@/modules/committee-engagements/ui/BuildingCommitteeEngagementPanel";
@@ -75,7 +78,8 @@ export function BuildingDetailPanels({
       <section className={styles.detailCard}>
         <h2 className={styles.workspaceTitle}>פרטי בניין</h2>
         <p className={styles.metaLine}>
-          סטטוס: {formatBuildingOrganizationalStatusHe(building.organizationalStatus)}
+          סטטוס: {formatBuildingOrganizationalStatusHe(building.organizationalStatus)} · אימות:{" "}
+          {formatLawyerVerificationStatusHe(building.lawyerVerificationStatus)}
         </p>
         <form action={updateAction} className={styles.filters}>
           <input type="hidden" name="buildingId" value={building.buildingId} />

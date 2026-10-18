@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { Container } from "@/components/ui";
-import { Card } from "@/components/ui/Card/Card";
+
 import { UserRole } from "@/modules/users/domain/user-role";
 import {
   hasOperationalBuildingScope,
@@ -8,7 +7,9 @@ import {
   resolveBuildingAccessScope,
 } from "@/shared/auth/building-access";
 import { requireOperationalPortalAccess } from "@/shared/auth/require-access";
-import styles from "../../portal.module.scss";
+import { OPERATOR_PORTAL_ROUTES } from "@/modules/portal/presentation/operator-portal-nav";
+import { OperatorPortalPageFrame } from "@/modules/portal/ui/OperatorPortalPageFrame";
+import styles from "@/modules/portal/ui/OperatorPortalDashboard.module.scss";
 
 export default async function PortalBuildingsPage() {
   const context = await requireOperationalPortalAccess();
@@ -23,27 +24,27 @@ export default async function PortalBuildingsPage() {
   }
 
   return (
-    <Container>
-      <Card className={styles.card}>
-        <h1 className={styles.title}>בניינים נגישים</h1>
-        <p className={styles.body}>{intro}</p>
-        {buildings.length === 0 ? (
-          <p className={styles.meta}>אין בניינים להצגה.</p>
-        ) : (
-          <ul className={styles.linkRow}>
-            {buildings.map((building) => (
-              <li key={building.buildingId}>
-                <Link href={`/app/buildings/${building.buildingId}`}>
-                  {building.displayName}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className={styles.linkRow}>
-          <Link href="/app">חזרה לאזור המחובר</Link>
-        </p>
-      </Card>
-    </Container>
+    <OperatorPortalPageFrame
+      title="בניינים נגישים"
+      subtitle={intro}
+      breadcrumbs={[
+        { label: "לוח בקרה", href: OPERATOR_PORTAL_ROUTES.home },
+        { label: "בניינים" },
+      ]}
+    >
+      {buildings.length === 0 ? (
+        <p className={styles.emptyState}>אין בניינים להצגה.</p>
+      ) : (
+        <ul className={styles.buildingList}>
+          {buildings.map((building) => (
+            <li key={building.buildingId}>
+              <Link href={`/app/buildings/${building.buildingId}`} className={styles.buildingListLink}>
+                {building.displayName}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </OperatorPortalPageFrame>
   );
 }

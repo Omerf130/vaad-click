@@ -15,6 +15,7 @@ describe("admin navigation configuration", () => {
       "management_companies",
       "users",
       "debt_cases",
+      "warning_letter_templates",
       "settings",
     ]);
   });

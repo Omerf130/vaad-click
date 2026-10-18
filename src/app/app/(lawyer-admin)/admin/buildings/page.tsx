@@ -4,7 +4,11 @@ import { ButtonLink } from "@/components/ui/Button/ButtonLink";
 import { AdminEmptyState } from "@/modules/admin/components/AdminEmptyState";
 import { AdminPageFrame } from "@/modules/admin/components/AdminPageFrame";
 import { BuildingOrganizationalStatus } from "@/modules/buildings/domain/building-status";
-import { formatBuildingOrganizationalStatusHe } from "@/modules/buildings/presentation/building-labels.he";
+import {
+  formatBuildingOrganizationalStatusHe,
+  formatLawyerVerificationStatusHe,
+} from "@/modules/buildings/presentation/building-labels.he";
+import { adminBuildingVerificationFilter } from "@/modules/buildings/validation/admin-building-list.schema";
 import { listAdminBuildings } from "@/modules/buildings/services/admin-building-query.service";
 import { buildAdminBuildingsListHref } from "@/modules/buildings/ui/admin-buildings-list-url";
 import { parseAdminBuildingListSearchParams } from "@/modules/buildings/validation/admin-building-list.schema";
@@ -31,6 +35,10 @@ export default async function AdminBuildingsPage({ searchParams }: PageProps) {
     <AdminPageFrame
       title="בניינים"
       subtitle="יצירה, עריכה ושיוך נציגות וחברות ניהול — לפי כללי CP6."
+      breadcrumbs={[
+        { label: "סקירה", href: "/app/admin" },
+        { label: "בניינים" },
+      ]}
       toolbar={
         <ButtonLink href="/app/admin/buildings/new" variant="primary" size="sm">
           בניין חדש
@@ -44,11 +52,24 @@ export default async function AdminBuildingsPage({ searchParams }: PageProps) {
           <input id="q" name="q" className={styles.input} type="search" defaultValue={params.q ?? ""} placeholder="שם או כתובת" />
         </div>
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="status">סטטוס</label>
+          <label className={styles.label} htmlFor="status">סטטוס ארגוני</label>
           <select id="status" name="status" className={styles.select} defaultValue={params.status ?? ""}>
             <option value="">הכל</option>
             <option value={BuildingOrganizationalStatus.ACTIVE}>פעיל</option>
             <option value={BuildingOrganizationalStatus.ARCHIVED}>בארכיון</option>
+          </select>
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="verification">אימות משפטי</label>
+          <select
+            id="verification"
+            name="verification"
+            className={styles.select}
+            defaultValue={params.verification ?? adminBuildingVerificationFilter.ALL}
+          >
+            <option value={adminBuildingVerificationFilter.ALL}>הכל</option>
+            <option value={adminBuildingVerificationFilter.PENDING}>טרם אומת</option>
+            <option value={adminBuildingVerificationFilter.VERIFIED}>אומת</option>
           </select>
         </div>
         <div className={styles.field}>
@@ -71,6 +92,7 @@ export default async function AdminBuildingsPage({ searchParams }: PageProps) {
                   <th>שם</th>
                   <th>כתובת</th>
                   <th>סטטוס</th>
+                  <th>אימות</th>
                   <th>נציג</th>
                   <th>חברת ניהול</th>
                   <th />
@@ -82,6 +104,7 @@ export default async function AdminBuildingsPage({ searchParams }: PageProps) {
                     <td>{row.displayName}</td>
                     <td>{`${row.street} ${row.houseNumber}, ${row.city}`}</td>
                     <td>{formatBuildingOrganizationalStatusHe(row.organizationalStatus)}</td>
+                    <td>{formatLawyerVerificationStatusHe(row.lawyerVerificationStatus)}</td>
                     <td>{row.representativeName ?? "—"}</td>
                     <td>{row.managementCompanyName ?? "—"}</td>
                     <td>

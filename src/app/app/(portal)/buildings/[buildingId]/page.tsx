@@ -1,13 +1,11 @@
-import Link from "next/link";
-
-import { Container } from "@/components/ui";
-import { Card } from "@/components/ui/Card/Card";
 import { listDebtCasesForBuilding } from "@/modules/debt-cases/services/debt-case.service";
 import { BuildingDebtCasesPanel } from "@/modules/debt-cases/ui/BuildingDebtCasesPanel";
+import { OPERATOR_PORTAL_ROUTES } from "@/modules/portal/presentation/operator-portal-nav";
+import { OperatorPortalPageFrame } from "@/modules/portal/ui/OperatorPortalPageFrame";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { requireBuildingPortalAccess } from "@/shared/auth/require-building-access";
-import styles from "../../../portal.module.scss";
 import debtStyles from "@/modules/debt-cases/ui/DebtCases.module.scss";
+import styles from "@/modules/portal/ui/OperatorPortalDashboard.module.scss";
 
 type PageProps = {
   params: Promise<{ buildingId: string }>;
@@ -25,26 +23,27 @@ export default async function PortalBuildingDetailPage({ params }: PageProps) {
     ? await listDebtCasesForBuilding({ context, buildingId })
     : [];
 
-  return (
-    <Container>
-      <Card className={styles.card} style={{ maxWidth: isOperator ? "56rem" : undefined }}>
-        <h1 className={styles.title}>{building.displayName}</h1>
-        <p className={styles.meta}>מזהה בניין: {building.buildingId}</p>
-        <p className={styles.body}>
-          {isOperator
-            ? "ניהול תיקי חוב לבניין — שמירת טיוטות והגשה לבדיקת עורך דין (לא שליחת מכתב)."
-            : "תצוגת בניין."}
-        </p>
-        <p className={styles.linkRow}>
-          <Link href="/app/buildings">חזרה לרשימת הבניינים</Link>
-        </p>
+  const subtitle = isOperator
+    ? "ניהול תיקי חוב — שמירת טיוטות והגשה לבדיקת עורך דין (לא שליחת מכתב)."
+    : "תצוגת בניין.";
 
-        {isOperator ? (
-          <div className={debtStyles.section}>
-            <BuildingDebtCasesPanel buildingId={buildingId} cases={debtCases} />
-          </div>
-        ) : null}
-      </Card>
-    </Container>
+  return (
+    <OperatorPortalPageFrame
+      title={building.displayName}
+      subtitle={subtitle}
+      breadcrumbs={[
+        { label: "לוח בקרה", href: OPERATOR_PORTAL_ROUTES.home },
+        { label: "בניינים", href: OPERATOR_PORTAL_ROUTES.buildings },
+        { label: building.displayName },
+      ]}
+    >
+      {isOperator ? (
+        <div className={`${styles.buildingDetailLayout} ${debtStyles.section}`}>
+          <BuildingDebtCasesPanel buildingId={buildingId} cases={debtCases} />
+        </div>
+      ) : (
+        <p className={styles.sectionHint}>אין תוכן תפעולי לתפקיד זה.</p>
+      )}
+    </OperatorPortalPageFrame>
   );
 }

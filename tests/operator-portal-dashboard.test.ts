@@ -34,6 +34,12 @@ vi.mock("@/modules/buildings/infra/building.model", () => ({
   },
 }));
 
+const mockRecentActivity = vi.fn();
+
+vi.mock("@/modules/portal/services/operator-debt-case-activity.service", () => ({
+  loadOperatorRecentActivityForBuildings: (...args: unknown[]) => mockRecentActivity(...args),
+}));
+
 const BUILDING_A = "11111111-1111-4111-8111-111111111111";
 const BUILDING_B = "22222222-2222-4222-8222-222222222222";
 
@@ -50,6 +56,7 @@ const repContext: AuthenticatedContext = {
 describe("operator portal dashboard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRecentActivity.mockResolvedValue([]);
     mockListBuildings.mockResolvedValue([{ buildingId: BUILDING_A, displayName: "בניין א" }]);
     mockGetBuildingIds.mockResolvedValue([BUILDING_A]);
     mockAggregate.mockResolvedValue([
@@ -65,20 +72,28 @@ describe("operator portal dashboard", () => {
       select: vi.fn().mockReturnThis(),
       lean: vi.fn().mockResolvedValue([{ buildingId: BUILDING_A, address: { city: "תל אביב" } }]),
     });
-    mockFind.mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      sort: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      lean: vi.fn().mockResolvedValue([
-        {
-          debtCaseId: "case-1",
-          buildingId: BUILDING_A,
-          apartmentNumberDisplay: "3",
-          workflowStatus: DebtCaseWorkflowStatus.RETURNED_FOR_COMPLETION,
-          lawyerReviewStatus: DebtCaseLawyerReviewStatus.RETURNED,
-          updatedAt: new Date("2024-01-02"),
-        },
-      ]),
+    mockFind.mockImplementation((match: Record<string, unknown>) => {
+      const workflowStatus = match.workflowStatus as string | { $in?: string[] } | undefined;
+      const isWaiting =
+        workflowStatus === DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW;
+      const rows = isWaiting
+        ? []
+        : [
+            {
+              debtCaseId: "case-1",
+              buildingId: BUILDING_A,
+              apartmentNumberDisplay: "3",
+              workflowStatus: DebtCaseWorkflowStatus.RETURNED_FOR_COMPLETION,
+              lawyerReviewStatus: DebtCaseLawyerReviewStatus.RETURNED,
+              updatedAt: new Date("2024-01-02"),
+            },
+          ];
+      return {
+        select: vi.fn().mockReturnThis(),
+        sort: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        lean: vi.fn().mockResolvedValue(rows),
+      };
     });
   });
 
@@ -92,6 +107,8 @@ describe("operator portal dashboard", () => {
       expect(dashboard.building.buildingId).toBe(BUILDING_A);
       expect(dashboard.metrics.totalDebtCases).toBe(4);
       expect(dashboard.actionItems).toHaveLength(1);
+      expect(dashboard.waitingForLawyerItems).toEqual([]);
+      expect(dashboard.recentActivity).toEqual([]);
     }
   });
 

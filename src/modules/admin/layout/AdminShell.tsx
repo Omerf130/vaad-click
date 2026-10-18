@@ -1,8 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
+import { AdminNavToggle } from "@/modules/admin/layout/AdminNavToggle";
 import { AdminSidebar } from "@/modules/admin/layout/AdminSidebar";
 import { AdminTopBar } from "@/modules/admin/layout/AdminTopBar";
 import { resolveAdminTopBarTitle } from "@/modules/admin/layout/admin-page-titles";
@@ -17,14 +18,22 @@ export type AdminShellProps = {
 export function AdminShell({ userFullName, userEmail, children }: AdminShellProps) {
   const pathname = usePathname();
   const pageTitle = resolveAdminTopBarTitle(pathname);
+  const [navExpanded, setNavExpanded] = useState(false);
 
   return (
     <div className={styles.shell}>
       <div className={styles.mainColumn}>
-        <AdminTopBar pageTitle={pageTitle} userFullName={userFullName} userEmail={userEmail} />
+        <AdminTopBar
+          pageTitle={pageTitle}
+          userFullName={userFullName}
+          userEmail={userEmail}
+          navToggle={
+            <AdminNavToggle expanded={navExpanded} onToggle={() => setNavExpanded((open) => !open)} />
+          }
+        />
         <main className={styles.workspace}>{children}</main>
       </div>
-      <AdminSidebar />
+      <AdminSidebar expanded={navExpanded} onNavigate={() => setNavExpanded(false)} />
     </div>
   );
 }

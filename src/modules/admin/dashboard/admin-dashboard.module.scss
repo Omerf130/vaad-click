@@ -180,3 +180,71 @@
   margin: 0;
   font-size: $font-size-sm;
 }
+
+.attentionList {
+  @extend .pendingList;
+}
+
+.attentionItem {
+  @extend .pendingItem;
+}
+
+.activityList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.activityItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-3;
+  padding: $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.activityMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.activityTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: $font-size-sm;
+}
+
+.activityMeta {
+  margin: $space-1 0 0;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.activityDetail {
+  margin: $space-2 0 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  white-space: pre-wrap;
+}
+
+.activityLink {
+  font-size: $font-size-sm;
+  color: $color-accent;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.emptyActivity {
+  margin: 0;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+}

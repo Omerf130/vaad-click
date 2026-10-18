@@ -10,6 +10,9 @@ export function buildAdminBuildingsListHref(
   if (params.status) {
     search.set("status", params.status);
   }
+  if (params.verification) {
+    search.set("verification", params.verification);
+  }
   if (params.page && params.page > 1) {
     search.set("page", String(params.page));
   }

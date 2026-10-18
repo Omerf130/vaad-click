@@ -1,6 +1,10 @@
 import "server-only";
 
-import { BuildingOrganizationalStatus } from "@/modules/buildings/domain/building-status";
+import {
+  BuildingOrganizationalStatus,
+  LawyerVerificationStatus,
+} from "@/modules/buildings/domain/building-status";
+import { adminBuildingVerificationFilter } from "@/modules/buildings/validation/admin-building-list.schema";
 import { Building } from "@/modules/buildings/infra/building.model";
 import { ManagementCompanyStatus } from "@/modules/management-companies/domain/management-company-status";
 import { ManagementCompany } from "@/modules/management-companies/infra/management-company.model";
@@ -30,6 +34,11 @@ function buildFilter(params: AdminBuildingListParams): Record<string, unknown> {
       { "address.houseNumber": { $regex: pattern, $options: "i" } },
     ];
   }
+  if (params.verification === adminBuildingVerificationFilter.PENDING) {
+    filter.lawyerVerificationStatus = { $ne: LawyerVerificationStatus.VERIFIED };
+  } else if (params.verification === adminBuildingVerificationFilter.VERIFIED) {
+    filter.lawyerVerificationStatus = LawyerVerificationStatus.VERIFIED;
+  }
   return filter;
 }
 
@@ -40,6 +49,7 @@ export type AdminBuildingListItem = {
   street: string;
   houseNumber: string;
   organizationalStatus: string;
+  lawyerVerificationStatus: string;
   representativeName: string | null;
   managementCompanyName: string | null;
 };
@@ -75,6 +85,7 @@ export async function listAdminBuildings(input: {
       street: row.address.street,
       houseNumber: row.address.houseNumber,
       organizationalStatus: row.organizationalStatus,
+      lawyerVerificationStatus: row.lawyerVerificationStatus,
       representativeName: rep?.fullName ?? null,
       managementCompanyName: company?.displayName ?? null,
     };
@@ -99,6 +110,7 @@ export type AdminBuildingDetail = {
     postalCode?: string | null;
   };
   organizationalStatus: string;
+  lawyerVerificationStatus: string;
   unitCount: number | null;
   averageMonthlyVaadFeeMinor: number | null;
   representative: { id: string; fullName: string; email: string } | null;
@@ -149,6 +161,7 @@ export async function getAdminBuildingDetail(input: {
     displayName: row.displayName,
     address: row.address,
     organizationalStatus: row.organizationalStatus,
+    lawyerVerificationStatus: row.lawyerVerificationStatus,
     unitCount: row.unitCount ?? null,
     averageMonthlyVaadFeeMinor: row.averageMonthlyVaadFeeMinor ?? null,
     representative,

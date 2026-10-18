@@ -19,6 +19,16 @@ export const createBuildingInputSchema = z.object({
 
 export type CreateBuildingInput = z.infer<typeof createBuildingInputSchema>;
 
+/** Management company portal — name and address only; no duplicate-exception bypass. */
+export const managementCompanyCreateBuildingInputSchema = z.object({
+  displayName: z.string().trim().min(1, "יש להזין שם בניין").max(200),
+  address: buildingAddressSchema,
+});
+
+export type ManagementCompanyCreateBuildingInput = z.infer<
+  typeof managementCompanyCreateBuildingInputSchema
+>;
+
 export const updateBuildingInputSchema = z.object({
   buildingId: z.string().trim().uuid(),
   displayName: z.string().trim().min(1).max(200),

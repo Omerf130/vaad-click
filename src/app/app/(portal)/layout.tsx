@@ -1,21 +1,37 @@
 import { Container } from "@/components/ui";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { BackToPublicHomeLink } from "@/components/navigation/BackToPublicHomeLink";
+import { AccountStatus } from "@/modules/users/domain/account-status";
+import { UserRole } from "@/modules/users/domain/user-role";
+import { PortalOperatorNav } from "@/modules/portal/ui/PortalOperatorNav";
 import { requireAuthenticatedPortalSession } from "@/shared/auth/require-access";
+import { getAccessibleBuildingPublicIds } from "@/shared/auth/building-access";
 import styles from "../app-shell.module.scss";
 
 export default async function PortalAppLayout({ children }: { children: React.ReactNode }) {
-  await requireAuthenticatedPortalSession();
+  const context = await requireAuthenticatedPortalSession();
+
+  let primaryBuildingId: string | null = null;
+  if (
+    context.user.role === UserRole.BUILDING_REP &&
+    context.user.accountStatus === AccountStatus.ACTIVE
+  ) {
+    const buildingIds = await getAccessibleBuildingPublicIds(context);
+    primaryBuildingId = buildingIds[0] ?? null;
+  }
 
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
         <Container className={styles.headerInner}>
-          <span className={styles.brand}>ועד בקליק — אזור מחובר</span>
+          <span className={styles.brand}>ועד בקליק — אזור מפעילים</span>
           <div className={styles.headerActions}>
             <BackToPublicHomeLink />
             <LogoutButton />
           </div>
+        </Container>
+        <Container>
+          <PortalOperatorNav primaryBuildingId={primaryBuildingId} />
         </Container>
       </header>
       <main className={styles.main}>{children}</main>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui";
 import { Card } from "@/components/ui/Card/Card";
 import { BuildingRepPortalDashboard } from "@/modules/portal/ui/BuildingRepPortalDashboard";
+import { ManagementCompanyEmptyPortalDashboard } from "@/modules/portal/ui/ManagementCompanyEmptyPortalDashboard";
 import { ManagementCompanyPortalDashboard } from "@/modules/portal/ui/ManagementCompanyPortalDashboard";
 import { loadOperatorPortalDashboard } from "@/modules/portal/services/operator-portal-dashboard.service";
 import { UserRole } from "@/modules/users/domain/user-role";
@@ -50,6 +51,13 @@ export default async function AppPortalPage() {
   const dashboard = await loadOperatorPortalDashboard(context);
 
   if (dashboard.kind === "empty") {
+    if (user.role === UserRole.MANAGEMENT_COMPANY) {
+      return (
+        <Container>
+          <ManagementCompanyEmptyPortalDashboard userFullName={user.fullName} />
+        </Container>
+      );
+    }
     return (
       <Container>
         <Card className={styles.card}>

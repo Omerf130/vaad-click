@@ -5,10 +5,23 @@ import { normalizeAdminUserListQueryValue } from "@/modules/users/validation/adm
 
 export const ADMIN_BUILDING_LIST_PAGE_SIZE = 20;
 
+export const adminBuildingVerificationFilter = {
+  ALL: "all",
+  PENDING: "pending",
+  VERIFIED: "verified",
+} as const;
+
 export const adminBuildingListParamsSchema = z.object({
   q: z.string().trim().max(120).optional(),
   status: z
     .enum([BuildingOrganizationalStatus.ACTIVE, BuildingOrganizationalStatus.ARCHIVED])
+    .optional(),
+  verification: z
+    .enum([
+      adminBuildingVerificationFilter.ALL,
+      adminBuildingVerificationFilter.PENDING,
+      adminBuildingVerificationFilter.VERIFIED,
+    ])
     .optional(),
   page: z.coerce.number().int().min(1).default(1),
 });
@@ -29,6 +42,7 @@ export function parseAdminBuildingListSearchParams(
   return adminBuildingListParamsSchema.parse({
     q: single("q"),
     status: single("status"),
+    verification: single("verification"),
     page: single("page"),
   });
 }

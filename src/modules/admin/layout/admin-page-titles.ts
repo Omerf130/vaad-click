@@ -14,6 +14,12 @@ export function resolveAdminTopBarTitle(pathname: string): string {
   if (pathname.startsWith("/app/admin/settings")) {
     return "הגדרות";
   }
+  if (pathname.startsWith("/app/admin/debt-cases")) {
+    return "תיקי חוב";
+  }
+  if (pathname.startsWith("/app/admin/warning-letter-templates")) {
+    return "תבניות מכתב";
+  }
   if (pathname === "/app/admin") {
     return "סקירה כללית";
   }

@@ -29,10 +29,13 @@ import { WarningLetterLifecyclePanel } from "@/modules/warning-letters/ui/Warnin
 import { WarningLetterDraftLegalApprovalStatus } from "@/modules/warning-letters/domain/warning-letter-draft-legal-approval-status";
 import { WarningLetterDraftStatus } from "@/modules/warning-letters/domain/warning-letter-draft-status";
 import { WarningLetterPreviewUnavailable } from "@/modules/warning-letters/ui/WarningLetterPreviewUnavailable";
+import { AdminActivityTimeline } from "@/modules/admin/components/AdminActivityTimeline";
+import type { AdminActivityEntry } from "@/modules/admin/services/admin-activity.service";
 import styles from "@/modules/debt-cases/ui/lawyer/LawyerDebtCasesAdmin.module.scss";
 
 type Props = {
   bundle: LawyerDebtCaseDetailBundle;
+  caseActivity?: AdminActivityEntry[];
   warningLetterDraftDetail?: WarningLetterDraftDetailResult | null;
   warningLetterDraftErrorHe?: string | null;
   warningLetterApprovalBlockersHe?: string[];
@@ -69,6 +72,7 @@ export function LawyerDebtCaseReviewDetail({
   warningLetterLegalChecklist = null,
   warningLetterFinalDocument = null,
   warningLetterDeliveryRecords = [],
+  caseActivity = [],
 }: Props) {
   const { record, buildingDisplayName, buildingCity, legalReadiness, canPerformReviewActions } =
     bundle;
@@ -292,6 +296,13 @@ export function LawyerDebtCaseReviewDetail({
             </ul>
           </>
         ) : null}
+      </section>
+
+      <section className={styles.section} aria-labelledby="case-activity-title">
+        <h2 id="case-activity-title" className={styles.sectionTitle}>
+          היסטוריית פעילות
+        </h2>
+        <AdminActivityTimeline items={caseActivity} linkDebtCases={false} />
       </section>
 
       {canPerformReviewActions ? (

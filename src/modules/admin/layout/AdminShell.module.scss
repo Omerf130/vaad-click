@@ -154,7 +154,33 @@ $admin-sidebar-fixed-width: 280px;
   padding: $space-6;
 }
 
+.navToggle {
+  display: none;
+  margin-bottom: $space-2;
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+  font: inherit;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+}
+
 @include md-down {
+  .navToggle {
+    display: inline-flex;
+  }
+
+  .sidebarCollapsed .navList {
+    display: none;
+  }
+
   .shell {
     grid-template-columns: 1fr;
     grid-template-areas:

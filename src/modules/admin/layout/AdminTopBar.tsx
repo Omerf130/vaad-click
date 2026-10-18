@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { BackToPublicHomeLink } from "@/components/navigation/BackToPublicHomeLink";
 import styles from "@/modules/admin/layout/AdminShell.module.scss";
@@ -6,12 +8,14 @@ export type AdminTopBarProps = {
   pageTitle: string;
   userFullName: string;
   userEmail: string;
+  navToggle?: ReactNode;
 };
 
-export function AdminTopBar({ pageTitle, userFullName, userEmail }: AdminTopBarProps) {
+export function AdminTopBar({ pageTitle, userFullName, userEmail, navToggle }: AdminTopBarProps) {
   return (
     <header className={styles.topBar}>
       <div>
+        {navToggle}
         <h1 className={styles.topBarTitle}>{pageTitle}</h1>
         <p className={styles.topBarMeta}>
           {userFullName} · {userEmail}

@@ -12,6 +12,8 @@ import {
   listAccessibleBuildings,
 } from "@/shared/auth/building-access";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
+import type { OperatorDebtCaseActivityEntry } from "@/modules/portal/services/operator-debt-case-activity.service";
+import { loadOperatorRecentActivityForBuildings } from "@/modules/portal/services/operator-debt-case-activity.service";
 import { connectMongo } from "@/shared/db/connect";
 
 export type OperatorDebtCaseMetrics = {
@@ -35,6 +37,7 @@ export type OperatorDashboardBuilding = {
   buildingId: string;
   displayName: string;
   city: string;
+  lawyerVerificationStatus: string;
   metrics: OperatorDebtCaseMetrics;
 };
 
@@ -43,6 +46,8 @@ export type BuildingRepPortalDashboard = {
   building: OperatorDashboardBuilding;
   metrics: OperatorDebtCaseMetrics;
   actionItems: OperatorDashboardActionItem[];
+  waitingForLawyerItems: OperatorDashboardActionItem[];
+  recentActivity: OperatorDebtCaseActivityEntry[];
 };
 
 export type ManagementCompanyPortalDashboard = {
@@ -51,6 +56,8 @@ export type ManagementCompanyPortalDashboard = {
   aggregateMetrics: OperatorDebtCaseMetrics;
   buildings: OperatorDashboardBuilding[];
   actionItems: OperatorDashboardActionItem[];
+  waitingForLawyerItems: OperatorDashboardActionItem[];
+  recentActivity: OperatorDebtCaseActivityEntry[];
 };
 
 export type OperatorPortalDashboardEmpty = {
@@ -206,6 +213,42 @@ async function listActionRequiredDebtCases(input: {
   }));
 }
 
+async function listWaitingForLawyerDebtCases(input: {
+  context: AuthenticatedContext;
+  buildingIds: readonly string[];
+  buildingNames: Map<string, string>;
+  limit: number;
+}): Promise<OperatorDashboardActionItem[]> {
+  if (input.buildingIds.length === 0) {
+    return [];
+  }
+
+  await connectMongo();
+  const match = {
+    ...buildDebtCaseScopeFilter(input),
+    workflowStatus: DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW,
+    lawyerReviewStatus: DebtCaseLawyerReviewStatus.PENDING,
+  };
+
+  const rows = await DebtCase.find(match)
+    .select(
+      "debtCaseId buildingId apartmentNumberDisplay workflowStatus lawyerReviewStatus updatedAt",
+    )
+    .sort({ updatedAt: -1 })
+    .limit(input.limit)
+    .lean();
+
+  return rows.map((row) => ({
+    debtCaseId: row.debtCaseId,
+    buildingId: row.buildingId,
+    buildingDisplayName: input.buildingNames.get(row.buildingId) ?? "בניין",
+    apartmentNumberDisplay: row.apartmentNumberDisplay ?? "—",
+    workflowStatus: row.workflowStatus,
+    lawyerReviewStatus: row.lawyerReviewStatus,
+    updatedAtIso: row.updatedAt?.toISOString() ?? new Date(0).toISOString(),
+  }));
+}
+
 export async function loadOperatorPortalDashboard(
   context: AuthenticatedContext,
 ): Promise<OperatorPortalDashboard> {
@@ -222,16 +265,27 @@ export async function loadOperatorPortalDashboard(
     buildingId: row.buildingId,
     displayName: row.displayName,
     city: "",
+    lawyerVerificationStatus: "not_started",
     metrics: metricsByBuilding.get(row.buildingId) ?? { ...EMPTY_METRICS },
   }));
 
   await connectMongo();
   const addressRows = await Building.find({ buildingId: { $in: [...buildingIds] } })
-    .select("buildingId address.city")
+    .select("buildingId address.city lawyerVerificationStatus")
     .lean();
-  const cityById = new Map(addressRows.map((row) => [row.buildingId, row.address?.city ?? ""]));
+  const detailById = new Map(
+    addressRows.map((row) => [
+      row.buildingId,
+      {
+        city: row.address?.city ?? "",
+        lawyerVerificationStatus: row.lawyerVerificationStatus ?? "not_started",
+      },
+    ]),
+  );
   for (const building of buildings) {
-    building.city = cityById.get(building.buildingId) ?? "";
+    const detail = detailById.get(building.buildingId);
+    building.city = detail?.city ?? "";
+    building.lawyerVerificationStatus = detail?.lawyerVerificationStatus ?? "not_started";
   }
 
   const actionItems = await listActionRequiredDebtCases({
@@ -239,6 +293,16 @@ export async function loadOperatorPortalDashboard(
     buildingIds,
     buildingNames,
     limit: 15,
+  });
+  const waitingForLawyerItems = await listWaitingForLawyerDebtCases({
+    context,
+    buildingIds,
+    buildingNames,
+    limit: 15,
+  });
+  const recentActivity = await loadOperatorRecentActivityForBuildings({
+    context,
+    buildingIds,
   });
 
   if (context.user.role === UserRole.BUILDING_REP) {
@@ -251,6 +315,10 @@ export async function loadOperatorPortalDashboard(
       building,
       metrics: building.metrics,
       actionItems: actionItems.filter((item) => item.buildingId === building.buildingId),
+      waitingForLawyerItems: waitingForLawyerItems.filter(
+        (item) => item.buildingId === building.buildingId,
+      ),
+      recentActivity: recentActivity.filter((item) => item.buildingId === building.buildingId),
     };
   }
 
@@ -260,5 +328,7 @@ export async function loadOperatorPortalDashboard(
     aggregateMetrics: sumMetrics(buildings.map((b) => b.metrics)),
     buildings,
     actionItems,
+    waitingForLawyerItems,
+    recentActivity,
   };
 }

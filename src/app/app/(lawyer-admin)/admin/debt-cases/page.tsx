@@ -28,6 +28,10 @@ export default async function AdminDebtCasesReviewQueuePage({ searchParams }: Pa
     <AdminPageFrame
       title="תיקי חוב — בדיקת עורך דין"
       subtitle="תור בדיקה לכל הבניינים. ברירת המחדל מציגה תיקים שהוגשו וממתינים לבדיקה, לפי תאריך הגשה."
+      breadcrumbs={[
+        { label: "סקירה", href: "/app/admin" },
+        { label: "תיקי חוב" },
+      ]}
     >
       <LawyerDebtCaseQueueFilters params={params} buildings={buildings} />
 

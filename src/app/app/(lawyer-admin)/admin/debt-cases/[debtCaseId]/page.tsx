@@ -18,6 +18,7 @@ import {
 import { buildWarningLetterLegalReadinessChecklist } from "@/modules/warning-letters/services/warning-letter-legal-readiness-checklist.service";
 import { listWarningLetterDeliveryRecords } from "@/modules/warning-letters/services/warning-letter-delivery.service";
 import { loadWarningLetterFinalDocumentForCase } from "@/modules/warning-letters/services/warning-letter-finalization.service";
+import { loadAdminDebtCaseActivity } from "@/modules/admin/services/admin-activity.service";
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
 
 type PageProps = {
@@ -40,6 +41,7 @@ export default async function AdminDebtCaseReviewDetailPage({ params }: PageProp
   const { debtCaseId } = await params;
   const context = await requireLawyerAdminPortal();
   const bundle = await loadBundle(debtCaseId);
+  const caseActivity = await loadAdminDebtCaseActivity({ context, debtCaseId });
   const title = `בדיקת תיק · דירה ${bundle.record.apartmentNumberDisplay || "—"}`;
 
   let warningLetterDraftDetail: WarningLetterDraftDetailResult | null = null;
@@ -96,9 +98,18 @@ export default async function AdminDebtCaseReviewDetailPage({ params }: PageProp
   }
 
   return (
-    <AdminPageFrame title={title} subtitle={bundle.buildingDisplayName}>
+    <AdminPageFrame
+      title={title}
+      subtitle={bundle.buildingDisplayName}
+      breadcrumbs={[
+        { label: "סקירה", href: "/app/admin" },
+        { label: "תיקי חוב", href: "/app/admin/debt-cases" },
+        { label: "בדיקת תיק" },
+      ]}
+    >
       <LawyerDebtCaseReviewDetail
         bundle={bundle}
+        caseActivity={caseActivity}
         warningLetterDraftDetail={warningLetterDraftDetail}
         warningLetterDraftErrorHe={warningLetterDraftErrorHe}
         warningLetterApprovalBlockersHe={warningLetterApprovalBlockersHe}

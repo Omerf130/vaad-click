@@ -63,10 +63,9 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   },
   {
     id: "reports",
-    labelHe: "דוחות",
-    href: null,
-    status: "planned",
-    unavailableReasonHe: "יושק ב-checkpoint עתידי",
+    labelHe: "דוחות ונתונים",
+    href: "/app/admin/reports",
+    status: "implemented",
   },
   {
     id: "settings",
@@ -103,6 +102,9 @@ export function isAdminNavItemActive(pathname: string, item: AdminNavItem): bool
   }
   if (item.href === "/app/admin/debt-cases") {
     return pathname === "/app/admin/debt-cases" || pathname.startsWith("/app/admin/debt-cases/");
+  }
+  if (item.href === "/app/admin/reports") {
+    return pathname === "/app/admin/reports" || pathname.startsWith("/app/admin/reports/");
   }
   if (item.href === "/app/admin/warning-letter-templates") {
     return pathname.startsWith("/app/admin/warning-letter-templates");

@@ -1,6 +1,7 @@
 export const OPERATOR_PORTAL_ROUTES = {
   home: "/app",
   buildings: "/app/buildings",
+  reports: "/app/reports",
   accountStatus: "/app/account-status",
 } as const;
 
@@ -20,6 +21,11 @@ export function getOperatorNavItems(input: {
       href: OPERATOR_PORTAL_ROUTES.buildings,
       labelHe: "בניינים",
       activePrefix: "/app/buildings",
+    },
+    {
+      href: OPERATOR_PORTAL_ROUTES.reports,
+      labelHe: "דוחות ונתונים",
+      activePrefix: "/app/reports",
     },
   ];
 

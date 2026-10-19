@@ -1,0 +1,161 @@
+@use "../../../styles/tokens" as *;
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  align-items: flex-end;
+  padding: $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-surface;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 10rem;
+}
+
+.label {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.fieldHint {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  max-width: 22rem;
+  line-height: 1.4;
+}
+
+.select,
+.input {
+  font: inherit;
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: $space-3;
+}
+
+.metricCard {
+  padding: $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-surface;
+}
+
+.metricValue {
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: 600;
+}
+
+.metricLabel {
+  margin: $space-1 0 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.metricHint {
+  margin: $space-1 0 0;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.sectionNote {
+  margin: 0 0 $space-2;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.chartBlock {
+  padding: $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: minmax(6rem, 8rem) 1fr minmax(2rem, 3rem);
+  gap: $space-2;
+  align-items: center;
+  margin-bottom: $space-2;
+  font-size: $font-size-sm;
+}
+
+.barTrack {
+  height: 0.65rem;
+  background: $color-border;
+  opacity: 0.35;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: $color-primary;
+  border-radius: $radius-sm;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-sm;
+}
+
+.table th,
+.table td {
+  padding: $space-2 $space-3;
+  border-bottom: 1px solid $color-border;
+  text-align: start;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  align-items: center;
+  margin-top: $space-3;
+}
+
+.bannerInfo {
+  margin: 0;
+  padding: $space-3;
+  border-radius: $radius-md;
+  background: $color-info-bg;
+  color: $color-info-text;
+  font-size: $font-size-sm;
+}
+
+.bannerWarning {
+  margin: 0;
+  padding: $space-3;
+  border-radius: $radius-md;
+  background: $color-warning-bg;
+  color: $color-warning-text;
+  font-size: $font-size-sm;
+}
+
+.exportBox {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  max-width: 36rem;
+}

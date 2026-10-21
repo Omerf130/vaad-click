@@ -37,7 +37,7 @@ export default async function PortalAppLayout({ children }: { children: React.Re
             <LogoutButton />
           </div>
         </Container>
-        <Container>
+        <Container className={styles.headerNavRow}>
           <PortalOperatorNav primaryBuildingId={primaryBuildingId} />
         </Container>
       </header>

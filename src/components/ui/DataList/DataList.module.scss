@@ -1,0 +1,337 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.tableShell {
+  max-width: 100%;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollHint {
+  display: none;
+  margin: 0;
+  padding: $space-2 $space-3;
+  border-bottom: 1px solid $color-border;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+
+  @include md-down {
+    display: block;
+  }
+}
+
+.dataTable {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: collapse;
+  font-size: $font-size-sm;
+
+  th,
+  td {
+    padding: $space-3;
+    border-bottom: 1px solid $color-border;
+    text-align: start;
+    vertical-align: middle;
+  }
+
+  th {
+    font-weight: 600;
+    color: $color-text-muted;
+    background: rgb(0 0 0 / 2%);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.dataTableComfortable {
+  min-width: 44rem;
+}
+
+.cellTruncate {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionsCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  align-items: center;
+}
+
+.desktopOnly {
+  @include md-down {
+    display: none !important;
+  }
+}
+
+.mobileOnly {
+  display: none;
+
+  @include md-down {
+    display: block;
+  }
+}
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cardRow {
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-surface;
+  padding: $space-3;
+}
+
+.cardRowPending {
+  background: rgb(255 193 7 / 6%);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-2;
+  margin-bottom: $space-2;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  line-height: $line-height-relaxed;
+  overflow-wrap: anywhere;
+}
+
+.cardMeta {
+  margin: 0;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.cardGrid {
+  display: grid;
+  gap: $space-2;
+  margin: 0;
+}
+
+.cardGridRow {
+  display: grid;
+  gap: $space-1;
+
+  @include sm-up {
+    grid-template-columns: 6.5rem 1fr;
+    align-items: baseline;
+  }
+}
+
+.cardGridRow dt {
+  margin: 0;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.cardGridRow dd {
+  margin: 0;
+  font-size: $font-size-sm;
+  overflow-wrap: anywhere;
+}
+
+.cardFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin-top: $space-3;
+  padding-top: $space-3;
+  border-top: 1px solid $color-border;
+}
+
+.paginationBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  margin-top: $space-4;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.paginationActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.metaLine {
+  margin: 0 0 $space-3;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.filterPanel {
+  margin-bottom: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+}
+
+.filterPanelHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+  padding: $space-3 $space-4;
+  border-bottom: 1px solid $color-border;
+}
+
+.filterPanelTitle {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+
+.filterActiveBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 $space-2;
+  min-height: 1.5rem;
+  border-radius: $radius-pill;
+  background: $color-info-bg;
+  color: $color-info-text;
+  font-size: $font-size-xs;
+  font-weight: 600;
+}
+
+.filterResetLink {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-accent;
+  text-decoration: underline;
+}
+
+.filterToggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-surface;
+  font: inherit;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  cursor: pointer;
+
+  @include md-up {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+}
+
+.filterBody {
+  padding: $space-4;
+}
+
+.filterPrimary {
+  display: grid;
+  gap: $space-3;
+
+  @include md-up {
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    align-items: end;
+  }
+}
+
+.filterSecondary {
+  display: none;
+  gap: $space-3;
+  margin-top: $space-3;
+  padding-top: $space-3;
+  border-top: 1px solid $color-border;
+
+  @include md-up {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    align-items: end;
+  }
+}
+
+.filterSecondaryOpen {
+  display: grid;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+}
+
+.filterLabel {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.filterInput,
+.filterSelect {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font: inherit;
+  background: $color-bg-surface;
+}
+
+.filterActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  align-items: center;
+}
+
+.filterSubmitRow {
+  margin-top: $space-3;
+}
+
+.stateBanner {
+  margin: 0;
+  padding: $space-4;
+  border: 1px dashed $color-border;
+  border-radius: $radius-lg;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  text-align: center;
+}
+
+.stateBannerError {
+  border-style: solid;
+  border-color: $color-error-text;
+  background: $color-error-bg;
+  color: $color-error-text;
+}

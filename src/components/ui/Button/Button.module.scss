@@ -70,3 +70,13 @@
     background-color: $color-info-bg;
   }
 }
+
+.danger {
+  background-color: $color-bg-surface;
+  color: $color-error-text;
+  border-color: $color-error-text;
+
+  &:hover:not(:disabled) {
+    background-color: $color-error-bg;
+  }
+}

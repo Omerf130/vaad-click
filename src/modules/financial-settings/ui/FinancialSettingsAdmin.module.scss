@@ -53,6 +53,9 @@
 
 .tableWrap {
   overflow-x: auto;
+  max-width: 100%;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
 }
 
 .table {

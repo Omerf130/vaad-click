@@ -80,6 +80,13 @@ type Props = {
   presentation?: "monolith" | "tabs";
   checklist?: WarningLetterLegalReadinessChecklist | null;
   lifecycle?: WarningLetterLifecycleBundle | null;
+  onBackToCaseOverview?: () => void;
+};
+
+const WL_SUBTAB_LABELS: Record<string, string> = {
+  [WL_SUBTAB_LETTER]: "עריכה ותצוגת מכתב",
+  [WL_SUBTAB_READINESS]: "מוכנות משפטית",
+  [WL_SUBTAB_MANAGEMENT]: "ניהול טיוטה",
 };
 
 function ActionFeedback({ state }: { state: WarningLetterDraftActionState }) {
@@ -102,6 +109,7 @@ export function WarningLetterLawyerDraftWorkspace({
   presentation = "monolith",
   checklist = null,
   lifecycle = null,
+  onBackToCaseOverview,
 }: Props) {
   const [activeSubTab, setActiveSubTab] = useState(WL_SUBTAB_LETTER);
   const draft = detail.draft;
@@ -621,6 +629,16 @@ export function WarningLetterLawyerDraftWorkspace({
 
     return (
       <div className={tabStyles.root}>
+        <nav className={tabStyles.caseContextNav} aria-label="מיקום בתיק">
+          {onBackToCaseOverview ? (
+            <button type="button" className={tabStyles.inlineLink} onClick={onBackToCaseOverview}>
+              ← חזרה לסקירת תיק
+            </button>
+          ) : null}
+          <span className={tabStyles.contextCrumb}>
+            מכתב התראה · {WL_SUBTAB_LABELS[activeSubTab] ?? activeSubTab}
+          </span>
+        </nav>
         <header className={tabStyles.statusHeader}>
           <div>
             <h2 className={tabStyles.statusTitle}>מכתב התראה · {letterReference}</h2>

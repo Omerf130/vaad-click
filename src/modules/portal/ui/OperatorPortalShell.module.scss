@@ -2,36 +2,44 @@
 @use "../../../styles/breakpoints" as *;
 
 .nav {
-  border-bottom: 1px solid $color-border;
-  background: $color-bg-subtle;
+  margin: 0;
+  padding: 0;
 }
 
 .navList {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: $space-1;
   list-style: none;
   margin: 0;
-  padding: $space-2 0;
+  padding: $space-2 0 $space-3;
 }
 
 .navLink,
 .navLinkActive {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
   padding: $space-2 $space-3;
+  border: 0;
   border-radius: $radius-md;
   font-size: $font-size-sm;
   font-weight: 600;
   text-decoration: none;
-  transition: background-color $transition-fast, color $transition-fast;
+  background: transparent;
+  transition:
+    color $transition-fast,
+    box-shadow $transition-fast;
 }
 
 .navLink {
   color: $color-text-muted;
 
   &:hover {
-    background: $color-bg-surface;
     color: $color-text;
+    background: transparent;
+    box-shadow: inset 0 -2px 0 $color-border-strong;
   }
 
   &:focus-visible {
@@ -41,8 +49,8 @@
 }
 
 .navLinkActive {
-  background: $color-bg-surface;
   color: $color-accent;
+  background: transparent;
   box-shadow: inset 0 -2px 0 $color-accent;
 }
 

@@ -9,6 +9,7 @@ import {
   markAllNotificationsReadAction,
   markNotificationReadAction,
 } from "@/modules/notifications/actions/notification.actions";
+import { formatNotificationDateTimeHe } from "@/modules/notifications/presentation/format-notification-datetime.he";
 import type { NotificationListItem } from "@/modules/notifications/services/notification-query.service";
 import styles from "@/modules/notifications/ui/NotificationBell.module.scss";
 
@@ -16,13 +17,6 @@ type Props = {
   initialUnreadCount: number;
   fullListHref: string;
 };
-
-function formatWhen(iso: string): string {
-  return new Date(iso).toLocaleString("he-IL", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
-}
 
 export function NotificationBell({ initialUnreadCount, fullListHref }: Props) {
   const panelId = useId();
@@ -121,30 +115,47 @@ export function NotificationBell({ initialUnreadCount, fullListHref }: Props) {
               </button>
             </div>
           </div>
-          {loading ? <p className={styles.empty}>טוען…</p> : null}
+          {loading ? (
+            <p className={styles.empty} role="status" aria-live="polite">
+              טוען…
+            </p>
+          ) : null}
           {!loading && items.length === 0 ? (
-            <p className={styles.empty}>אין התראות להצגה.</p>
+            <p className={styles.empty} role="status">
+              אין התראות להצגה.
+            </p>
           ) : (
             <ul className={styles.list}>
-              {items.map((item) => (
-                <li
-                  key={item.notificationId}
-                  className={item.readAtIso ? styles.item : `${styles.item} ${styles.itemUnread}`}
-                >
-                  <button
-                    type="button"
-                    className={styles.itemLink}
-                    onClick={() => void handleItemClick(item)}
+              {items.map((item) => {
+                const unread = !item.readAtIso;
+                return (
+                  <li
+                    key={item.notificationId}
+                    className={unread ? `${styles.item} ${styles.itemUnread}` : styles.item}
                   >
-                    <p className={styles.itemTitle}>
-                      {!item.readAtIso ? "● " : null}
-                      {item.titleHe}
-                    </p>
-                    <p className={styles.itemBody}>{item.bodyHe}</p>
-                    <p className={styles.itemMeta}>{formatWhen(item.createdAtIso)}</p>
-                  </button>
-                </li>
-              ))}
+                    <button
+                      type="button"
+                      className={styles.itemLink}
+                      onClick={() => void handleItemClick(item)}
+                    >
+                      <div className={styles.itemTitleRow}>
+                        <p className={styles.itemTitle}>{item.titleHe}</p>
+                        {unread ? (
+                          <span className={styles.unreadBadge} aria-hidden>
+                            חדש
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className={styles.itemBody}>{item.bodyHe}</p>
+                      <p className={styles.itemMeta}>
+                        <time dateTime={item.createdAtIso}>
+                          {formatNotificationDateTimeHe(item.createdAtIso)}
+                        </time>
+                      </p>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
           <div className={styles.panelFooter}>

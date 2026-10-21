@@ -5,7 +5,12 @@ import { getOperatorNavItems } from "@/modules/portal/presentation/operator-port
 describe("operator portal navigation", () => {
   it("includes dashboard and buildings for all operators", () => {
     const items = getOperatorNavItems({});
-    expect(items.map((item) => item.href)).toEqual(["/app", "/app/buildings", "/app/reports"]);
+    expect(items.map((item) => item.href)).toEqual([
+      "/app",
+      "/app/buildings",
+      "/app/reports",
+      "/app/notifications",
+    ]);
   });
 
   it("adds primary building shortcut for building representatives", () => {

@@ -14,6 +14,19 @@ $admin-sidebar-fixed-width: 280px;
   background: $color-bg-page;
 }
 
+.shellMobileNavOpen {
+  overflow: hidden;
+}
+
+.mainColumnInert {
+  pointer-events: none;
+  user-select: none;
+}
+
+.drawerBackdrop {
+  display: none;
+}
+
 .sidebar {
   grid-area: sidebar;
   grid-column: 2;
@@ -63,8 +76,7 @@ $admin-sidebar-fixed-width: 280px;
 }
 
 .navLink,
-.navLinkActive,
-.navLinkDisabled {
+.navLinkActive {
   display: block;
   width: 100%;
   padding: $space-3 $space-3;
@@ -86,25 +98,40 @@ $admin-sidebar-fixed-width: 280px;
 }
 
 .navLinkActive {
-  display: block;
-  width: 100%;
-  padding: $space-3 $space-3;
-  border: 0;
-  border-radius: $radius-md;
-  font: inherit;
-  text-align: start;
-  text-decoration: none;
-  transition: background $transition-fast;
   color: $color-text-on-dark;
   background: rgb(255 255 255 / 12%);
   border-inline-start: 3px solid $color-accent-400;
   font-weight: 600;
 }
 
-.navLinkDisabled {
+.plannedNavBlock {
+  margin-top: auto;
+  padding: $space-3 $space-2 0;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.plannedNavHeading {
+  margin: 0 0 $space-2;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: $color-text-on-dark-muted;
-  background: transparent;
-  cursor: not-allowed;
+}
+
+.plannedNavList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.plannedNavItem {
+  padding: $space-2 $space-3;
+  font-size: $font-size-sm;
+  color: $color-text-on-dark-muted;
+  line-height: $line-height-normal;
 }
 
 .mainColumn {
@@ -123,12 +150,21 @@ $admin-sidebar-fixed-width: 280px;
 .topBar {
   background: $color-bg-surface;
   border-bottom: 1px solid $color-border;
-  padding: $space-3 $space-6;
+  padding: $space-3 $space-4;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: $space-4;
+  gap: $space-3;
   min-height: 3.75rem;
+  flex-shrink: 0;
+}
+
+.topBarMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2 $space-3;
+  min-width: 0;
 }
 
 .topBarTitle {
@@ -141,12 +177,14 @@ $admin-sidebar-fixed-width: 280px;
   margin: $space-1 0 0;
   font-size: $font-size-sm;
   color: $color-text-muted;
+  width: 100%;
 }
 
 .topBarActions {
   display: flex;
   align-items: center;
-  gap: $space-3;
+  gap: $space-2;
+  flex-shrink: 0;
 }
 
 .workspace {
@@ -156,7 +194,7 @@ $admin-sidebar-fixed-width: 280px;
 
 .navToggle {
   display: none;
-  margin-bottom: $space-2;
+  min-height: 2.75rem;
   padding: $space-2 $space-3;
   border: 1px solid $color-border;
   border-radius: $radius-md;
@@ -165,6 +203,7 @@ $admin-sidebar-fixed-width: 280px;
   font-size: $font-size-sm;
   font-weight: 600;
   cursor: pointer;
+  flex-shrink: 0;
 
   &:focus-visible {
     outline: 2px solid $color-accent;
@@ -173,49 +212,76 @@ $admin-sidebar-fixed-width: 280px;
 }
 
 @include md-down {
-  .navToggle {
-    display: inline-flex;
+  .drawerBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: rgb(15 23 42 / 45%);
+    cursor: pointer;
   }
 
-  .sidebarCollapsed .navList {
-    display: none;
+  .navToggle {
+    display: inline-flex;
+    align-items: center;
   }
 
   .shell {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      "sidebar"
-      "main";
-    height: auto;
-    max-height: none;
-    overflow: visible;
+    grid-template-areas: "main";
+    height: 100vh;
+    max-height: 100vh;
   }
 
   .mainColumn {
     grid-column: auto;
-    height: auto;
-    max-height: none;
-    overflow-y: visible;
+    height: 100vh;
+    max-height: 100vh;
   }
 
   .sidebar {
-    grid-column: auto;
-    width: 100%;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: auto;
+    bottom: 0;
+    z-index: 50;
+    width: min($admin-sidebar-fixed-width, 88vw);
     min-width: 0;
     max-width: none;
-    padding: $space-4;
-    position: static;
-    height: auto;
-    max-height: none;
-    overflow-y: visible;
+    height: 100vh;
+    max-height: 100vh;
+    grid-column: auto;
+    padding: $space-4 $space-3;
+    transition: transform $transition-fast;
+    box-shadow: -4px 0 24px rgb(0 0 0 / 18%);
+  }
+
+  .sidebarMobileClosed {
+    transform: translate3d(100%, 0, 0);
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .sidebarMobileOpen {
+    transform: translate3d(0, 0, 0);
+    pointer-events: auto;
+    visibility: visible;
   }
 
   .navList {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
   }
 
   .workspace {
     padding: $space-4;
+  }
+
+  .topBarMeta {
+    font-size: $font-size-xs;
   }
 }

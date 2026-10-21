@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { AdminNavToggle } from "@/modules/admin/layout/AdminNavToggle";
 import { AdminSidebar } from "@/modules/admin/layout/AdminSidebar";
@@ -25,17 +25,96 @@ export function AdminShell({
 }: AdminShellProps) {
   const pathname = usePathname();
   const pageTitle = resolveAdminTopBarTitle(pathname);
-  const [navExpanded, setNavExpanded] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const navToggleRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const closeMobileNav = useCallback(() => {
+    setMobileNavOpen(false);
+    navToggleRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => setMobileNavOpen(false));
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      return;
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeMobileNav();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [mobileNavOpen, closeMobileNav]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      return;
+    }
+    const firstFocusable = sidebarRef.current?.querySelector<HTMLElement>(
+      'a[href], button:not([disabled])',
+    );
+    firstFocusable?.focus();
+  }, [mobileNavOpen]);
+
+  useEffect(() => {
+    if (!mobileNavOpen || !sidebarRef.current) {
+      return;
+    }
+    const root = sidebarRef.current;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Tab") {
+        return;
+      }
+      const focusables = Array.from(
+        root.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'),
+      ).filter((el) => !el.hasAttribute("disabled") && el.tabIndex !== -1);
+      if (focusables.length === 0) {
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [mobileNavOpen]);
+
+  const mainColumnClass = mobileNavOpen
+    ? `${styles.mainColumn} ${styles.mainColumnInert}`
+    : styles.mainColumn;
 
   return (
-    <div className={styles.shell}>
-      <div className={styles.mainColumn}>
+    <div className={mobileNavOpen ? `${styles.shell} ${styles.shellMobileNavOpen}` : styles.shell}>
+      {mobileNavOpen ? (
+        <button
+          type="button"
+          className={styles.drawerBackdrop}
+          aria-label="סגירת תפריט ניווט"
+          onClick={closeMobileNav}
+        />
+      ) : null}
+      <div className={mainColumnClass} inert={mobileNavOpen ? true : undefined}>
         <AdminTopBar
           pageTitle={pageTitle}
           userFullName={userFullName}
           userEmail={userEmail}
           navToggle={
-            <AdminNavToggle expanded={navExpanded} onToggle={() => setNavExpanded((open) => !open)} />
+            <AdminNavToggle
+              ref={navToggleRef}
+              expanded={mobileNavOpen}
+              onToggle={() => setMobileNavOpen((open) => !open)}
+            />
           }
           notificationBell={
             <NotificationBell
@@ -44,9 +123,15 @@ export function AdminShell({
             />
           }
         />
-        <main className={styles.workspace}>{children}</main>
+        <main className={styles.workspace} id="admin-main-content">
+          {children}
+        </main>
       </div>
-      <AdminSidebar expanded={navExpanded} onNavigate={() => setNavExpanded(false)} />
+      <AdminSidebar
+        ref={sidebarRef}
+        mobileOpen={mobileNavOpen}
+        onNavigate={closeMobileNav}
+      />
     </div>
   );
 }

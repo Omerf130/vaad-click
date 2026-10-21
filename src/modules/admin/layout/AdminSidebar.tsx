@@ -2,62 +2,75 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { forwardRef } from "react";
 
 import {
-  ADMIN_NAV_ITEMS,
+  getImplementedAdminNavItems,
+  getPlannedAdminNavItems,
   isAdminNavItemActive,
 } from "@/modules/admin/navigation/admin-nav-config";
 import styles from "@/modules/admin/layout/AdminShell.module.scss";
 
 type Props = {
-  expanded?: boolean;
+  mobileOpen: boolean;
   onNavigate?: () => void;
 };
 
-export function AdminSidebar({ expanded = true, onNavigate }: Props) {
+export const AdminSidebar = forwardRef<HTMLElement, Props>(function AdminSidebar(
+  { mobileOpen, onNavigate },
+  ref,
+) {
   const pathname = usePathname();
-  const sidebarClass = [styles.sidebar, expanded ? "" : styles.sidebarCollapsed]
-    .filter(Boolean)
-    .join(" ");
+  const implemented = getImplementedAdminNavItems();
+  const planned = getPlannedAdminNavItems();
+
+  const sidebarClass = [
+    styles.sidebar,
+    mobileOpen ? styles.sidebarMobileOpen : styles.sidebarMobileClosed,
+  ].join(" ");
 
   return (
-    <aside className={sidebarClass} aria-label="ניווט מנהל משרד">
+    <aside
+      ref={ref}
+      id="admin-mobile-nav-drawer"
+      className={sidebarClass}
+      aria-label="ניווט מנהל משרד"
+    >
       <div className={styles.brandBlock}>
         <p className={styles.brandTitle}>ועד בקליק</p>
         <p className={styles.brandSubtitle}>ניהול משרד</p>
       </div>
-      <nav id="admin-sidebar-nav">
+      <nav id="admin-sidebar-nav" aria-label="יעדים פעילים">
         <ul className={styles.navList}>
-          {ADMIN_NAV_ITEMS.map((item) => {
+          {implemented.map((item) => {
             const active = isAdminNavItemActive(pathname, item);
-            if (item.status === "implemented" && item.href) {
-              return (
-                <li key={item.id}>
-                  <Link
-                    href={item.href}
-                    className={active ? styles.navLinkActive : styles.navLink}
-                    aria-current={active ? "page" : undefined}
-                    onClick={onNavigate}
-                  >
-                    {item.labelHe}
-                  </Link>
-                </li>
-              );
-            }
             return (
               <li key={item.id}>
-                <span
-                  className={styles.navLinkDisabled}
-                  title={item.unavailableReasonHe}
-                  aria-disabled="true"
+                <Link
+                  href={item.href!}
+                  className={active ? styles.navLinkActive : styles.navLink}
+                  aria-current={active ? "page" : undefined}
+                  onClick={onNavigate}
                 >
                   {item.labelHe}
-                </span>
+                </Link>
               </li>
             );
           })}
         </ul>
       </nav>
+      {planned.length > 0 ? (
+        <div className={styles.plannedNavBlock} aria-label="מודולים עתידיים">
+          <p className={styles.plannedNavHeading}>בקרוב</p>
+          <ul className={styles.plannedNavList}>
+            {planned.map((item) => (
+              <li key={item.id} className={styles.plannedNavItem} title={item.unavailableReasonHe}>
+                {item.labelHe}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </aside>
   );
-}
+});

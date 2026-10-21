@@ -115,3 +115,7 @@ export function isAdminNavItemActive(pathname: string, item: AdminNavItem): bool
 export function getImplementedAdminNavItems(): AdminNavItem[] {
   return ADMIN_NAV_ITEMS.filter((item) => item.status === "implemented" && item.href);
 }
+
+export function getPlannedAdminNavItems(): AdminNavItem[] {
+  return ADMIN_NAV_ITEMS.filter((item) => item.status === "planned");
+}

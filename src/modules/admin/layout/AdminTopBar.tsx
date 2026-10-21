@@ -21,12 +21,14 @@ export function AdminTopBar({
 }: AdminTopBarProps) {
   return (
     <header className={styles.topBar}>
-      <div>
+      <div className={styles.topBarMain}>
         {navToggle}
-        <h1 className={styles.topBarTitle}>{pageTitle}</h1>
-        <p className={styles.topBarMeta}>
-          {userFullName} · {userEmail}
-        </p>
+        <div>
+          <h1 className={styles.topBarTitle}>{pageTitle}</h1>
+          <p className={styles.topBarMeta}>
+            {userFullName} · {userEmail}
+          </p>
+        </div>
       </div>
       <div className={styles.topBarActions}>
         {notificationBell}

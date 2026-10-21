@@ -15,9 +15,14 @@ const initial: PortalBuildingActionState = { ok: false };
 type Props = {
   /** When true, form is expanded by default (e.g. empty building list). */
   defaultOpen?: boolean;
+  /** Hide outer section heading when wrapped in a parent disclosure. */
+  hideSectionTitle?: boolean;
 };
 
-export function ManagementCompanyAddBuildingPanel({ defaultOpen = false }: Props) {
+export function ManagementCompanyAddBuildingPanel({
+  defaultOpen = false,
+  hideSectionTitle = false,
+}: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(defaultOpen);
   const [state, formAction, pending] = useActionState(
@@ -31,13 +36,20 @@ export function ManagementCompanyAddBuildingPanel({ defaultOpen = false }: Props
     }
   }, [state.ok, router]);
 
+  const titleId = hideSectionTitle ? undefined : "mc-add-building-title";
+
   return (
-    <section className={styles.addBuildingSection} aria-labelledby="mc-add-building-title">
+    <section
+      className={styles.addBuildingSection}
+      aria-labelledby={titleId}
+    >
       <div className={styles.addBuildingHeader}>
         <div>
-          <h2 id="mc-add-building-title" className={styles.sectionTitle}>
-            ניהול בניינים
-          </h2>
+          {hideSectionTitle ? null : (
+            <h2 id="mc-add-building-title" className={styles.sectionTitle}>
+              ניהול בניינים
+            </h2>
+          )}
           <p className={styles.sectionHint}>
             הוספת בניין משייכת אותו לחברת הניהול שלכם. הבניין אינו מאומת משפטית עד שמשרד עורך הדין
             יסיים את תהליך האימות — הלקוח המשפטי הוא ועד הבית.

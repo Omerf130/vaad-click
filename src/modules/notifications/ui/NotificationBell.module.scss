@@ -1,7 +1,9 @@
 @use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
 
 .wrap {
   position: relative;
+  flex-shrink: 0;
 }
 
 .trigger {
@@ -9,8 +11,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 1px solid $color-border;
   border-radius: $radius-md;
   background: $color-bg-surface;
@@ -29,8 +31,9 @@
 
 .badge {
   position: absolute;
-  top: -0.25rem;
-  inset-inline-start: -0.25rem;
+  top: -0.2rem;
+  right: -0.2rem;
+  left: auto;
   min-width: 1.1rem;
   height: 1.1rem;
   padding: 0 0.2rem;
@@ -46,15 +49,28 @@
 .panel {
   position: absolute;
   top: calc(100% + $space-2);
-  inset-inline-end: 0;
-  z-index: 40;
-  width: min(22rem, calc(100vw - 2rem));
-  max-height: 24rem;
+  right: 0;
+  left: auto;
+  z-index: 60;
+  width: min(22rem, calc(100vw - 1rem));
+  max-height: min(24rem, calc(100vh - 6rem));
   overflow: auto;
   border: 1px solid $color-border;
   border-radius: $radius-md;
   background: $color-bg-surface;
   box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
+}
+
+@include md-down {
+  .panel {
+    position: fixed;
+    top: 4.5rem;
+    right: max(#{$space-2}, env(safe-area-inset-right, 0px));
+    left: max(#{$space-2}, env(safe-area-inset-left, 0px));
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - 5.5rem);
+  }
 }
 
 .panelHeader {
@@ -104,8 +120,14 @@
 
 .itemLink {
   display: block;
+  width: 100%;
   padding: $space-3;
+  border: none;
+  background: none;
   color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
   text-decoration: none;
 
   &:hover {
@@ -118,10 +140,42 @@
   }
 }
 
+.listPageList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  background: $color-bg-surface;
+}
+
+.itemTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+  margin-bottom: $space-1;
+}
+
 .itemTitle {
-  margin: 0 0 $space-1;
+  margin: 0;
   font-size: $font-size-sm;
   font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.unreadBadge {
+  flex-shrink: 0;
+  padding: 0 $space-2;
+  min-height: 1.25rem;
+  border-radius: $radius-pill;
+  background: $color-accent;
+  color: #fff;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  line-height: 1.25rem;
 }
 
 .itemBody {
@@ -129,6 +183,13 @@
   font-size: $font-size-xs;
   color: $color-text-muted;
   line-height: $line-height-relaxed;
+  overflow-wrap: anywhere;
+}
+
+.itemDestination {
+  margin-inline-start: $space-1;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
 }
 
 .itemMeta {

@@ -1,12 +1,69 @@
 @use "../../../styles/tokens" as *;
 @use "../../../styles/breakpoints" as *;
 
-.page {
+.page,
+.pageCompact {
   max-width: 72rem;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: $space-6;
+}
+
+.pageCompact {
+  gap: $space-5;
+}
+
+.dashboardLead {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.priorityGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-4;
+  align-items: start;
+
+  @include md-down {
+    grid-template-columns: 1fr;
+  }
+}
+
+.disclosureSection {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+  padding: 0;
+}
+
+.disclosureSummary {
+  padding: $space-4 $space-5;
+  font-size: $font-size-md;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::marker {
+    content: "";
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: -2px;
+    border-radius: $radius-lg;
+  }
+}
+
+.disclosureBody {
+  padding: 0 $space-5 $space-5;
+  border-top: 1px solid $color-border;
 }
 
 .hero {

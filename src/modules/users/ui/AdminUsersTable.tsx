@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { ButtonLink } from "@/components/ui/Button/ButtonLink";
+import { ListPagination } from "@/components/ui/DataList/ListPagination";
+import dataListStyles from "@/components/ui/DataList/DataList.module.scss";
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
 import { AccountStatus } from "@/modules/users/domain/account-status";
 import { formatAdminUserDateTime } from "@/modules/users/presentation/format-admin-user-date";
@@ -40,69 +42,103 @@ export function AdminUsersTable({
 
   return (
     <>
-      <p className={styles.metaLine}>
+      <p className={dataListStyles.metaLine}>
         {total} משתמשים{listParams.view === "pending" ? " ממתינים" : ""}
       </p>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th scope="col">שם</th>
-              <th scope="col">דוא״ל</th>
-              <th scope="col">תפקיד</th>
-              <th scope="col">סטטוס</th>
-              <th scope="col">תאריך הרשמה</th>
-              <th scope="col">פעולות</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((user) => {
-              const pending = user.accountStatus === AccountStatus.PENDING_APPROVAL;
-              return (
-                <tr
-                  key={user.id}
-                  className={pending ? styles.rowPending : undefined}
-                >
-                  <td>{user.fullName}</td>
-                  <td>
-                    <Link href={`/app/admin/users/${user.id}`}>{user.email}</Link>
-                  </td>
-                  <td>{formatAdminUserRoleHe(user.role)}</td>
-                  <td>
-                    <StatusBadge
-                      label={formatAccountStatusHe(user.accountStatus)}
-                      variant={accountStatusBadgeVariant(user.accountStatus)}
-                    />
-                  </td>
-                  <td>{formatAdminUserDateTime(user.createdAt)}</td>
-                  <td className={styles.actionsCell}>
-                    <ButtonLink href={`/app/admin/users/${user.id}`} variant="ghost" size="sm">
-                      {pending ? "בדיקה ואישור" : "פרטים"}
-                    </ButtonLink>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div className={styles.pagination}>
-        <span>
-          עמוד {page} מתוך {totalPages}
-        </span>
-        <div className={styles.actionsCell}>
-          {prevHref ? (
-            <ButtonLink href={prevHref} variant="ghost" size="sm">
-              הקודם
-            </ButtonLink>
-          ) : null}
-          {nextHref ? (
-            <ButtonLink href={nextHref} variant="ghost" size="sm">
-              הבא
-            </ButtonLink>
-          ) : null}
+
+      <div className={`${dataListStyles.tableShell} ${dataListStyles.desktopOnly}`}>
+        <div className={dataListStyles.tableScroll}>
+          <table className={dataListStyles.dataTable}>
+            <thead>
+              <tr>
+                <th scope="col">שם</th>
+                <th scope="col">דוא״ל</th>
+                <th scope="col">תפקיד</th>
+                <th scope="col">סטטוס</th>
+                <th scope="col">תאריך הרשמה</th>
+                <th scope="col">פעולות</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((user) => {
+                const pending = user.accountStatus === AccountStatus.PENDING_APPROVAL;
+                return (
+                  <tr
+                    key={user.id}
+                    className={pending ? styles.rowPending : undefined}
+                  >
+                    <td>{user.fullName}</td>
+                    <td className={dataListStyles.cellTruncate} title={user.email}>
+                      <Link href={`/app/admin/users/${user.id}`}>{user.email}</Link>
+                    </td>
+                    <td>{formatAdminUserRoleHe(user.role)}</td>
+                    <td>
+                      <StatusBadge
+                        label={formatAccountStatusHe(user.accountStatus)}
+                        variant={accountStatusBadgeVariant(user.accountStatus)}
+                      />
+                    </td>
+                    <td>{formatAdminUserDateTime(user.createdAt)}</td>
+                    <td className={dataListStyles.actionsCell}>
+                      <ButtonLink href={`/app/admin/users/${user.id}`} variant="ghost" size="sm">
+                        {pending ? "בדיקה ואישור" : "פרטים"}
+                      </ButtonLink>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      <ul className={`${dataListStyles.cardList} ${dataListStyles.mobileOnly}`} aria-label="משתמשים">
+        {items.map((user) => {
+          const pending = user.accountStatus === AccountStatus.PENDING_APPROVAL;
+          return (
+            <li
+              key={user.id}
+              className={pending ? `${dataListStyles.cardRow} ${dataListStyles.cardRowPending}` : dataListStyles.cardRow}
+            >
+              <div className={dataListStyles.cardHeader}>
+                <p className={dataListStyles.cardTitle}>{user.fullName}</p>
+                <StatusBadge
+                  label={formatAccountStatusHe(user.accountStatus)}
+                  variant={accountStatusBadgeVariant(user.accountStatus)}
+                />
+              </div>
+              <dl className={dataListStyles.cardGrid}>
+                <div className={dataListStyles.cardGridRow}>
+                  <dt>דוא״ל</dt>
+                  <dd>
+                    <Link href={`/app/admin/users/${user.id}`}>{user.email}</Link>
+                  </dd>
+                </div>
+                <div className={dataListStyles.cardGridRow}>
+                  <dt>תפקיד</dt>
+                  <dd>{formatAdminUserRoleHe(user.role)}</dd>
+                </div>
+                <div className={dataListStyles.cardGridRow}>
+                  <dt>הרשמה</dt>
+                  <dd>{formatAdminUserDateTime(user.createdAt)}</dd>
+                </div>
+              </dl>
+              <div className={dataListStyles.cardFooter}>
+                <ButtonLink href={`/app/admin/users/${user.id}`} variant="secondary" size="sm">
+                  {pending ? "בדיקה ואישור" : "פרטים"}
+                </ButtonLink>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <ListPagination
+        page={page}
+        totalPages={totalPages}
+        prevHref={prevHref}
+        nextHref={nextHref}
+      />
     </>
   );
 }

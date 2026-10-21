@@ -26,9 +26,10 @@ import styles from "@/modules/debt-cases/ui/lawyer/LawyerDebtCasesAdmin.module.s
 type Props = {
   debtCaseId: string;
   revision: number;
+  onJumpToSection?: (sectionId: string) => void;
 };
 
-export function LawyerDebtCaseReviewActions({ debtCaseId, revision }: Props) {
+export function LawyerDebtCaseReviewActions({ debtCaseId, revision, onJumpToSection }: Props) {
   const router = useRouter();
   const [confirm, setConfirm] = useState<LawyerReviewConfirmKind | null>(null);
   const [comment, setComment] = useState("");
@@ -107,11 +108,11 @@ export function LawyerDebtCaseReviewActions({ debtCaseId, revision }: Props) {
   };
 
   return (
-    <section className={styles.section} aria-labelledby="review-actions-title">
+    <section className={styles.reviewActionsSection} aria-labelledby="review-actions-title">
       <h2 id="review-actions-title" className={styles.sectionTitle}>
         החלטת בדיקה
       </h2>
-      <p className={styles.bannerInfo}>
+      <p className={styles.bannerInfoCompact}>
         פעולות אלו מעדכנות את סטטוס הבדיקה בלבד. הן אינן שולחות מכתב ואינן מפעילות גבייה.
       </p>
 
@@ -132,25 +133,39 @@ export function LawyerDebtCaseReviewActions({ debtCaseId, revision }: Props) {
           {!feedback.ok && feedback.sectionIds && feedback.sectionIds.length > 0 ? (
             <p className={styles.requirementsHint}>
               {[...new Set(feedback.sectionIds)].map((sectionId) => (
-                <a key={sectionId} href={`#${sectionId}`} className={styles.sectionJumpLink}>
+                <button
+                  key={sectionId}
+                  type="button"
+                  className={styles.sectionJumpLink}
+                  onClick={() => onJumpToSection?.(sectionId)}
+                >
                   מעבר לפרק הרלוונטי ↓
-                </a>
+                </button>
               ))}
             </p>
           ) : null}
         </div>
       ) : null}
 
-      <div className={styles.actionsRow}>
-        <Button type="button" disabled={pending} onClick={() => setConfirm("approve")}>
-          אישור להכנת מכתב
-        </Button>
-        <Button type="button" variant="secondary" disabled={pending} onClick={() => setConfirm("return")}>
-          החזרה להשלמה
-        </Button>
-        <Button type="button" variant="secondary" disabled={pending} onClick={() => setConfirm("reject")}>
-          דחיית תיק
-        </Button>
+      <div className={styles.reviewActionsLayout}>
+        <div className={styles.reviewActionsPrimary}>
+          <Button type="button" disabled={pending} onClick={() => setConfirm("approve")}>
+            אישור להכנת מכתב
+          </Button>
+        </div>
+        <div className={styles.reviewActionsSecondary}>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={pending}
+            onClick={() => setConfirm("return")}
+          >
+            החזרה להשלמה
+          </Button>
+          <Button type="button" variant="danger" disabled={pending} onClick={() => setConfirm("reject")}>
+            דחיית תיק
+          </Button>
+        </div>
       </div>
 
       <AdminConfirmDialog

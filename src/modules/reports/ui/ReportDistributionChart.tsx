@@ -21,7 +21,11 @@ export function ReportDistributionChart({ title, noteHe, buckets }: Props) {
           {buckets.map((bucket) => (
             <div key={bucket.status} className={styles.barRow} role="listitem">
               <span>{bucket.labelHe}</span>
-              <div className={styles.barTrack} aria-hidden>
+              <div
+                className={styles.barTrack}
+                role="img"
+                aria-label={`${bucket.labelHe}: ${bucket.count} תיקים`}
+              >
                 <div
                   className={styles.barFill}
                   style={{ width: `${Math.round((bucket.count / max) * 100)}%` }}

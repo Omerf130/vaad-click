@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { SessionAuthStage } from "@/modules/auth/domain/session-types";
+import { AccountStatus } from "@/modules/users/domain/account-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { sessionGrantsAccess } from "@/shared/auth/access-policy";
 
@@ -23,13 +24,16 @@ describe("sessionGrantsAccess", () => {
     ).toBe(true);
   });
 
-  it("blocks lawyer primary session on production development portal", () => {
+  it("blocks lawyer primary session on production development portal when demo off", () => {
     expect(
       sessionGrantsAccess({
         session: activeSession(SessionAuthStage.PRIMARY),
         userRole: UserRole.LAWYER_ADMIN,
         surface: "development_portal",
         isProductionEnvironment: true,
+        userId: "aaaaaaaaaaaaaaaaaaaaaaaa",
+        accountStatus: AccountStatus.ACTIVE,
+        lawyerDemoConfig: { enabled: false, authorizedUserId: null },
       }),
     ).toBe(false);
   });

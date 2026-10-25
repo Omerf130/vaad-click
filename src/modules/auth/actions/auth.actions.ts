@@ -13,6 +13,7 @@ import { revokeServerSessionByToken } from "@/modules/auth/services/session.serv
 import { loginInputSchema } from "@/modules/auth/validation/login.schema";
 import { registerInputSchema } from "@/modules/auth/validation/register.schema";
 import {
+  recordAuthLawyerDemoPortalAccess,
   recordAuthLoginFailure,
   recordAuthLogout,
   recordAuthRateLimitExceeded,
@@ -41,6 +42,9 @@ import {
 } from "@/shared/security/rate-limit/rate-limit-config";
 import { sanitizeReturnPath } from "@/shared/security/safe-redirect";
 import { genericAuthenticationFailureMessage } from "@/shared/security/account-login";
+import { lawyerDemoGrantsLawyerDevelopmentPortal } from "@/shared/auth/lawyer-demo-access";
+import { getLawyerDemoAccessConfig } from "@/shared/auth/lawyer-demo-access.server";
+import { isProduction } from "@/shared/config/env.server";
 
 const MAX_FORM_FIELD_LENGTH = 512;
 
@@ -140,6 +144,27 @@ export async function loginAction(
       correlationId,
     });
     await writeSessionCookie(session.token, result.authStage);
+
+    if (
+      result.role === UserRole.LAWYER_ADMIN &&
+      result.accountStatus === AccountStatus.ACTIVE &&
+      result.authStage === SessionAuthStage.PRIMARY &&
+      isProduction() &&
+      lawyerDemoGrantsLawyerDevelopmentPortal({
+        userId: result.userId,
+        userRole: result.role,
+        accountStatus: result.accountStatus,
+        sessionAuthStage: result.authStage,
+        isProductionEnvironment: true,
+        config: getLawyerDemoAccessConfig(),
+      })
+    ) {
+      await recordAuthLawyerDemoPortalAccess({
+        userId: result.userId,
+        role: result.role,
+        correlationId,
+      });
+    }
   } catch (error) {
     if (error instanceof LoginSessionEstablishmentError) {
       return { ok: false, message: genericAuthenticationFailureMessage() };

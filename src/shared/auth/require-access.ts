@@ -27,6 +27,8 @@ async function requireAuthenticatedSession(): Promise<
     userRole: context.user.role,
     surface: "development_portal",
     isProductionEnvironment: isProduction(),
+    userId: context.user.id,
+    accountStatus: context.user.accountStatus,
   });
 
   if (!allowed) {
@@ -130,6 +132,8 @@ export async function requireLawyerAdminPortal(): Promise<
     userRole: context.user.role,
     surface: "development_portal",
     isProductionEnvironment: isProduction(),
+    userId: context.user.id,
+    accountStatus: context.user.accountStatus,
   });
 
   if (!allowed) {

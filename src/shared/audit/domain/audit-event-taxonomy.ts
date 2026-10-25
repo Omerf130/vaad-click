@@ -29,6 +29,7 @@ export const AuditEventType = {
   AUTH_RATE_LIMIT_EXCEEDED: "auth.rate_limit.exceeded",
   AUTH_ACCESS_FORBIDDEN: "auth.access.forbidden",
   AUTH_ACCOUNT_PASSWORD_INITIALIZED: "auth.account.password_initialized",
+  AUTH_LAWYER_DEMO_PORTAL_ACCESS: "auth.lawyer_demo.portal_access",
   USER_ADMIN_CREATED: "user_admin.account.created",
   USER_ADMIN_STATUS_CHANGED: "user_admin.account.status_changed",
   USER_ADMIN_ACCOUNT_APPROVED: "user_admin.account.approved",

@@ -153,6 +153,26 @@ export async function recordAuthAccessForbidden(input: {
   });
 }
 
+export async function recordAuthLawyerDemoPortalAccess(input: {
+  userId: string;
+  role: UserRole;
+  correlationId?: string;
+}): Promise<void> {
+  await writeAuditEvent({
+    eventType: AuditEventType.AUTH_LAWYER_DEMO_PORTAL_ACCESS,
+    actor: {
+      type: AuditActorType.USER,
+      userId: input.userId,
+      role: input.role,
+    },
+    action: "lawyer_demo_portal_access",
+    outcome: AuditOutcome.SUCCESS,
+    target: { entityType: "user", entityId: input.userId },
+    metadata: { temporaryDemoException: true },
+    correlationId: input.correlationId,
+  });
+}
+
 export async function recordAuthAccountPasswordInitialized(input: {
   userId: string;
   role: UserRole;

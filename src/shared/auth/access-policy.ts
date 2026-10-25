@@ -1,8 +1,14 @@
 import { isSessionActive } from "@/modules/auth/domain/session-lifecycle";
 import type { SessionRecord } from "@/modules/auth/domain/session-types";
 import { SessionAuthStage } from "@/modules/auth/domain/session-types";
+import type { AccountStatus } from "@/modules/users/domain/account-status";
 import { lawyerAdminRequiresMfa } from "@/modules/users/domain/mfa-state";
 import type { UserRole } from "@/modules/users/domain/user-role";
+import {
+  lawyerDemoGrantsLawyerDevelopmentPortal,
+  parseLawyerDemoAccessConfig,
+  type LawyerDemoAccessConfig,
+} from "@/shared/auth/lawyer-demo-access";
 
 export type AccessSurface =
   | "development_portal"
@@ -17,10 +23,14 @@ export function sessionGrantsAccess(input: {
   userRole: UserRole;
   surface: AccessSurface;
   isProductionEnvironment: boolean;
+  userId?: string;
+  accountStatus?: AccountStatus;
+  lawyerDemoConfig?: LawyerDemoAccessConfig;
   now?: Date;
 }): boolean {
   const { session, userRole, surface, isProductionEnvironment } = input;
   const now = input.now ?? new Date();
+  const lawyerDemoConfig = input.lawyerDemoConfig ?? parseLawyerDemoAccessConfig(process.env);
 
   if (!session || !isSessionActive(session, now)) {
     return false;
@@ -29,7 +39,24 @@ export function sessionGrantsAccess(input: {
   if (surface === "development_portal") {
     if (lawyerAdminRequiresMfa(userRole)) {
       if (isProductionEnvironment) {
-        return session.authStage === SessionAuthStage.MFA_COMPLETE;
+        if (session.authStage === SessionAuthStage.MFA_COMPLETE) {
+          return true;
+        }
+        if (
+          input.userId &&
+          input.accountStatus &&
+          lawyerDemoGrantsLawyerDevelopmentPortal({
+            userId: input.userId,
+            userRole,
+            accountStatus: input.accountStatus,
+            sessionAuthStage: session.authStage,
+            isProductionEnvironment,
+            config: lawyerDemoConfig,
+          })
+        ) {
+          return true;
+        }
+        return false;
       }
       return (
         session.authStage === SessionAuthStage.PRIMARY ||

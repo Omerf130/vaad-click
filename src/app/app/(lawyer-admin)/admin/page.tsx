@@ -18,6 +18,7 @@ import {
   getPublishedFinancialSettingsHistory,
   resolveApplicableFinancialSettingsVersion,
 } from "@/modules/financial-settings/services/financial-settings-query.service";
+import { sessionGrantsAccess } from "@/shared/auth/access-policy";
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
 import { isProduction } from "@/shared/config/env.server";
 
@@ -38,7 +39,16 @@ export default async function LawyerAdminDashboardPage() {
     ]);
 
   const productionBlocked =
-    isProduction() && context.session.authStage !== SessionAuthStage.MFA_COMPLETE;
+    isProduction() &&
+    context.session.authStage !== SessionAuthStage.MFA_COMPLETE &&
+    !sessionGrantsAccess({
+      session: context.session,
+      userRole: context.user.role,
+      surface: "development_portal",
+      isProductionEnvironment: true,
+      userId: context.user.id,
+      accountStatus: context.user.accountStatus,
+    });
 
   return (
     <AdminPageFrame

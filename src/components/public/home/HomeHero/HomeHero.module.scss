@@ -66,7 +66,16 @@
   font-size: clamp(1rem, 1.6vw, $font-size-lg);
   color: $color-text-muted;
   line-height: $line-height-relaxed;
-  margin-block-end: $space-5;
+  margin-block-end: $space-3;
+}
+
+.scopeNote {
+  margin: 0 0 $space-5;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+  padding-inline-start: $space-3;
+  border-inline-start: 3px solid rgb(34 128 235 / 35%);
 }
 
 .ctas {

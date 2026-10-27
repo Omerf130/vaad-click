@@ -9,7 +9,10 @@ export const WarningLetterUnapprovedTemplateVariant = {
   COMMITTEE_INTRO: "committee_intro_v1",
   OCCUPANCY_SPLIT_BRANCHES: "occupancy_split_branches_v1",
   PRINTED_DEADLINE_WITHOUT_TREATMENT: "printed_deadline_without_treatment_v1",
+  /** @deprecated superseded by split payment-block variants (CP12); not required for approval readiness */
   PAYMENT_BLOCK_MANIFEST: "payment_block_manifest_v1",
+  PAYMENT_BLOCK_WITH_TREATMENT: "payment_block_with_treatment_v1",
+  PAYMENT_BLOCK_WITHOUT_TREATMENT: "payment_block_without_treatment_v1",
 } as const;
 
 export type WarningLetterUnapprovedTemplateVariantId =
@@ -25,7 +28,8 @@ export function collectApplicableTemplateVariantIds(
 ): WarningLetterUnapprovedTemplateVariantId[] {
   const ids: WarningLetterUnapprovedTemplateVariantId[] = [
     WarningLetterUnapprovedTemplateVariant.OCCUPANCY_SPLIT_BRANCHES,
-    WarningLetterUnapprovedTemplateVariant.PAYMENT_BLOCK_MANIFEST,
+    WarningLetterUnapprovedTemplateVariant.PAYMENT_BLOCK_WITH_TREATMENT,
+    WarningLetterUnapprovedTemplateVariant.PAYMENT_BLOCK_WITHOUT_TREATMENT,
   ];
 
   if (input.clientPresentation === WarningLetterClientPresentation.MANAGEMENT_COMPANY) {

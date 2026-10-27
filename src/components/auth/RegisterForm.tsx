@@ -8,6 +8,7 @@ import {
   type AuthActionState,
 } from "@/modules/auth/actions/auth.actions";
 import { UserRole } from "@/modules/users/domain/user-role";
+import { RegisterConsentNotice } from "./RegisterConsentNotice";
 import fieldStyles from "./AuthFormFields.module.scss";
 
 const initialState: AuthActionState = { ok: true };
@@ -126,6 +127,8 @@ export function RegisterForm() {
           {state.message}
         </p>
       ) : null}
+
+      <RegisterConsentNotice />
 
       <div className={fieldStyles.actions}>
         <Button type="submit" variant="primary" disabled={pending}>

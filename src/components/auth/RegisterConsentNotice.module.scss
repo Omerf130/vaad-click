@@ -1,0 +1,43 @@
+@use "../../styles/tokens" as *;
+
+.notice {
+  padding: $space-4;
+  border-radius: $radius-md;
+  border: 1px solid $color-border;
+  background: rgb(34 128 235 / 4%);
+}
+
+.title {
+  margin: 0 0 $space-2;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.body {
+  margin: 0 0 $space-2;
+  font-size: $font-size-xs;
+  line-height: $line-height-relaxed;
+  color: $color-text-muted;
+}
+
+.links {
+  margin: 0;
+  font-size: $font-size-xs;
+
+  a {
+    color: $color-accent;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: $focus-ring-width solid $color-focus;
+      outline-offset: $focus-ring-offset;
+      border-radius: $radius-sm;
+    }
+  }
+}

@@ -7,12 +7,15 @@ type PublicPageMetadataInput = {
   description: string;
   /** Pathname starting with `/`, e.g. `/` */
   path: string;
+  /** Draft or non-final pages should not be indexed. */
+  noIndex?: boolean;
 };
 
 export function buildPublicPageMetadata({
   title,
   description,
   path,
+  noIndex,
 }: PublicPageMetadataInput): Metadata {
   const canonicalPath = path === "/" ? "/" : path.replace(/\/$/, "");
   const canonicalUrl = new URL(canonicalPath, SITE_URL).toString();
@@ -36,5 +39,13 @@ export function buildPublicPageMetadata({
       title,
       description,
     },
+    ...(noIndex
+      ? {
+          robots: {
+            index: false,
+            follow: true,
+          },
+        }
+      : {}),
   };
 }

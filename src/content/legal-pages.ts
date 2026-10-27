@@ -1,45 +1,51 @@
 /**
- * Planned public legal routes — content pending lawyer approval.
- * Do not link to these routes until `contentStatus` is `approved` and pages exist.
+ * Public legal document routes and publication state.
+ * No fabricated policy text — draft pages show a non-final placeholder only.
  */
 
-export type LegalPageContentStatus = "pending_lawyer" | "approved";
+export type LegalDocumentPublicationStatus = "draft_pending_approval";
 
-export type PlannedLegalPage = {
-  slug: "privacy" | "terms" | "advertising-disclosure";
-  route: `/legal/${string}`;
-  hebrewTitle: string;
-  requiredBeforeLaunch: boolean;
-  contentStatus: LegalPageContentStatus;
+export type LegalDocumentDefinition = {
+  path: `/privacy` | `/terms` | `/accessibility`;
+  title: string;
+  shortTitle: string;
+  publicationStatus: LegalDocumentPublicationStatus;
+  draftNoticeTitle: string;
+  draftNoticeBody: string;
 };
 
-export const PLANNED_LEGAL_PAGES: readonly PlannedLegalPage[] = [
-  {
-    slug: "privacy",
-    route: "/legal/privacy",
-    hebrewTitle: "מדיניות פרטיות",
-    requiredBeforeLaunch: true,
-    contentStatus: "pending_lawyer",
+export const legalDocuments = {
+  privacy: {
+    path: "/privacy",
+    title: "מדיניות פרטיות",
+    shortTitle: "פרטיות",
+    publicationStatus: "draft_pending_approval",
+    draftNoticeTitle: "טיוטה — טרם אושרה לפרסום",
+    draftNoticeBody:
+      "מסמך מדיניות הפרטיות המחייב עדיין בעריכה ואישור משפטי. עד לפרסום הגרסה הסופית, המידע כאן הוא להסבר בלבד ואינו מהווה הסכם.",
   },
-  {
-    slug: "terms",
-    route: "/legal/terms",
-    hebrewTitle: "תנאי שימוש",
-    requiredBeforeLaunch: true,
-    contentStatus: "pending_lawyer",
+  terms: {
+    path: "/terms",
+    title: "תנאי שימוש",
+    shortTitle: "תנאים",
+    publicationStatus: "draft_pending_approval",
+    draftNoticeTitle: "טיוטה — טרם אושרה לפרסום",
+    draftNoticeBody:
+      "תנאי השימוש המחייבים עדיין בעריכה ואישור משפטי. עד לפרסום הגרסה הסופית, המידע כאן הוא להסבר בלבד ואינו מהווה הסכם.",
   },
-  {
-    slug: "advertising-disclosure",
-    route: "/legal/advertising-disclosure",
-    hebrewTitle: "גילוי נאות — פרסום משפטי",
-    requiredBeforeLaunch: true,
-    contentStatus: "pending_lawyer",
+  accessibility: {
+    path: "/accessibility",
+    title: "הצהרת נגישות",
+    shortTitle: "נגישות",
+    publicationStatus: "draft_pending_approval",
+    draftNoticeTitle: "טיוטה — טרם אושרה לפרסום",
+    draftNoticeBody:
+      "הצהרת נגישות מלאה תפורסם לאחר בדיקה ואימות. אין לראות במסמך זה הצהרה על עמידה בתקן לפני שהושלמה הבדיקה.",
   },
-] as const;
+} as const satisfies Record<string, LegalDocumentDefinition>;
 
-export const LEGAL_CONTENT_BLOCKERS = [
-  "Privacy policy text (Hebrew) approved by lawyer / DPO review",
-  "Terms of use approved by lawyer",
-  "Bar association advertising compliance review for all public marketing copy",
-  "Approved firm contact details before displaying phone, email or office addresses",
+export const legalDocumentList = [
+  legalDocuments.privacy,
+  legalDocuments.terms,
+  legalDocuments.accessibility,
 ] as const;

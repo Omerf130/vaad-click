@@ -11,7 +11,7 @@ import {
 import { computeWarningLetterTemplateVariantContentSha256 } from "@/modules/warning-letters/domain/warning-letter-template-variant-content-hash";
 import {
   getTemplateVariantCatalogEntry,
-  WARNING_LETTER_TEMPLATE_VARIANT_CATALOG,
+  listActiveTemplateVariantCatalogEntries,
   type WarningLetterTemplateVariantCatalogEntry,
 } from "@/modules/warning-letters/domain/warning-letter-template-variant-catalog";
 import { WarningLetterTemplateVariantApproval } from "@/modules/warning-letters/infra/warning-letter-template-variant-approval.model";
@@ -46,9 +46,7 @@ export async function listWarningLetterTemplateVariantCatalogWithApprovalStatus(
     approvals.map((row) => [row.variantId, row] as const),
   );
 
-  return WARNING_LETTER_TEMPLATE_VARIANT_CATALOG.filter(
-    (entry) => entry.templateVersionId === templateVersionId,
-  ).map((entry) => {
+  return listActiveTemplateVariantCatalogEntries({ templateVersionId }).map((entry) => {
     const contentSha256 = computeWarningLetterTemplateVariantContentSha256({
       variantId: entry.variantId,
       templateVersionId: entry.templateVersionId,

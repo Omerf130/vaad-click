@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildPublicPageMetadata } from "@/shared/seo/build-public-page-metadata";
-import { PLANNED_LEGAL_PAGES } from "@/content/legal-pages";
+import { legalDocumentList } from "@/content/legal-pages";
 
 describe("public SEO helpers", () => {
   it("builds canonical and social metadata for homepage", () => {
@@ -16,9 +16,19 @@ describe("public SEO helpers", () => {
     expect(metadata.title).toEqual({ absolute: "Test Title" });
   });
 
-  it("tracks legal pages as pending without publishing routes", () => {
+  it("can mark draft legal pages as noindex", () => {
+    const metadata = buildPublicPageMetadata({
+      title: "Privacy",
+      description: "Draft",
+      path: "/privacy",
+      noIndex: true,
+    });
+    expect(metadata.robots).toMatchObject({ index: false, follow: true });
+  });
+
+  it("tracks legal pages as draft pending approval", () => {
     expect(
-      PLANNED_LEGAL_PAGES.every((page) => page.contentStatus === "pending_lawyer"),
+      legalDocumentList.every((page) => page.publicationStatus === "draft_pending_approval"),
     ).toBe(true);
   });
 });

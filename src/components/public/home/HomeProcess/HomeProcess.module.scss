@@ -87,7 +87,23 @@
     &:nth-child(3) {
       padding-inline-start: $space-10;
     }
+
+    &:nth-child(4) {
+      padding-inline-start: $space-10;
+    }
   }
+}
+
+.futureBadge {
+  display: inline-block;
+  margin-inline-start: $space-2;
+  padding: $space-1 $space-2;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  color: $color-primary;
+  background: rgb(34 128 235 / 8%);
+  border-radius: $radius-sm;
+  vertical-align: middle;
 }
 
 .number {

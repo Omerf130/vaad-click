@@ -1,10 +1,11 @@
 import type { WarningLetterClientPresentation } from "@/modules/warning-letters/domain/warning-letter-client-presentation";
 import {
+  resolvePaymentInstructionClauseTemplate,
+} from "@/modules/warning-letters/templates/payment-instruction-clauses";
+import {
   INITIAL_WARNING_FIXED_CLAUSES,
   INITIAL_WARNING_MC_MAINTENANCE_CLAUSE,
   INITIAL_WARNING_OCCUPANCY_CLAUSES,
-  INITIAL_WARNING_PAYMENT_BLOCK_INCOMPLETE,
-  INITIAL_WARNING_PAYMENT_BLOCK_NO_TREATMENT,
   INITIAL_WARNING_TREATMENT_CLAUSE,
   type InitialWarningClauseId,
 } from "@/modules/warning-letters/templates/initial-warning-clause-manifest";
@@ -87,12 +88,12 @@ function clauseTemplate(
     return INITIAL_WARNING_TREATMENT_CLAUSE.template;
   }
   if (clauseId === "payment_block") {
-    if (input.monetaryPreviewIncomplete) {
-      return INITIAL_WARNING_PAYMENT_BLOCK_INCOMPLETE;
-    }
-    return input.includeTreatmentExpenses
-      ? INITIAL_WARNING_FIXED_CLAUSES.payment_block.template
-      : INITIAL_WARNING_PAYMENT_BLOCK_NO_TREATMENT;
+    return resolvePaymentInstructionClauseTemplate({
+      treatmentFeeEligible:
+        input.includeTreatmentExpenses || input.includeIncompleteTreatmentClause,
+      includeTreatmentExpenses: input.includeTreatmentExpenses,
+      monetaryPreviewIncomplete: input.monetaryPreviewIncomplete,
+    });
   }
   const fixed = INITIAL_WARNING_FIXED_CLAUSES[clauseId as keyof typeof INITIAL_WARNING_FIXED_CLAUSES];
   return fixed.template;

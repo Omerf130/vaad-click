@@ -18,8 +18,8 @@
   gap: $space-6;
 
   @include md-up {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
-    gap: $space-10;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.5fr) minmax(0, 0.5fr);
+    gap: $space-8;
     align-items: start;
   }
 }
@@ -42,12 +42,42 @@
   }
 }
 
+.operator {
+  margin: 0 0 $space-2;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text-on-dark;
+}
+
 .description {
   margin: 0;
   font-size: $font-size-sm;
   color: $color-text-on-dark-muted;
   max-width: 30rem;
   line-height: $line-height-relaxed;
+}
+
+.contactCompact {
+  margin: $space-4 0 0;
+  font-size: $font-size-xs;
+  line-height: $line-height-relaxed;
+  color: $color-text-on-dark-muted;
+
+  a {
+    color: $color-accent-400;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: $focus-ring-width solid $color-focus;
+      outline-offset: $focus-ring-offset;
+      border-radius: $radius-sm;
+    }
+  }
 }
 
 .nav {

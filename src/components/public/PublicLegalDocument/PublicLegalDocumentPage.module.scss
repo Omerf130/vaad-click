@@ -1,0 +1,50 @@
+@use "../../../styles/tokens" as *;
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: $color-bg-page;
+  overflow-x: clip;
+}
+
+.main {
+  flex: 1;
+  padding-block: $space-8 $space-10;
+}
+
+.container {
+  max-width: 42rem;
+}
+
+.docHeader {
+  margin-block-end: $space-6;
+}
+
+.statusBadge {
+  display: inline-block;
+  margin: 0 0 $space-4;
+  padding: $space-2 $space-3;
+  border-radius: $radius-md;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  color: $color-primary;
+  background: rgb(34 128 235 / 10%);
+  border: 1px solid rgb(34 128 235 / 25%);
+}
+
+.title {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  color: $color-primary;
+  margin: 0;
+}
+
+.body {
+  font-size: $font-size-md;
+  line-height: $line-height-relaxed;
+  color: $color-text-muted;
+}
+
+.draftLead {
+  margin: 0;
+}

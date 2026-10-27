@@ -1,3 +1,8 @@
+import {
+  INITIAL_WARNING_PAYMENT_BLOCK_WITHOUT_TREATMENT,
+  INITIAL_WARNING_PAYMENT_BLOCK_WITH_TREATMENT,
+} from "@/modules/warning-letters/templates/payment-instruction-clauses";
+
 /**
  * Stable clause ids for initial warning (Hebrew prose from warning-letter-sample.docx).
  * Placeholders: {name} — substituted at snapshot/render time.
@@ -80,8 +85,7 @@ export const INITIAL_WARNING_FIXED_CLAUSES: Record<
   },
   payment_block: {
     id: "payment_block",
-    template:
-      'לתשומת ליבך – את מלוא החוב, בסך כולל של {totalDisplay} (קרן החוב בסך {principalDisplay} בתוספת הוצאות טיפול עו"ד בסך {treatmentDisplayClause}), יש לשלם בתשלום אחד, לחשבון הנאמנות של משרדנו, באמצעות קישור התשלום האישי שנשלח אלייך בהודעת הווטסאפ: {paymentLinkPlaceholder}. ניתן לשלם בכרטיס אשראי או בהעברה בנקאית.\nאין לשלם את החוב, או כל חלק ממנו, ישירות לוועד הבית או לחברת הניהול. תשלום חלקי, בכל דרך שהיא, לא יביא לסגירת התיק עד לתשלום מלוא היתרה.',
+    template: INITIAL_WARNING_PAYMENT_BLOCK_WITH_TREATMENT,
   },
   evidence_disclaimer: {
     id: "evidence_disclaimer",
@@ -90,12 +94,9 @@ export const INITIAL_WARNING_FIXED_CLAUSES: Record<
   },
 };
 
+/** @deprecated use INITIAL_WARNING_PAYMENT_BLOCK_WITHOUT_TREATMENT from payment-instruction-clauses */
 export const INITIAL_WARNING_PAYMENT_BLOCK_NO_TREATMENT =
-  'לתשומת ליבך – את מלוא החוב, בסך כולל של {totalDisplay} (קרן החוב), יש לשלם בתשלום אחד, לחשבון הנאמנות של משרדנו, באמצעות קישור התשלום האישי שנשלח אלייך בהודעת הווטסאפ: {paymentLinkPlaceholder}. ניתן לשלם בכרטיס אשראי או בהעברה בנקאית.\nאין לשלם את החוב, או כל חלק ממנו, ישירות לוועד הבית או לחברת הניהול. תשלום חלקי, בכל דרך שהיא, לא יביא לסגירת התיק עד לתשלום מלוא היתרה.';
-
-/** Non-operative preview when treatment fee is expected but settings are missing. */
-export const INITIAL_WARNING_PAYMENT_BLOCK_INCOMPLETE =
-  'לתשומת ליבך – את מלוא החוב, בסך כולל של {totalDisplay} (קרן החוב בסך {principalDisplay} בתוספת הוצאות טיפול עו"ד בסך {treatmentDisplayClause}), יש לשלם בתשלום אחד, לחשבון הנאמנות של משרדנו, באמצעות קישור התשלום האישי שנשלח אלייך בהודעת הווטסאפ: {paymentLinkPlaceholder}. ניתן לשלם בכרטיס אשראי או בהעברה בנקאית.\nאין לשלם את החוב, או כל חלק ממנו, ישירות לוועד הבית או לחברת הניהול. תשלום חלקי, בכל דרך שהיא, לא יביא לסגירת התיק עד לתשלום מלוא היתרה.';
+  INITIAL_WARNING_PAYMENT_BLOCK_WITHOUT_TREATMENT;
 
 export const INITIAL_WARNING_OCCUPANCY_CLAUSES = {
   owner_single: {

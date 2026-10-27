@@ -36,4 +36,16 @@ describe("warning letter template variant approval", () => {
     expect(pending).not.toContain(WarningLetterUnapprovedTemplateVariant.COMMITTEE_INTRO);
     expect(pending.length).toBe(applicable.length - 1);
   });
+
+  it("has distinct content hashes for split payment-block variants", () => {
+    const withTreatment = computeWarningLetterTemplateVariantContentSha256({
+      variantId: WarningLetterUnapprovedTemplateVariant.PAYMENT_BLOCK_WITH_TREATMENT,
+      templateVersionId: INITIAL_WARNING_TEMPLATE_VERSION_ID,
+    });
+    const withoutTreatment = computeWarningLetterTemplateVariantContentSha256({
+      variantId: WarningLetterUnapprovedTemplateVariant.PAYMENT_BLOCK_WITHOUT_TREATMENT,
+      templateVersionId: INITIAL_WARNING_TEMPLATE_VERSION_ID,
+    });
+    expect(withTreatment).not.toBe(withoutTreatment);
+  });
 });

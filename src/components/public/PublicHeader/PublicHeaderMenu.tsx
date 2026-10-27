@@ -11,6 +11,7 @@ import styles from "./PublicHeader.module.scss";
 const navItems = [
   { href: "#how-it-works", label: homepageHeader.navHowItWorks },
   { href: "#who-for", label: homepageHeader.navWhoFor },
+  { href: "#contact", label: homepageHeader.navContact },
 ] as const;
 
 type Props = {

@@ -25,7 +25,12 @@ export function HomeProcess() {
                 {step.number}
               </span>
               <div className={styles.stepContent}>
-                <h3 className={styles.stepTitle}>{step.title}</h3>
+                <h3 className={styles.stepTitle}>
+                  {step.title}
+                  {step.futureCapability ? (
+                    <span className={styles.futureBadge}>בפיתוח — לא פעיל כיום</span>
+                  ) : null}
+                </h3>
                 <p className={styles.stepBody}>{step.body}</p>
               </div>
             </li>

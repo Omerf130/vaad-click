@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PublicFooter } from "@/components/public/PublicFooter/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader/PublicHeader";
 import { HomeAudience } from "@/components/public/home/HomeAudience/HomeAudience";
+import { HomeContact } from "@/components/public/home/HomeContact/HomeContact";
 import { HomeFinalCta } from "@/components/public/home/HomeFinalCta/HomeFinalCta";
 import { HomeHero } from "@/components/public/home/HomeHero/HomeHero";
 import { HomeProcess } from "@/components/public/home/HomeProcess/HomeProcess";
@@ -28,6 +29,7 @@ export default function HomePage() {
         <HomeAudience />
         <HomeProcess />
         <HomeTransparency />
+        <HomeContact />
         <HomeFinalCta />
       </main>
       <PublicFooter />

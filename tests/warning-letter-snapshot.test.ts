@@ -181,6 +181,24 @@ describe("warning letter snapshot", () => {
     expect(snapshot.numberedClauses[0]?.body).toContain("בבעלותכם המשותפת");
   });
 
+  it("uses without-treatment payment block when building not eligible", () => {
+    const snapshot = buildStrictOperativeInitialWarningLetterSnapshot(
+      buildInput({
+        building: {
+          street: "רחוב הדוגמה",
+          houseNumber: "28",
+          city: "עיר לדוגמה",
+          clientPresentation: WarningLetterClientPresentation.COMMITTEE,
+          managementCompanyLegalName: null,
+          treatmentFeeEligible: false,
+        },
+      }),
+    );
+    const payment = snapshot.numberedClauses.find((c) => c.clauseId === "payment_block");
+    expect(payment?.body).toContain("(קרן החוב)");
+    expect(payment?.body).not.toContain("הוצאות טיפול עו");
+  });
+
   it("omits treatment clause when building not eligible", () => {
     const snapshot = buildStrictOperativeInitialWarningLetterSnapshot(
       buildInput({

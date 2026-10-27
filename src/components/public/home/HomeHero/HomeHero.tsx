@@ -4,6 +4,7 @@ import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button/ButtonLink";
 import { PlannedAction } from "@/components/public/PlannedAction/PlannedAction";
 import { homepageHero } from "@/content/homepage";
+import { lawFirmDeliveryScopeClarification } from "@/content/law-firm";
 import styles from "./HomeHero.module.scss";
 
 export function HomeHero() {
@@ -16,6 +17,7 @@ export function HomeHero() {
             {homepageHero.headline}
           </h1>
           <p className={styles.supporting}>{homepageHero.supporting}</p>
+          <p className={styles.scopeNote}>{lawFirmDeliveryScopeClarification}</p>
           <div className={styles.ctas}>
             <PlannedAction
               label={homepageHero.primaryCta}

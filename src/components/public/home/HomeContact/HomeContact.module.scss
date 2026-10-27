@@ -1,0 +1,139 @@
+@use "../../../../styles/tokens" as *;
+@use "../../../../styles/breakpoints" as *;
+
+.section {
+  padding-block: $space-10;
+  background-color: $color-bg-surface;
+  border-block-start: 1px solid $color-border;
+}
+
+.header {
+  max-width: 42rem;
+  margin-block-end: $space-8;
+}
+
+.title {
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  color: $color-primary;
+  margin-block-end: $space-4;
+}
+
+.intro {
+  margin: 0;
+  font-size: $font-size-lg;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.grid {
+  display: grid;
+  gap: $space-5;
+
+  @include md-up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include lg-up {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.branchCard,
+.metaCard {
+  padding: $space-6;
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  background: $color-bg-page;
+}
+
+.branchName {
+  margin: 0 0 $space-3;
+  font-size: $font-size-lg;
+  color: $color-primary;
+}
+
+.address {
+  font-style: normal;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.addressLine {
+  font-size: $font-size-md;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.phoneLink {
+  font-size: $font-size-lg;
+  font-weight: 700;
+  color: $color-accent;
+  text-decoration: none;
+  width: fit-content;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: $focus-ring-width solid $color-focus;
+    outline-offset: $focus-ring-offset;
+    border-radius: $radius-sm;
+  }
+}
+
+.lawyerName {
+  margin: 0 0 $space-2;
+  font-size: $font-size-lg;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.serviceContext {
+  margin: 0 0 $space-5;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.metaList {
+  margin: 0;
+}
+
+.metaRow {
+  display: grid;
+  gap: $space-1;
+  margin-block-end: $space-4;
+
+  &:last-child {
+    margin-block-end: 0;
+  }
+
+  dt {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+    font-size: $font-size-md;
+
+    a {
+      color: $color-accent;
+      font-weight: 600;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      &:focus-visible {
+        outline: $focus-ring-width solid $color-focus;
+        outline-offset: $focus-ring-offset;
+        border-radius: $radius-sm;
+      }
+    }
+  }
+}

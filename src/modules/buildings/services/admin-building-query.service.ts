@@ -116,6 +116,9 @@ export type AdminBuildingDetail = {
   representative: { id: string; fullName: string; email: string } | null;
   managementCompany: { managementCompanyId: string; displayName: string } | null;
   duplicateExceptionReason: string | null;
+  treatmentFeeEligible: boolean;
+  treatmentFeeEligibleUpdatedAt: string | null;
+  treatmentFeeEligibleUpdatedBy: { fullName: string } | null;
 };
 
 export async function getAdminBuildingDetail(input: {
@@ -156,6 +159,16 @@ export async function getAdminBuildingDetail(input: {
     }
   }
 
+  let treatmentFeeEligibleUpdatedBy: AdminBuildingDetail["treatmentFeeEligibleUpdatedBy"] = null;
+  if (row.treatmentFeeEligibleUpdatedByUserId) {
+    const actor = await User.findById(row.treatmentFeeEligibleUpdatedByUserId)
+      .select("fullName")
+      .lean();
+    if (actor?.fullName) {
+      treatmentFeeEligibleUpdatedBy = { fullName: actor.fullName };
+    }
+  }
+
   return {
     buildingId: row.buildingId,
     displayName: row.displayName,
@@ -167,6 +180,11 @@ export async function getAdminBuildingDetail(input: {
     representative,
     managementCompany,
     duplicateExceptionReason: row.duplicateException?.reasonInternal ?? null,
+    treatmentFeeEligible: Boolean(row.treatmentFeeEligible),
+    treatmentFeeEligibleUpdatedAt: row.treatmentFeeEligibleUpdatedAt
+      ? row.treatmentFeeEligibleUpdatedAt.toISOString()
+      : null,
+    treatmentFeeEligibleUpdatedBy,
   };
 }
 

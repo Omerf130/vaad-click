@@ -16,6 +16,7 @@ describe("admin navigation configuration", () => {
       "users",
       "debt_cases",
       "warning_letter_templates",
+      "legal_document_templates",
       "reports",
       "settings",
     ]);

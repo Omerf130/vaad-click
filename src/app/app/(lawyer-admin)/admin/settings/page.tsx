@@ -29,6 +29,15 @@ export default async function AdminSettingsHubPage() {
           </ButtonLink>
         }
       />
+      <AdminModuleCard
+        title="מסמכים משפטיים"
+        description="טיוטות, גרסאות, אישור ופרסום של תבניות ייפוי כוח, הסכם שכר טרחה והצהרה."
+        footer={
+          <ButtonLink href="/app/admin/legal-document-templates" variant="secondary" size="sm">
+            פתיחת מסמכים משפטיים
+          </ButtonLink>
+        }
+      />
     </AdminPageFrame>
   );
 }

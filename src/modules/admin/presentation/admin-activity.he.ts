@@ -10,6 +10,8 @@ export function formatAdminActivityTitleHe(eventType: string): string {
       return "נוצר רישום בניין";
     case AuditEventType.BUILDING_RECORD_UPDATED:
       return "עודכנו פרטי בניין";
+    case AuditEventType.BUILDING_TREATMENT_FEE_ELIGIBILITY_CHANGED:
+      return "עודכן סטטוס הוצאות טיפול לבניין";
     case AuditEventType.BUILDING_MANAGEMENT_COMPANY_LINKED:
       return "חברת ניהול שויכה לבניין";
     case AuditEventType.BUILDING_REPRESENTATIVE_ASSIGNED:

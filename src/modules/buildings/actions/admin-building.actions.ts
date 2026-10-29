@@ -19,8 +19,11 @@ import {
   createBuildingRecord,
   updateBuildingRecord,
 } from "@/modules/buildings/services/building-lifecycle.service";
+import { updateBuildingTreatmentFeeEligibility } from "@/modules/buildings/services/building-treatment-fee-eligibility.service";
+import { formatTreatmentFeeEligibilitySavedMessageHe } from "@/modules/buildings/presentation/building-treatment-fee.he";
 import { createBuildingInputSchema } from "@/modules/buildings/validation/building.schema";
 import { updateBuildingInputSchema } from "@/modules/buildings/validation/building.schema";
+import { updateBuildingTreatmentFeeEligibilitySchema } from "@/modules/buildings/validation/building.schema";
 import { resolveAuditCorrelationId } from "@/modules/audit/services/audit-correlation";
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
 import { assertSameOriginMutationRequest } from "@/shared/security/request-origin";
@@ -272,6 +275,38 @@ export async function unlinkManagementCompanyFormAction(
     revalidatePath(ADMIN_COMPANIES_PATH);
     revalidatePath(`${ADMIN_COMPANIES_PATH}/${managementCompanyId}`);
     return { ok: true, message: "שיוך חברת הניהול הוסר.", buildingId };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function updateBuildingTreatmentFeeEligibilityFormAction(
+  _prev: AdminBuildingActionState,
+  formData: FormData,
+): Promise<AdminBuildingActionState> {
+  try {
+    const context = await guard();
+    const payload = updateBuildingTreatmentFeeEligibilitySchema.parse({
+      buildingId: formData.get("buildingId"),
+      treatmentFeeEligible: formData.get("treatmentFeeEligible"),
+      expectedTreatmentFeeEligible: formData.get("expectedTreatmentFeeEligible"),
+    });
+
+    const correlationId = await resolveAuditCorrelationId();
+    const result = await updateBuildingTreatmentFeeEligibility({
+      context,
+      payload,
+      correlationId,
+    });
+    revalidateBuilding(payload.buildingId);
+    return {
+      ok: true,
+      buildingId: payload.buildingId,
+      message: formatTreatmentFeeEligibilitySavedMessageHe(
+        result.changed,
+        result.treatmentFeeEligible,
+      ),
+    };
   } catch (error) {
     return handleError(error);
   }

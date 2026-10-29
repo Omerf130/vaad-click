@@ -49,6 +49,7 @@ export const AuditEventType = {
   BUILDING_COMMITTEE_ENGAGEMENT_PROPOSED_TERMS_REPLACED:
     "building.committee_engagement.proposed_terms_replaced",
   BUILDING_VERIFICATION_STATUS_CHANGED: "building.verification_status.changed",
+  BUILDING_TREATMENT_FEE_ELIGIBILITY_CHANGED: "building.treatment_fee_eligibility.changed",
   MANAGEMENT_COMPANY_RECORD_CREATED: "management_company.record.created",
   MANAGEMENT_COMPANY_RECORD_UPDATED: "management_company.record.updated",
   MANAGEMENT_COMPANY_RECORD_ARCHIVED: "management_company.record.archived",
@@ -79,6 +80,20 @@ export const AuditEventType = {
     "legal_document.warning_letter_draft.wording_returned",
   LEGAL_DOCUMENT_WARNING_LETTER_TEMPLATE_VARIANT_APPROVED:
     "legal_document.warning_letter_template_variant.approved",
+  LEGAL_DOCUMENT_ONBOARDING_TEMPLATE_DRAFT_CREATED:
+    "legal_document.onboarding_template.draft_created",
+  LEGAL_DOCUMENT_ONBOARDING_TEMPLATE_DRAFT_SAVED:
+    "legal_document.onboarding_template.draft_saved",
+  LEGAL_DOCUMENT_ONBOARDING_TEMPLATE_REVISION_APPROVED:
+    "legal_document.onboarding_template.revision_approved",
+  LEGAL_DOCUMENT_ONBOARDING_TEMPLATE_REVISION_PUBLISHED:
+    "legal_document.onboarding_template.revision_published",
+  LEGAL_DOCUMENT_ONBOARDING_TEMPLATE_PUBLISH_BLOCKED:
+    "legal_document.onboarding_template.publish_blocked",
+  LEGAL_DOCUMENT_BUILDING_INSTANCE_GENERATED:
+    "legal_document.building_instance.generated",
+  LEGAL_DOCUMENT_BUILDING_INSTANCE_SUPERSEDED:
+    "legal_document.building_instance.superseded",
   LEGAL_DOCUMENT_WARNING_LETTER_FINALIZED:
     "legal_document.warning_letter.finalized",
   LEGAL_DOCUMENT_WARNING_LETTER_FINALIZATION_BLOCKED:

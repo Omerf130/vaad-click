@@ -64,3 +64,19 @@ export const updateBuildingVerificationStatusSchema = z.object({
     LawyerVerificationStatus.PENDING_LAWYER_REVIEW,
   ]),
 });
+
+const treatmentFeeEligibilityBooleanSchema = z.union([
+  z.enum(["true", "false"]).transform((value) => value === "true"),
+  z.boolean(),
+]);
+
+export const updateBuildingTreatmentFeeEligibilitySchema = z.object({
+  buildingId: z.string().trim().uuid(),
+  treatmentFeeEligible: treatmentFeeEligibilityBooleanSchema,
+  /** Value shown in UI when the user opened the form — optimistic concurrency. */
+  expectedTreatmentFeeEligible: treatmentFeeEligibilityBooleanSchema,
+});
+
+export type UpdateBuildingTreatmentFeeEligibilityInput = z.infer<
+  typeof updateBuildingTreatmentFeeEligibilitySchema
+>;

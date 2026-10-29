@@ -1,3 +1,5 @@
+import { loadBuildingLegalDocumentsPortalView } from "@/modules/building-legal-documents/services/building-legal-document.service";
+import { BuildingLegalDocumentsPortalPanel } from "@/modules/building-legal-documents/ui/BuildingLegalDocumentsPortalPanel";
 import { listDebtCasesForBuilding } from "@/modules/debt-cases/services/debt-case.service";
 import { BuildingDebtCasesPanel } from "@/modules/debt-cases/ui/BuildingDebtCasesPanel";
 import { OPERATOR_PORTAL_ROUTES } from "@/modules/portal/presentation/operator-portal-nav";
@@ -19,9 +21,12 @@ export default async function PortalBuildingDetailPage({ params }: PageProps) {
     context.user.role === UserRole.BUILDING_REP ||
     context.user.role === UserRole.MANAGEMENT_COMPANY;
 
-  const debtCases = isOperator
-    ? await listDebtCasesForBuilding({ context, buildingId })
-    : [];
+  const [debtCases, legalDocumentCategories] = await Promise.all([
+    isOperator ? listDebtCasesForBuilding({ context, buildingId }) : Promise.resolve([]),
+    isOperator
+      ? loadBuildingLegalDocumentsPortalView({ context, buildingId })
+      : Promise.resolve([]),
+  ]);
 
   const subtitle = isOperator
     ? "ניהול תיקי חוב — שמירת טיוטות והגשה לבדיקת עורך דין (לא שליחת מכתב)."
@@ -39,6 +44,7 @@ export default async function PortalBuildingDetailPage({ params }: PageProps) {
     >
       {isOperator ? (
         <div className={`${styles.buildingDetailLayout} ${debtStyles.section}`}>
+          <BuildingLegalDocumentsPortalPanel categories={legalDocumentCategories} />
           <BuildingDebtCasesPanel buildingId={buildingId} cases={debtCases} />
         </div>
       ) : (

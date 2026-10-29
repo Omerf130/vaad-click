@@ -282,3 +282,27 @@ export async function recordCommitteeEngagementProposedTermsReplaced(
     { session: input.session },
   );
 }
+
+export async function recordBuildingTreatmentFeeEligibilityChanged(
+  input: AuditBase & {
+    buildingId: string;
+    previousEligible: boolean;
+    nextEligible: boolean;
+  },
+) {
+  await writeAuditEventMandatory(
+    {
+      eventType: AuditEventType.BUILDING_TREATMENT_FEE_ELIGIBILITY_CHANGED,
+      actor: buildUserAuditActor(input.context),
+      action: "update_treatment_fee_eligibility",
+      outcome: AuditOutcome.SUCCESS,
+      target: { entityType: "building", entityId: input.buildingId },
+      metadata: {
+        previousTreatmentFeeEligible: input.previousEligible,
+        nextTreatmentFeeEligible: input.nextEligible,
+      },
+      correlationId: input.correlationId,
+    },
+    { session: input.session },
+  );
+}

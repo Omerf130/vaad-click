@@ -41,6 +41,12 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
     status: "implemented",
   },
   {
+    id: "legal_document_templates",
+    labelHe: "מסמכים משפטיים",
+    href: "/app/admin/legal-document-templates",
+    status: "implemented",
+  },
+  {
     id: "lawyer_approvals",
     labelHe: "אישורי עורך דין",
     href: null,
@@ -108,6 +114,9 @@ export function isAdminNavItemActive(pathname: string, item: AdminNavItem): bool
   }
   if (item.href === "/app/admin/warning-letter-templates") {
     return pathname.startsWith("/app/admin/warning-letter-templates");
+  }
+  if (item.href === "/app/admin/legal-document-templates") {
+    return pathname.startsWith("/app/admin/legal-document-templates");
   }
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }

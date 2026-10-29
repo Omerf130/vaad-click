@@ -26,6 +26,9 @@ import type {
 } from "@/modules/document-assets/presentation/document-asset-view.types";
 import { BuildingDocumentsPanel } from "@/modules/document-assets/ui/BuildingDocumentsPanel";
 import type { AdminCommitteeEngagementView } from "@/modules/committee-engagements/services/committee-engagement.service";
+import { BuildingLegalDocumentsAdminPanel } from "@/modules/building-legal-documents/ui/BuildingLegalDocumentsAdminPanel";
+import { BuildingTreatmentFeeEligibilityPanel } from "@/modules/buildings/ui/BuildingTreatmentFeeEligibilityPanel";
+import type { BuildingLegalDocumentCategoryAdminView } from "@/modules/building-legal-documents/services/building-legal-document.service";
 import styles from "@/modules/users/ui/AdminUsers.module.scss";
 
 type BuildingDetailPanelsProps = {
@@ -35,6 +38,7 @@ type BuildingDetailPanelsProps = {
   committeeEngagement: AdminCommitteeEngagementView | null;
   buildingDocuments: AdminDocumentAssetListItem[];
   documentStorageState: DocumentStorageUiState;
+  legalDocumentCategories: BuildingLegalDocumentCategoryAdminView[];
 };
 
 const initial: AdminBuildingActionState = { ok: false };
@@ -46,6 +50,7 @@ export function BuildingDetailPanels({
   committeeEngagement,
   buildingDocuments,
   documentStorageState,
+  legalDocumentCategories,
 }: BuildingDetailPanelsProps) {
   const [confirm, setConfirm] = useState<"removeRep" | "archive" | "unlink" | null>(null);
   const [updateState, updateAction, updatePending] = useActionState(updateBuildingFormAction, initial);
@@ -126,6 +131,8 @@ export function BuildingDetailPanels({
         ) : null}
       </section>
 
+      <BuildingTreatmentFeeEligibilityPanel building={building} />
+
       <section className={styles.detailCard}>
         <h2 className={styles.workspaceTitle}>נציגות בית משותף</h2>
         {building.representative ? (
@@ -176,6 +183,13 @@ export function BuildingDetailPanels({
         documents={buildingDocuments}
         storageState={documentStorageState}
       />
+
+      <section className={styles.detailCard}>
+        <BuildingLegalDocumentsAdminPanel
+          buildingId={building.buildingId}
+          categories={legalDocumentCategories}
+        />
+      </section>
 
       <section className={styles.detailCard}>
         <h2 className={styles.workspaceTitle}>חברת ניהול</h2>

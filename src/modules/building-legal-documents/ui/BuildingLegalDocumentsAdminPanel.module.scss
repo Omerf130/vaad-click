@@ -1,0 +1,106 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: 700;
+}
+
+.intro {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.feedbackSuccess,
+.feedbackError {
+  margin: 0;
+  padding: $space-2 $space-3;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+}
+
+.feedbackSuccess {
+  background: $color-success-bg;
+  color: $color-success-text;
+}
+
+.feedbackError {
+  background: $color-error-bg;
+  color: $color-error-text;
+}
+
+.grid {
+  display: grid;
+  gap: $space-4;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include md-up {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: $font-size-md;
+  font-weight: 700;
+}
+
+.meta {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.blockReason {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-warning-text;
+  line-height: $line-height-relaxed;
+}
+
+.inlineForm {
+  display: block;
+  margin-top: auto;
+}
+
+.snapshotDetails {
+  margin-top: $space-2;
+  font-size: $font-size-xs;
+}
+
+.snapshotSummary {
+  cursor: pointer;
+  color: $color-accent;
+  font-weight: 600;
+}
+
+.snapshotBody {
+  margin: $space-2 0 0;
+  padding: $space-2;
+  max-height: 8rem;
+  overflow: auto;
+  border-radius: $radius-sm;
+  background: $color-bg-subtle;
+  white-space: pre-wrap;
+  font-size: $font-size-xs;
+  line-height: $line-height-relaxed;
+}

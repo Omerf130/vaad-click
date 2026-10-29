@@ -12,6 +12,7 @@ import {
   getDocumentStorageUiState,
   listBuildingDocumentAssetsForLawyerAdmin,
 } from "@/modules/document-assets/services/document-asset.service";
+import { loadBuildingLegalDocumentsAdminView } from "@/modules/building-legal-documents/services/building-legal-document.service";
 import { BuildingDetailPanels } from "@/modules/buildings/ui/BuildingDetailPanels";
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
 
@@ -29,12 +30,14 @@ export default async function AdminBuildingDetailPage({ params }: PageProps) {
     managementCompanies,
     committeeEngagement,
     buildingDocuments,
+    legalDocumentCategories,
   ] = await Promise.all([
     getAdminBuildingDetail({ context, buildingId }),
     listEligibleBuildingRepresentatives({ buildingId }),
     listActiveManagementCompaniesForLinking(),
     getAdminCommitteeEngagementForBuilding({ context, buildingId }),
     listBuildingDocumentAssetsForLawyerAdmin({ context, buildingId }),
+    loadBuildingLegalDocumentsAdminView({ context, buildingId }),
   ]);
 
   const documentStorageState = getDocumentStorageUiState();
@@ -73,6 +76,7 @@ export default async function AdminBuildingDetailPage({ params }: PageProps) {
         committeeEngagement={committeeEngagement}
         buildingDocuments={buildingDocuments}
         documentStorageState={documentStorageState}
+        legalDocumentCategories={legalDocumentCategories}
       />
     </AdminPageFrame>
   );

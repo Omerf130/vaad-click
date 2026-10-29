@@ -20,6 +20,9 @@ export function resolveAdminTopBarTitle(pathname: string): string {
   if (pathname.startsWith("/app/admin/warning-letter-templates")) {
     return "תבניות מכתב";
   }
+  if (pathname.startsWith("/app/admin/legal-document-templates")) {
+    return "מסמכים משפטיים";
+  }
   if (pathname === "/app/admin") {
     return "סקירה כללית";
   }

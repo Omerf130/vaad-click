@@ -59,6 +59,12 @@ const buildingSchema = new Schema(
     legacyFastTrackEligible: { type: Boolean, default: false },
     /** Lawyer-marked: building has basis to charge debtor treatment fee on warning letter (CP8.4B). */
     treatmentFeeEligible: { type: Boolean, default: false },
+    treatmentFeeEligibleUpdatedAt: { type: Date, default: null },
+    treatmentFeeEligibleUpdatedByUserId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     createdByUserId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     archivedAt: { type: Date, default: null },
   },

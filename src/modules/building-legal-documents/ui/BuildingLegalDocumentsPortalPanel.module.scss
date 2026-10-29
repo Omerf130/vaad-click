@@ -34,8 +34,7 @@
 
 .row {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  flex-direction: column;
   gap: $space-2;
   padding: $space-2 $space-3;
   border-radius: $radius-md;
@@ -43,11 +42,38 @@
   font-size: $font-size-sm;
 }
 
+.rowMain {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: $space-2;
+}
+
 .rowLabel {
   font-weight: 600;
 }
 
 .rowMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+  color: $color-text-muted;
+}
+
+.viewLink {
+  color: $color-accent;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.emptyLine {
+  margin: 0;
   color: $color-text-muted;
 }
 

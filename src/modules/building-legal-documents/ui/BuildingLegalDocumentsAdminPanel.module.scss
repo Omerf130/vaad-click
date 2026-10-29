@@ -82,25 +82,41 @@
   margin-top: auto;
 }
 
-.snapshotDetails {
-  margin-top: $space-2;
-  font-size: $font-size-xs;
+.viewLink {
+  color: $color-accent;
+  font-weight: 600;
+  font-size: $font-size-sm;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
-.snapshotSummary {
+.historyDetails {
+  margin-top: $space-1;
+  font-size: $font-size-sm;
+}
+
+.historySummary {
   cursor: pointer;
   color: $color-accent;
   font-weight: 600;
 }
 
-.snapshotBody {
+.historyList {
   margin: $space-2 0 0;
-  padding: $space-2;
-  max-height: 8rem;
-  overflow: auto;
-  border-radius: $radius-sm;
-  background: $color-bg-subtle;
-  white-space: pre-wrap;
-  font-size: $font-size-xs;
-  line-height: $line-height-relaxed;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.historyItem {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: $space-2;
+  color: $color-text-muted;
 }

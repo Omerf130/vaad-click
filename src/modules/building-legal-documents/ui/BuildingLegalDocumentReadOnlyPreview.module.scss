@@ -1,0 +1,73 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.article {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  max-width: 48rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.title {
+  margin: 0;
+  font-size: $font-size-xl;
+  font-weight: 700;
+}
+
+.banner,
+.historicalBanner,
+.signatureNote {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  color: $color-text-muted;
+}
+
+.historicalBanner {
+  color: $color-warning-text;
+}
+
+.metaList {
+  display: grid;
+  gap: $space-2;
+  margin: 0;
+}
+
+.metaRow {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: $space-2;
+  font-size: $font-size-sm;
+
+  dt {
+    margin: 0;
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+  }
+}
+
+.bodyFrame {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-surface;
+  padding: $space-4;
+}
+
+.body {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: $font-size-md;
+  line-height: $line-height-relaxed;
+  overflow-wrap: anywhere;
+}

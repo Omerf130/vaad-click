@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/Button/Button";
@@ -14,6 +15,7 @@ import {
   formatBuildingLegalDocumentGenerationBlockHe,
 } from "@/modules/building-legal-documents/presentation/building-legal-document-messages.he";
 import type { BuildingLegalDocumentCategoryAdminView } from "@/modules/building-legal-documents/services/building-legal-document.service";
+import type { BuildingLegalDocumentInstanceSummary } from "@/modules/building-legal-documents/services/building-legal-document.service";
 import styles from "@/modules/building-legal-documents/ui/BuildingLegalDocumentsAdminPanel.module.scss";
 
 type Props = {
@@ -29,6 +31,9 @@ function statusBadgeVariant(
   if (uiStatus === BuildingLegalDocumentUiStatus.GENERATED_PENDING_SIGNATURE) {
     return "warning";
   }
+  if (uiStatus === BuildingLegalDocumentUiStatus.SUPERSEDED) {
+    return "neutral";
+  }
   return "neutral";
 }
 
@@ -40,6 +45,45 @@ function formatDate(iso: string | null | undefined): string {
     dateStyle: "medium",
     timeStyle: "short",
   });
+}
+
+function previewHref(buildingId: string, documentId: string): string {
+  return `/app/admin/buildings/${buildingId}/legal-documents/${documentId}`;
+}
+
+function HistoryList({
+  buildingId,
+  items,
+}: {
+  buildingId: string;
+  items: BuildingLegalDocumentInstanceSummary[];
+}) {
+  if (items.length === 0) {
+    return null;
+  }
+  return (
+    <details className={styles.historyDetails}>
+      <summary className={styles.historySummary}>
+        היסטוריה ({items.length} גרסאות שהוחלפו)
+      </summary>
+      <ul className={styles.historyList}>
+        {items.map((item) => (
+          <li key={item.buildingLegalDocumentId} className={styles.historyItem}>
+            <span>
+              גרסה {item.templateRevisionNumber} · הופק {formatDate(item.createdAtIso)}
+              {item.supersededAtIso ? ` · הוחלף ${formatDate(item.supersededAtIso)}` : null}
+            </span>
+            <Link
+              className={styles.viewLink}
+              href={previewHref(buildingId, item.buildingLegalDocumentId)}
+            >
+              צפייה
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
 }
 
 export function BuildingLegalDocumentsAdminPanel({ buildingId, categories }: Props) {
@@ -73,25 +117,34 @@ export function BuildingLegalDocumentsAdminPanel({ buildingId, categories }: Pro
               label={buildingLegalDocumentUiStatusLabelHe(row.uiStatus)}
               variant={statusBadgeVariant(row.uiStatus)}
             />
-            <p className={styles.meta}>
-              סטטוס: {buildingLegalDocumentUiStatusLabelHe(row.uiStatus)}
-            </p>
             {row.activeInstance ? (
               <>
                 <p className={styles.meta}>
-                  תבנית: גרסה {row.activeInstance.templateRevisionNumber}
+                  מסמך פעיל · גרסת תבנית {row.activeInstance.templateRevisionNumber}
                 </p>
-                <p className={styles.meta}>הופק: {formatDate(row.activeInstance.createdAtIso)}</p>
-                <details className={styles.snapshotDetails}>
-                  <summary className={styles.snapshotSummary}>צילום תוכן שהופק</summary>
-                  <pre className={styles.snapshotBody} dir="rtl">
-                    {row.activeInstance.renderedContentSnapshot || "(ריק)"}
-                  </pre>
-                </details>
+                <p className={styles.meta}>
+                  הופק: {formatDate(row.activeInstance.createdAtIso)}
+                </p>
+                {row.activeInstance.generatedByFullName ? (
+                  <p className={styles.meta}>הופק על ידי: {row.activeInstance.generatedByFullName}</p>
+                ) : null}
+                <Link
+                  className={styles.viewLink}
+                  href={previewHref(buildingId, row.activeInstance.buildingLegalDocumentId)}
+                >
+                  צפייה במסמך הנוכחי
+                </Link>
               </>
             ) : (
               <p className={styles.meta}>לא הופק מסמך פעיל לקטגוריה זו.</p>
             )}
+            <HistoryList buildingId={buildingId} items={row.supersededHistory} />
+            {row.historyCount > row.supersededHistory.length + (row.activeInstance ? 1 : 0) ? (
+              <p className={styles.meta}>
+                מוצגות {row.supersededHistory.length} רשומות היסטוריות אחרונות מתוך{" "}
+                {row.historyCount} סה״כ.
+              </p>
+            ) : null}
             {row.publishedTemplateRevisionNumber != null ? (
               <p className={styles.meta}>
                 תבנית זמינה להפקה: גרסה {row.publishedTemplateRevisionNumber}
@@ -101,9 +154,6 @@ export function BuildingLegalDocumentsAdminPanel({ buildingId, categories }: Pro
               <p className={styles.blockReason} role="status">
                 {formatBuildingLegalDocumentGenerationBlockHe(row.generationBlockCode)}
               </p>
-            ) : null}
-            {row.historyCount > 1 ? (
-              <p className={styles.meta}>היסטוריה: {row.historyCount} רשומות</p>
             ) : null}
             <form action={formAction} className={styles.inlineForm}>
               <input type="hidden" name="buildingId" value={buildingId} />

@@ -10,9 +10,11 @@ import { PendingBuildingOnboardingRequest } from "@/modules/debt-cases/infra/pen
 import { BuildingOrganizationalStatus } from "@/modules/buildings/domain/building-status";
 import { Building } from "@/modules/buildings/infra/building.model";
 import { assertLawyerAdminOrganization } from "@/modules/organizations/services/assert-lawyer-admin";
+import { recordPendingOnboardingBound } from "@/modules/organizations/services/organization-audit.service";
 import { AccountStatus } from "@/modules/users/domain/account-status";
 import { User } from "@/modules/users/infra/user.model";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
+import { AuditWriteFailedError } from "@/shared/audit/errors/audit-errors";
 import { isWellFormedBuildingPublicId } from "@/shared/auth/building-access/building-public-id";
 import { connectMongo } from "@/shared/db/connect";
 
@@ -20,6 +22,38 @@ export type PendingOnboardingContext = {
   onboardingRequestId: string;
   buildingId: string;
 };
+
+function mapAuditError(error: unknown): never {
+  if (error instanceof AuditWriteFailedError) {
+    throw new DebtCaseError(
+      DebtCaseErrorCode.AUDIT_PERSISTENCE,
+      "Onboarding bind could not be recorded",
+    );
+  }
+  throw error;
+}
+
+export function buildPendingOnboardingConcurrencyFilter(input: {
+  onboardingRequestId: string;
+  targetUserId: string;
+  expectedOnboardingStatus: PendingBuildingOnboardingStatus;
+  expectedBoundBuildingId: string | null;
+}): Record<string, unknown> {
+  const userObjectId = new Types.ObjectId(input.targetUserId);
+  if (input.expectedOnboardingStatus === PendingBuildingOnboardingStatus.OPEN) {
+    return {
+      onboardingRequestId: input.onboardingRequestId,
+      userId: userObjectId,
+      status: PendingBuildingOnboardingStatus.OPEN,
+    };
+  }
+  return {
+    onboardingRequestId: input.onboardingRequestId,
+    userId: userObjectId,
+    status: PendingBuildingOnboardingStatus.BOUND,
+    buildingId: input.expectedBoundBuildingId,
+  };
+}
 
 /** Creates server-owned onboarding association (registration UI wires later). */
 export async function createPendingBuildingOnboardingRequest(input: {
@@ -60,10 +94,17 @@ export async function createPendingBuildingOnboardingRequest(input: {
 /** Lawyer-admin binds an existing building to a pending user's onboarding request. */
 export async function bindPendingOnboardingToBuilding(input: {
   context: AuthenticatedContext;
+  targetUserId: string;
   onboardingRequestId: string;
   buildingId: string;
-}): Promise<void> {
+  expectedOnboardingStatus: PendingBuildingOnboardingStatus;
+  expectedBoundBuildingId?: string | null;
+  correlationId?: string;
+}): Promise<{ changed: boolean }> {
   assertLawyerAdminOrganization(input.context);
+  if (!Types.ObjectId.isValid(input.targetUserId)) {
+    throw new DebtCaseError(DebtCaseErrorCode.VALIDATION, "Invalid user id");
+  }
   if (!isWellFormedBuildingPublicId(input.buildingId)) {
     throw new DebtCaseError(DebtCaseErrorCode.VALIDATION, "Invalid building id");
   }
@@ -79,17 +120,92 @@ export async function bindPendingOnboardingToBuilding(input: {
 
   const request = await PendingBuildingOnboardingRequest.findOne({
     onboardingRequestId: input.onboardingRequestId,
+    userId: new Types.ObjectId(input.targetUserId),
     status: { $in: [PendingBuildingOnboardingStatus.OPEN, PendingBuildingOnboardingStatus.BOUND] },
-  });
+  }).lean();
+
   if (!request) {
     throw new DebtCaseError(DebtCaseErrorCode.NOT_FOUND, "Onboarding request not found");
   }
 
-  request.status = PendingBuildingOnboardingStatus.BOUND;
-  request.buildingId = input.buildingId;
-  request.boundAt = new Date();
-  request.boundByUserId = new Types.ObjectId(input.context.user.id);
-  await request.save();
+  const currentBuildingId = request.buildingId ?? null;
+  if (
+    request.status === PendingBuildingOnboardingStatus.BOUND &&
+    currentBuildingId === input.buildingId
+  ) {
+    return { changed: false };
+  }
+
+  const expectedBoundBuildingId =
+    input.expectedOnboardingStatus === PendingBuildingOnboardingStatus.BOUND
+      ? (input.expectedBoundBuildingId ?? currentBuildingId)
+      : null;
+
+  if (
+    request.status !== input.expectedOnboardingStatus ||
+    (request.status === PendingBuildingOnboardingStatus.BOUND &&
+      currentBuildingId !== expectedBoundBuildingId)
+  ) {
+    throw new DebtCaseError(
+      DebtCaseErrorCode.FORBIDDEN,
+      "Onboarding request state changed elsewhere",
+    );
+  }
+
+  const now = new Date();
+  const actorId = new Types.ObjectId(input.context.user.id);
+  const session = await mongoose.startSession();
+  const previousBuildingId = currentBuildingId;
+
+  try {
+    await session.withTransaction(async () => {
+      const filter = buildPendingOnboardingConcurrencyFilter({
+        onboardingRequestId: input.onboardingRequestId,
+        targetUserId: input.targetUserId,
+        expectedOnboardingStatus: input.expectedOnboardingStatus,
+        expectedBoundBuildingId,
+      });
+
+      const updateResult = await PendingBuildingOnboardingRequest.updateOne(
+        filter,
+        {
+          $set: {
+            status: PendingBuildingOnboardingStatus.BOUND,
+            buildingId: input.buildingId,
+            boundAt: now,
+            boundByUserId: actorId,
+          },
+        },
+        { session },
+      );
+
+      if (updateResult.modifiedCount !== 1) {
+        throw new DebtCaseError(
+          DebtCaseErrorCode.FORBIDDEN,
+          "Onboarding concurrent update conflict",
+        );
+      }
+
+      await recordPendingOnboardingBound({
+        context: input.context,
+        targetUserId: input.targetUserId,
+        onboardingRequestId: input.onboardingRequestId,
+        buildingId: input.buildingId,
+        previousBuildingId,
+        correlationId: input.correlationId,
+        session,
+      });
+    });
+  } catch (error) {
+    if (error instanceof DebtCaseError) {
+      throw error;
+    }
+    mapAuditError(error);
+  } finally {
+    await session.endSession();
+  }
+
+  return { changed: true };
 }
 
 /** Resolves bound building for pending user — never trusts client building id. */

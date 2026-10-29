@@ -35,6 +35,7 @@ export const AuditEventType = {
   USER_ADMIN_ACCOUNT_APPROVED: "user_admin.account.approved",
   USER_ADMIN_ACCOUNT_REJECTED: "user_admin.account.rejected",
   USER_ADMIN_ACCOUNT_RECONSIDERED: "user_admin.account.reconsidered",
+  USER_ADMIN_PENDING_ONBOARDING_BOUND: "user_admin.pending_onboarding.bound",
   BUILDING_RECORD_CREATED: "building.record.created",
   BUILDING_RECORD_UPDATED: "building.record.updated",
   BUILDING_RECORD_ARCHIVED: "building.record.archived",
@@ -94,6 +95,10 @@ export const AuditEventType = {
     "legal_document.building_instance.generated",
   LEGAL_DOCUMENT_BUILDING_INSTANCE_SUPERSEDED:
     "legal_document.building_instance.superseded",
+  LEGAL_DOCUMENT_BUILDING_INSTANCE_PDF_VIEWED:
+    "legal_document.building_instance.pdf_viewed",
+  LEGAL_DOCUMENT_BUILDING_INSTANCE_PDF_DOWNLOADED:
+    "legal_document.building_instance.pdf_downloaded",
   LEGAL_DOCUMENT_WARNING_LETTER_FINALIZED:
     "legal_document.warning_letter.finalized",
   LEGAL_DOCUMENT_WARNING_LETTER_FINALIZATION_BLOCKED:

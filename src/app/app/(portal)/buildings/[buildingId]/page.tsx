@@ -44,7 +44,10 @@ export default async function PortalBuildingDetailPage({ params }: PageProps) {
     >
       {isOperator ? (
         <div className={`${styles.buildingDetailLayout} ${debtStyles.section}`}>
-          <BuildingLegalDocumentsPortalPanel categories={legalDocumentCategories} />
+          <BuildingLegalDocumentsPortalPanel
+            buildingId={buildingId}
+            categories={legalDocumentCategories}
+          />
           <BuildingDebtCasesPanel buildingId={buildingId} cases={debtCases} />
         </div>
       ) : (

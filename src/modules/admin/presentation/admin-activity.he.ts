@@ -6,6 +6,8 @@ export function formatAdminActivityTitleHe(eventType: string): string {
       return "חשבון משתמש אושר";
     case AuditEventType.USER_ADMIN_ACCOUNT_REJECTED:
       return "חשבון משתמש נדחה";
+    case AuditEventType.USER_ADMIN_PENDING_ONBOARDING_BOUND:
+      return "שויך בניין לבקשת הרשמה";
     case AuditEventType.BUILDING_RECORD_CREATED:
       return "נוצר רישום בניין";
     case AuditEventType.BUILDING_RECORD_UPDATED:

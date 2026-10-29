@@ -283,6 +283,32 @@ export async function recordCommitteeEngagementProposedTermsReplaced(
   );
 }
 
+export async function recordPendingOnboardingBound(
+  input: AuditBase & {
+    targetUserId: string;
+    onboardingRequestId: string;
+    buildingId: string;
+    previousBuildingId: string | null;
+  },
+) {
+  await writeAuditEventMandatory(
+    {
+      eventType: AuditEventType.USER_ADMIN_PENDING_ONBOARDING_BOUND,
+      actor: buildUserAuditActor(input.context),
+      action: "bind_pending_onboarding_building",
+      outcome: AuditOutcome.SUCCESS,
+      target: { entityType: "user", entityId: input.targetUserId },
+      metadata: {
+        onboardingRequestId: input.onboardingRequestId,
+        buildingId: input.buildingId,
+        previousBuildingId: input.previousBuildingId,
+      },
+      correlationId: input.correlationId,
+    },
+    { session: input.session },
+  );
+}
+
 export async function recordBuildingTreatmentFeeEligibilityChanged(
   input: AuditBase & {
     buildingId: string;

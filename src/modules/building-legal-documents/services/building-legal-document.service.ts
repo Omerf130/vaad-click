@@ -26,6 +26,8 @@ import {
 } from "@/modules/legal-document-templates/domain/legal-document-template-category";
 import { resolveApprovedPublishedLegalTemplateRevision } from "@/modules/legal-document-templates/services/approved-published-legal-template.service";
 import { assertLawyerAdminOrganization } from "@/modules/organizations/services/assert-lawyer-admin";
+import { UserRole } from "@/modules/users/domain/user-role";
+import { User } from "@/modules/users/infra/user.model";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 import { assertBuildingAccess } from "@/shared/auth/building-access/assert-building-access";
 import { buildUserAuditActor } from "@/shared/audit/build-audit-actor";
@@ -33,16 +35,28 @@ import { AuditEventType } from "@/shared/audit/domain/audit-event-taxonomy";
 import { AuditOutcome } from "@/shared/audit/domain/audit-outcome";
 import { connectMongo } from "@/shared/db/connect";
 
-export type BuildingLegalDocumentInstanceView = {
+export const BUILDING_LEGAL_DOCUMENT_HISTORY_LIMIT = 10;
+
+export type BuildingLegalDocumentInstanceSummary = {
   buildingLegalDocumentId: string;
   buildingId: string;
   category: LegalDocumentTemplateCategory;
   templateRevisionNumber: number;
-  templateRevisionId: string;
   status: BuildingLegalDocumentStatus;
   uiStatus: BuildingLegalDocumentUiStatus;
   createdAtIso: string;
   supersededAtIso: string | null;
+  generatedByFullName: string | null;
+};
+
+export type BuildingLegalDocumentPreviewView = BuildingLegalDocumentInstanceSummary & {
+  titleHe: string;
+  renderedContentSnapshot: string;
+};
+
+/** @deprecated Use summary + dedicated preview loader — snapshot not included in lists. */
+export type BuildingLegalDocumentInstanceView = BuildingLegalDocumentInstanceSummary & {
+  templateRevisionId: string;
   renderedContentSnapshot: string;
 };
 
@@ -50,11 +64,12 @@ export type BuildingLegalDocumentCategoryAdminView = {
   category: LegalDocumentTemplateCategory;
   titleHe: string;
   uiStatus: BuildingLegalDocumentUiStatus;
-  activeInstance: BuildingLegalDocumentInstanceView | null;
+  activeInstance: BuildingLegalDocumentInstanceSummary | null;
   generationAllowed: boolean;
   generationBlockCode: BuildingLegalDocumentGenerationBlockCode | null;
   publishedTemplateRevisionNumber: number | null;
   historyCount: number;
+  supersededHistory: BuildingLegalDocumentInstanceSummary[];
 };
 
 export type BuildingLegalDocumentCategoryPortalView = {
@@ -63,35 +78,51 @@ export type BuildingLegalDocumentCategoryPortalView = {
   uiStatus: BuildingLegalDocumentUiStatus;
   createdAtIso: string | null;
   templateRevisionNumber: number | null;
+  activeBuildingLegalDocumentId: string | null;
 };
 
-function mapDocument(doc: {
-  buildingLegalDocumentId: string;
-  buildingId: string;
-  category: string;
-  templateRevisionId: string;
-  templateRevisionNumber: number;
-  status: string;
-  createdAt?: Date;
-  supersededAt?: Date | null;
-  renderedContentSnapshot: string;
-}): BuildingLegalDocumentInstanceView {
+function mapUiStatus(status: BuildingLegalDocumentStatus): BuildingLegalDocumentUiStatus {
+  return status === BuildingLegalDocumentStatus.GENERATED_PENDING_SIGNATURE
+    ? BuildingLegalDocumentUiStatus.GENERATED_PENDING_SIGNATURE
+    : BuildingLegalDocumentUiStatus.SUPERSEDED;
+}
+
+async function resolveGeneratedByNames(
+  userIds: readonly Types.ObjectId[],
+): Promise<Map<string, string>> {
+  if (userIds.length === 0) {
+    return new Map();
+  }
+  const users = await User.find({ _id: { $in: [...userIds] } })
+    .select("fullName")
+    .lean();
+  return new Map(users.map((row) => [row._id.toString(), row.fullName]));
+}
+
+function mapDocumentSummary(
+  doc: {
+    buildingLegalDocumentId: string;
+    buildingId: string;
+    category: string;
+    templateRevisionNumber: number;
+    status: string;
+    createdAt?: Date;
+    supersededAt?: Date | null;
+    createdByUserId: Types.ObjectId;
+  },
+  generatedByFullName: string | null,
+): BuildingLegalDocumentInstanceSummary {
   const status = doc.status as BuildingLegalDocumentStatus;
-  const uiStatus =
-    status === BuildingLegalDocumentStatus.GENERATED_PENDING_SIGNATURE
-      ? BuildingLegalDocumentUiStatus.GENERATED_PENDING_SIGNATURE
-      : BuildingLegalDocumentUiStatus.SUPERSEDED;
   return {
     buildingLegalDocumentId: doc.buildingLegalDocumentId,
     buildingId: doc.buildingId,
     category: doc.category as LegalDocumentTemplateCategory,
     templateRevisionNumber: doc.templateRevisionNumber,
-    templateRevisionId: doc.templateRevisionId,
     status,
-    uiStatus,
+    uiStatus: mapUiStatus(status),
     createdAtIso: doc.createdAt?.toISOString() ?? new Date(0).toISOString(),
     supersededAtIso: doc.supersededAt ? doc.supersededAt.toISOString() : null,
-    renderedContentSnapshot: doc.renderedContentSnapshot,
+    generatedByFullName,
   };
 }
 
@@ -167,15 +198,29 @@ export async function loadBuildingLegalDocumentsAdminView(input: {
 
   const views: BuildingLegalDocumentCategoryAdminView[] = [];
   for (const category of LEGAL_DOCUMENT_TEMPLATE_CATEGORY_VALUES) {
-    const [active, historyCount, generation] = await Promise.all([
+    const [active, supersededRows, historyCount, generation] = await Promise.all([
       BuildingLegalDocument.findOne({
         buildingId: input.buildingId,
         category,
         status: BuildingLegalDocumentStatus.GENERATED_PENDING_SIGNATURE,
       }).lean(),
+      BuildingLegalDocument.find({
+        buildingId: input.buildingId,
+        category,
+        status: BuildingLegalDocumentStatus.SUPERSEDED,
+      })
+        .sort({ createdAt: -1 })
+        .limit(BUILDING_LEGAL_DOCUMENT_HISTORY_LIMIT)
+        .lean(),
       BuildingLegalDocument.countDocuments({ buildingId: input.buildingId, category }),
       evaluateGenerationAllowed(input.buildingId, category),
     ]);
+
+    const nameIds = [
+      ...(active ? [active.createdByUserId] : []),
+      ...supersededRows.map((row) => row.createdByUserId),
+    ];
+    const namesById = await resolveGeneratedByNames(nameIds);
 
     views.push({
       category,
@@ -183,11 +228,19 @@ export async function loadBuildingLegalDocumentsAdminView(input: {
       uiStatus: active
         ? BuildingLegalDocumentUiStatus.GENERATED_PENDING_SIGNATURE
         : BuildingLegalDocumentUiStatus.NOT_GENERATED,
-      activeInstance: active ? mapDocument(active) : null,
+      activeInstance: active
+        ? mapDocumentSummary(
+            active,
+            namesById.get(active.createdByUserId.toString()) ?? null,
+          )
+        : null,
       generationAllowed: generation.allowed,
       generationBlockCode: generation.blockCode,
       publishedTemplateRevisionNumber: generation.publishedTemplateRevisionNumber,
       historyCount,
+      supersededHistory: supersededRows.map((row) =>
+        mapDocumentSummary(row, namesById.get(row.createdByUserId.toString()) ?? null),
+      ),
     });
   }
   return views;
@@ -210,7 +263,9 @@ export async function loadBuildingLegalDocumentsPortalView(input: {
       category,
       status: BuildingLegalDocumentStatus.GENERATED_PENDING_SIGNATURE,
     })
-      .select("category templateRevisionNumber createdAt status")
+      .select(
+        "buildingLegalDocumentId category templateRevisionNumber createdAt status",
+      )
       .lean();
 
     views.push({
@@ -221,9 +276,94 @@ export async function loadBuildingLegalDocumentsPortalView(input: {
         : BuildingLegalDocumentUiStatus.NOT_GENERATED,
       createdAtIso: active?.createdAt?.toISOString() ?? null,
       templateRevisionNumber: active?.templateRevisionNumber ?? null,
+      activeBuildingLegalDocumentId: active?.buildingLegalDocumentId ?? null,
     });
   }
   return views;
+}
+
+async function assertCanPreviewBuildingLegalDocument(input: {
+  context: AuthenticatedContext;
+  doc: {
+    buildingId: string;
+    status: string;
+  };
+  expectedBuildingId?: string;
+  portalActiveOnly?: boolean;
+}): Promise<void> {
+  if (
+    input.expectedBuildingId &&
+    input.doc.buildingId !== input.expectedBuildingId
+  ) {
+    throw new BuildingLegalDocumentError(
+      BuildingLegalDocumentErrorCode.FORBIDDEN,
+      "Building mismatch",
+    );
+  }
+
+  const isLawyer = input.context.user.role === UserRole.LAWYER_ADMIN;
+  if (!isLawyer) {
+    await assertBuildingAccess({
+      context: input.context,
+      buildingPublicId: input.doc.buildingId,
+    });
+    if (
+      input.portalActiveOnly &&
+      input.doc.status !== BuildingLegalDocumentStatus.GENERATED_PENDING_SIGNATURE
+    ) {
+      throw new BuildingLegalDocumentError(
+        BuildingLegalDocumentErrorCode.FORBIDDEN,
+        "Historical document not available in portal",
+      );
+    }
+  } else {
+    try {
+      assertLawyerAdminOrganization(input.context);
+    } catch {
+      throw new BuildingLegalDocumentError(
+        BuildingLegalDocumentErrorCode.FORBIDDEN,
+        "Lawyer admin required",
+      );
+    }
+  }
+}
+
+export async function getBuildingLegalDocumentPreview(input: {
+  context: AuthenticatedContext;
+  buildingLegalDocumentId: string;
+  expectedBuildingId?: string;
+  portalActiveOnly?: boolean;
+}): Promise<BuildingLegalDocumentPreviewView> {
+  await connectMongo();
+  const doc = await BuildingLegalDocument.findOne({
+    buildingLegalDocumentId: input.buildingLegalDocumentId,
+  }).lean();
+
+  if (!doc) {
+    throw new BuildingLegalDocumentError(
+      BuildingLegalDocumentErrorCode.DOCUMENT_NOT_FOUND,
+      "Document not found",
+    );
+  }
+
+  await assertCanPreviewBuildingLegalDocument({
+    context: input.context,
+    doc,
+    expectedBuildingId: input.expectedBuildingId,
+    portalActiveOnly: input.portalActiveOnly,
+  });
+
+  const namesById = await resolveGeneratedByNames([doc.createdByUserId]);
+  const summary = mapDocumentSummary(
+    doc,
+    namesById.get(doc.createdByUserId.toString()) ?? null,
+  );
+
+  return {
+    ...summary,
+    titleHe: legalDocumentTemplateCategoryLabelHe(summary.category),
+    renderedContentSnapshot: doc.renderedContentSnapshot,
+  };
 }
 
 export async function generateBuildingLegalDocument(input: {

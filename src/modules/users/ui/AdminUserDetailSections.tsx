@@ -9,14 +9,30 @@ import {
   formatAdminUserRoleHe,
 } from "@/modules/users/presentation/admin-user-labels.he";
 import type { AdminUserDetail } from "@/modules/users/services/admin-user-query.service";
+import type { AdminUserOnboardingRequestView } from "@/modules/users/services/admin-user-onboarding.service";
+import type { AdminUserOnboardingBuildingOption } from "@/modules/users/services/admin-user-onboarding.service";
 import { UserAccountReviewPanel } from "@/modules/users/ui/UserAccountReviewPanel";
+import { UserBuildingOnboardingPanel } from "@/modules/users/ui/UserBuildingOnboardingPanel";
 import styles from "@/modules/users/ui/AdminUsers.module.scss";
 
 type AdminUserDetailSectionsProps = {
   user: AdminUserDetail;
+  onboarding: AdminUserOnboardingRequestView | null;
+  buildingOptions: {
+    items: AdminUserOnboardingBuildingOption[];
+    total: number;
+    page: number;
+    totalPages: number;
+  };
+  buildingSearchQ: string;
 };
 
-export function AdminUserDetailSections({ user }: AdminUserDetailSectionsProps) {
+export function AdminUserDetailSections({
+  user,
+  onboarding,
+  buildingOptions,
+  buildingSearchQ,
+}: AdminUserDetailSectionsProps) {
   return (
     <div className={styles.detailGrid}>
       {user.accountStatus === AccountStatus.PENDING_APPROVAL ? (
@@ -66,9 +82,16 @@ export function AdminUserDetailSections({ user }: AdminUserDetailSectionsProps) 
         </dl>
       </section>
 
+      <UserBuildingOnboardingPanel
+        user={user}
+        onboarding={onboarding}
+        buildingOptions={buildingOptions}
+        buildingSearchQ={buildingSearchQ}
+      />
+
       <section className={styles.detailCard} aria-labelledby="user-assignment-heading">
         <h2 id="user-assignment-heading" className={styles.workspaceTitle}>
-          שיוך ארגוני
+          שיוך ארגוני (תפעולי)
         </h2>
         {user.assignment.kind === "none" ? (
           <p className={styles.metaLine}>אין שיוך לבניין או לחברת ניהול.</p>

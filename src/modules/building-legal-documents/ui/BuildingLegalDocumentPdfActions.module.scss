@@ -1,0 +1,43 @@
+@use "../../../styles/tokens" as *;
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.hint {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+}
+
+.actionPrimary,
+.actionSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-2 $space-4;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.actionPrimary {
+  background: $color-accent;
+  color: #ffffff;
+}
+
+.actionSecondary {
+  border: 1px solid $color-border;
+  background: $color-bg-surface;
+  color: $color-text;
+}

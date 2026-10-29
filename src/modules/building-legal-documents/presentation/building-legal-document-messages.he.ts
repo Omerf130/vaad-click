@@ -13,6 +13,7 @@ const ERROR_MESSAGES: Record<BuildingLegalDocumentErrorCode, string> = {
   [BuildingLegalDocumentErrorCode.UNKNOWN_CATEGORY]: "קטגוריית מסמך לא מוכרת.",
   [BuildingLegalDocumentErrorCode.CONCURRENT_GENERATION]:
     "הופק מסמך במקביל — נסו שוב אם נדרש.",
+  [BuildingLegalDocumentErrorCode.DOCUMENT_NOT_FOUND]: "המסמך לא נמצא.",
 };
 
 const BLOCK_MESSAGES: Record<BuildingLegalDocumentGenerationBlockCode, string> = {
@@ -50,3 +51,16 @@ export function buildingLegalDocumentUiStatusLabelHe(
 }
 
 export const PORTAL_SIGNATURE_UNAVAILABLE_HE = "חתימה דיגיטלית עדיין אינה זמינה.";
+
+export const BUILDING_LEGAL_DOCUMENT_READONLY_BANNER_HE =
+  "תצוגה לקריאה בלבד — תוכן זה הוא צילום מצב שהופק לבניין ואינו ניתן לעריכה.";
+
+export const BUILDING_LEGAL_DOCUMENT_HISTORICAL_BANNER_HE =
+  "מסמך היסטורי שהוחלף — לצפייה בלבד.";
+
+export const BUILDING_LEGAL_DOCUMENT_PDF_VIEW_LABEL_HE = "צפייה ב-PDF";
+
+export const BUILDING_LEGAL_DOCUMENT_PDF_DOWNLOAD_LABEL_HE = "הורדת PDF";
+
+export const BUILDING_LEGAL_DOCUMENT_PDF_HINT_HE =
+  "ה-PDF נוצר מהצילום השמור של המסמך. אם הדפדפן חוסם תצוגה, השתמשו בהורדה.";

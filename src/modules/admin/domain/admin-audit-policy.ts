@@ -4,6 +4,7 @@ import { AuditEventType } from "@/shared/audit/domain/audit-event-taxonomy";
 export const ADMIN_DASHBOARD_ACTIVITY_EVENT_TYPES: readonly string[] = [
   AuditEventType.USER_ADMIN_ACCOUNT_APPROVED,
   AuditEventType.USER_ADMIN_ACCOUNT_REJECTED,
+  AuditEventType.USER_ADMIN_PENDING_ONBOARDING_BOUND,
   AuditEventType.BUILDING_RECORD_CREATED,
   AuditEventType.BUILDING_RECORD_UPDATED,
   AuditEventType.BUILDING_TREATMENT_FEE_ELIGIBILITY_CHANGED,

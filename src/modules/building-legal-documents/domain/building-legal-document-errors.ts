@@ -7,6 +7,7 @@ export const BuildingLegalDocumentErrorCode = {
   TEMPLATE_REVISION_INVALID: "template_revision_invalid",
   UNKNOWN_CATEGORY: "unknown_category",
   CONCURRENT_GENERATION: "concurrent_generation",
+  DOCUMENT_NOT_FOUND: "document_not_found",
 } as const;
 
 export type BuildingLegalDocumentErrorCode =

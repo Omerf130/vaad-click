@@ -45,6 +45,7 @@ import { genericAuthenticationFailureMessage } from "@/shared/security/account-l
 import { lawyerDemoGrantsLawyerDevelopmentPortal } from "@/shared/auth/lawyer-demo-access";
 import { getLawyerDemoAccessConfig } from "@/shared/auth/lawyer-demo-access.server";
 import { isProduction } from "@/shared/config/env.server";
+import { rethrowNextRedirect } from "@/shared/navigation/rethrow-next-redirect";
 
 const MAX_FORM_FIELD_LENGTH = 512;
 
@@ -243,11 +244,35 @@ export async function registerAction(
         reasonCode: "role_forbidden",
         correlationId,
       });
+    } else if (result.code === "AUDIT_PERSISTENCE") {
+      await recordAuthRegistrationFailure({
+        reasonCode: "validation",
+        correlationId,
+      });
     }
     return { ok: false, message: result.message };
   }
 
-  await writeSessionCookie(result.sessionToken, SessionAuthStage.MFA_COMPLETE);
+  try {
+    await writeSessionCookie(result.sessionToken, SessionAuthStage.MFA_COMPLETE);
+  } catch (error) {
+    rethrowNextRedirect(error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("[registerAction] writeSessionCookie failed after registration persisted", {
+        errorName: error instanceof Error ? error.name : "unknown",
+      });
+    }
+    await recordAuthRegistrationFailure({
+      reasonCode: "validation",
+      correlationId,
+    });
+    return {
+      ok: false,
+      message:
+        "החשבון נוצר אך לא הצלחנו להשלים את הכניסה. נסו להתחבר עם הדוא\"ל והסיסמה.",
+    };
+  }
+
   redirect(
     portalRedirectPath({
       role: parsed.data.role,

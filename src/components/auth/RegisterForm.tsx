@@ -8,6 +8,7 @@ import {
   type AuthActionState,
 } from "@/modules/auth/actions/auth.actions";
 import { UserRole } from "@/modules/users/domain/user-role";
+import { PasswordInputWithToggle } from "@/components/auth/PasswordInputWithToggle";
 import { RegisterConsentNotice } from "./RegisterConsentNotice";
 import fieldStyles from "./AuthFormFields.module.scss";
 
@@ -88,39 +89,25 @@ export function RegisterForm() {
         ) : null}
       </div>
 
-      <div className={fieldStyles.field}>
-        <label className={fieldStyles.label} htmlFor="register-password">
-          סיסמה
-        </label>
-        <input
-          id="register-password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          className={fieldStyles.input}
-        />
-        {state.fieldErrors?.password ? (
-          <p className={fieldStyles.fieldError}>{state.fieldErrors.password[0]}</p>
-        ) : null}
-      </div>
+      <PasswordInputWithToggle
+        id="register-password"
+        name="password"
+        label="סיסמה"
+        autoComplete="new-password"
+        required
+        errorMessage={state.fieldErrors?.password?.[0]}
+      />
 
-      <div className={fieldStyles.field}>
-        <label className={fieldStyles.label} htmlFor="register-confirm">
-          אימות סיסמה
-        </label>
-        <input
-          id="register-confirm"
-          name="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          required
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
-          className={fieldStyles.input}
-        />
-        {confirmError ? <p className={fieldStyles.fieldError}>{confirmError}</p> : null}
-      </div>
+      <PasswordInputWithToggle
+        id="register-confirm"
+        name="confirmPassword"
+        label="אימות סיסמה"
+        autoComplete="new-password"
+        required
+        value={confirmPassword}
+        onChange={(event) => setConfirmPassword(event.target.value)}
+        errorMessage={confirmError ?? undefined}
+      />
 
       {state.message && !state.ok ? (
         <p className={fieldStyles.formError} role="alert">

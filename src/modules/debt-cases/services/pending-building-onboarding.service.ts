@@ -66,7 +66,11 @@ export async function createPendingBuildingOnboardingRequest(input: {
   }
 
   await connectMongo();
-  const user = await User.findById(input.targetUserId).lean();
+  let userQuery = User.findById(input.targetUserId);
+  if (input.session) {
+    userQuery = userQuery.session(input.session);
+  }
+  const user = await userQuery.lean();
   if (!user || user.accountStatus !== AccountStatus.PENDING_APPROVAL) {
     throw new DebtCaseError(
       DebtCaseErrorCode.FORBIDDEN,

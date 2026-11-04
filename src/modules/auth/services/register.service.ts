@@ -12,6 +12,7 @@ import { createServerSession } from "@/modules/auth/services/session.service";
 import { AccountStatus } from "@/modules/users/domain/account-status";
 import { assertPublicRegistrationRole } from "@/modules/users/domain/role-assignment";
 import { User } from "@/modules/users/infra/user.model";
+import { DebtCaseError } from "@/modules/debt-cases/domain/debt-case-errors";
 import { createPendingBuildingOnboardingRequest } from "@/modules/debt-cases/services/pending-building-onboarding.service";
 import { notifyLawyerAdminsAccountRegistrationPending } from "@/modules/notifications/services/notification-dispatch.service";
 import { connectMongo } from "@/shared/db/connect";
@@ -129,7 +130,11 @@ export async function registerPublicUser(
         message: "לא ניתן להשלים את ההרשמה. נסה להתחבר או להשתמש בדוא\"ל אחר.",
       };
     }
-    if (error instanceof AuditWriteFailedError || error instanceof RegistrationPersistenceError) {
+    if (
+      error instanceof AuditWriteFailedError ||
+      error instanceof RegistrationPersistenceError ||
+      error instanceof DebtCaseError
+    ) {
       return {
         ok: false,
         code: "AUDIT_PERSISTENCE",

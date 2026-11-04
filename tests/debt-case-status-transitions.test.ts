@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { DebtCaseError } from "@/modules/debt-cases/domain/debt-case-errors";
 import { DebtCaseLawyerReviewStatus } from "@/modules/debt-cases/domain/debt-case-lawyer-review-status";
@@ -31,12 +32,26 @@ describe("assertDebtCaseWorkflowTransition", () => {
     ).not.toThrow();
   });
 
-  it("blocks pending-approval operator from submitting", () => {
+  it("allows legacy pending-approval operator to submit for lawyer review", () => {
     expect(() =>
       assertDebtCaseWorkflowTransition({
         from: DebtCaseWorkflowStatus.DRAFT,
         to: DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW,
         context: pendingRep,
+      }),
+    ).not.toThrow();
+  });
+
+  it("blocks rejected clients from submitting", () => {
+    expect(() =>
+      assertDebtCaseWorkflowTransition({
+        from: DebtCaseWorkflowStatus.DRAFT,
+        to: DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW,
+        context: {
+          role: UserRole.BUILDING_REP,
+          accountStatus: AccountStatus.REJECTED,
+          clientApprovalStatus: ClientApprovalStatus.REJECTED,
+        },
       }),
     ).toThrow(DebtCaseError);
   });

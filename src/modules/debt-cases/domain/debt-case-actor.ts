@@ -1,4 +1,8 @@
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import {
+  canOperatorSubmitDebtCase,
+  type ClientPortalUserState,
+} from "@/modules/users/domain/client-portal-access";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { DebtCaseError, DebtCaseErrorCode } from "@/modules/debt-cases/domain/debt-case-errors";
 
@@ -15,18 +19,24 @@ export type DebtCaseOperatorRole =
 export type DebtCaseActorContext = {
   role: UserRole;
   accountStatus: AccountStatus;
+  clientApprovalStatus?: import("@/modules/users/domain/client-approval-status").ClientApprovalStatus | null;
 };
 
 export function isDebtCaseOperatorRole(role: UserRole): role is DebtCaseOperatorRole {
   return role === UserRole.BUILDING_REP || role === UserRole.MANAGEMENT_COMPANY;
 }
 
-/** Pending-approval users may draft only; submission requires active account. */
+/** Rejected/disabled accounts cannot submit; unapproved clients may submit for lawyer client review. */
 export function assertAccountMaySubmitDebtCase(context: DebtCaseActorContext): void {
-  if (context.accountStatus !== AccountStatus.ACTIVE) {
+  const portalState: ClientPortalUserState = {
+    role: context.role,
+    accountStatus: context.accountStatus,
+    clientApprovalStatus: context.clientApprovalStatus ?? null,
+  };
+  if (!canOperatorSubmitDebtCase(portalState)) {
     throw new DebtCaseError(
       DebtCaseErrorCode.SUBMIT_NOT_ALLOWED,
-      "Account must be active to submit a debt case",
+      "Account cannot submit a debt case",
     );
   }
 }

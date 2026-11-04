@@ -202,6 +202,13 @@ export const debtCaseDraftInputSchema = debtCaseDraftInputSchemaBase.superRefine
 
 export type DebtCaseDraftInput = z.infer<typeof debtCaseDraftInputSchema>;
 
+/** Case draft fields for intake flows (building resolved separately). */
+export const debtCaseIntakeCaseDraftFieldsSchema = debtCaseDraftInputSchemaBase.omit({
+  buildingId: true,
+});
+
+export const debtCaseIntakeCaseDraftSaveSchema = debtCaseIntakeCaseDraftFieldsSchema.partial();
+
 export const debtCaseSubmitInputSchema = debtCaseDraftInputSchemaBase
   .extend({
     apartmentNumber: z.string().trim().min(1, "נדרש מספר דירה"),

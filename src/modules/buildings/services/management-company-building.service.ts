@@ -19,6 +19,7 @@ import {
   type ManagementCompanyCreateBuildingInput,
 } from "@/modules/buildings/validation/building.schema";
 import { resolveActiveManagementCompanyForUser } from "@/modules/organizations/services/resolve-management-company-for-user";
+import { isClientApproved } from "@/modules/users/domain/client-portal-access";
 import {
   recordBuildingCreated,
   recordManagementCompanyLinked,
@@ -51,6 +52,18 @@ export async function createBuildingForManagementCompany(input: {
   const normalizedAddressKey = normalizeBuildingAddressKey(parsed.address);
 
   await connectMongo();
+
+  const assignedBuildingCount = await Building.countDocuments({
+    managementCompanyId: company.managementCompanyObjectId,
+    organizationalStatus: BuildingOrganizationalStatus.ACTIVE,
+  });
+  if (!isClientApproved(input.context.user) && assignedBuildingCount > 0) {
+    throw new OrganizationError(
+      OrganizationErrorCode.FORBIDDEN,
+      "Additional buildings require client approval",
+    );
+  }
+
   const existing = await Building.findOne({
     normalizedAddressKey,
     organizationalStatus: BuildingOrganizationalStatus.ACTIVE,

@@ -122,7 +122,11 @@ export function AdminUserDetailSections({
         <h2 id="user-review-heading" className={styles.workspaceTitle}>
           אישור חשבון
         </h2>
-        <UserAccountReviewPanel userId={user.id} accountStatus={user.accountStatus} />
+        <UserAccountReviewPanel
+          userId={user.id}
+          accountStatus={user.accountStatus}
+          clientApprovalStatus={user.clientApprovalStatus}
+        />
       </section>
     </div>
   );

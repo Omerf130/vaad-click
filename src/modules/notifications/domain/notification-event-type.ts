@@ -8,6 +8,7 @@ export const NotificationEventType = {
   DEBT_CASE_RETURNED: "debt_case_returned",
   DEBT_CASE_REJECTED: "debt_case_rejected",
   BUILDING_CREATED_BY_MC: "building_created_by_mc",
+  BUILDING_ASSOCIATION_REVIEW_REQUIRED: "building_association_review_required",
 } as const;
 
 export type NotificationEventType =

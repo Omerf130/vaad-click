@@ -59,16 +59,18 @@ describe("resolveBuildingAccessScope (DB-backed)", () => {
     });
   });
 
-  it("does not query assignments when account is pending", async () => {
+  it("resolves legacy pending accounts with empty assigned scope when unassigned", async () => {
+    buildingFindOne.mockReturnValue({
+      select: () => ({ lean: async () => null }),
+    });
     const { resolveBuildingAccessScope } = await import(
       "@/shared/auth/building-access/resolve-building-access-scope"
     );
     const scope = await resolveBuildingAccessScope(
       context({ accountStatus: AccountStatus.PENDING_APPROVAL }),
     );
-    expect(scope.mode).toBe(BuildingScopeMode.DENIED);
-    expect(buildingFindOne).not.toHaveBeenCalled();
-    expect(userFindById).not.toHaveBeenCalled();
+    expect(scope.mode).toBe(BuildingScopeMode.ASSIGNED);
+    expect(buildingFindOne).toHaveBeenCalled();
   });
 
   it("resolves representative assignment from MongoDB", async () => {

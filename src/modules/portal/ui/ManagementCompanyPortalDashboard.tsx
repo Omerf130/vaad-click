@@ -1,3 +1,4 @@
+import { ButtonLink } from "@/components/ui/Button/ButtonLink";
 import type { ManagementCompanyPortalDashboard as McDashboardData } from "@/modules/portal/services/operator-portal-dashboard.service";
 import { ManagementCompanyAddBuildingPanel } from "@/modules/portal/ui/ManagementCompanyAddBuildingPanel";
 import { ManagementCompanyBuildingExplorer } from "@/modules/portal/ui/ManagementCompanyBuildingExplorer";
@@ -46,6 +47,11 @@ export function ManagementCompanyPortalDashboard({ data }: Props) {
         </div>
       ) : null}
 
+      <section className={styles.quickCreateSection}>
+        <ButtonLink href="/app/debt-cases/new" variant="primary">
+          פתיחת תיק חייב חדש
+        </ButtonLink>
+      </section>
       <ManagementCompanyCreateCasePanel buildings={data.buildings} />
 
       <section className={styles.section} aria-labelledby="mc-buildings-title">

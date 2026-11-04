@@ -1,0 +1,266 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/breakpoints" as *;
+
+.shell {
+  display: flex;
+  justify-content: center;
+  padding: 0 $space-4 $space-6;
+}
+
+.card {
+  width: 100%;
+  max-width: 44rem;
+  background: $color-bg-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: 0 4px 24px rgb(12 31 61 / 8%);
+  padding: $space-6;
+
+  @include md-down {
+    padding: $space-5 $space-4;
+  }
+}
+
+.stepNav {
+  margin: 0 0 $space-6;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2 $space-3;
+  justify-content: flex-start;
+}
+
+.stepNavItem {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stepNavButton {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: $space-1;
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+  color: $color-text-muted;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  line-height: $line-height-relaxed;
+  cursor: default;
+  text-align: right;
+
+  &[data-active="true"] {
+    border-color: $color-accent;
+    background: $color-info-bg;
+    color: $color-info-text;
+    box-shadow: inset 0 0 0 1px $color-accent;
+  }
+
+  &[data-complete="true"]:not([data-active="true"]) {
+    border-color: $color-border-strong;
+    color: $color-text;
+  }
+}
+
+.stepNavIndex {
+  font-size: $font-size-xs;
+  font-weight: 700;
+  color: inherit;
+}
+
+.stepPanel {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+.stepHeading {
+  margin: 0;
+  font-size: $font-size-xl;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.stepLead {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.fieldGroupTitle {
+  margin: 0;
+  font-size: $font-size-md;
+  font-weight: 700;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  margin-top: $space-6;
+  padding-top: $space-5;
+  border-top: 1px solid $color-border;
+}
+
+.footerPrimary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+}
+
+.feedbackSuccess {
+  margin: 0 0 $space-4;
+  font-size: $font-size-sm;
+  color: $color-success-text;
+}
+
+.feedbackError {
+  margin: 0 0 $space-4;
+  font-size: $font-size-sm;
+  color: $color-error-text;
+}
+
+.reviewBlock {
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+}
+
+.reviewBlockHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+  margin-bottom: $space-3;
+}
+
+.reviewBlockTitle {
+  margin: 0;
+  font-size: $font-size-md;
+  font-weight: 700;
+}
+
+.reviewList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+}
+
+.reviewRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.reviewLabel {
+  color: $color-text-muted;
+  min-width: 5rem;
+}
+
+.reviewValue {
+  color: $color-text;
+  flex: 1;
+}
+
+.editStepLink {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-accent;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: $space-1 $space-2;
+  border-radius: $radius-sm;
+  font-family: inherit;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+}
+
+.paymentFieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.paymentLegend {
+  margin: 0 0 $space-3;
+  font-size: $font-size-md;
+  font-weight: 700;
+}
+
+.paymentOption,
+.paymentOptionSelected {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  cursor: pointer;
+  background: $color-bg-surface;
+  text-align: right;
+}
+
+.paymentOptionSelected {
+  border-color: $color-accent;
+  background: $color-info-bg;
+  box-shadow: inset 0 0 0 1px $color-accent;
+}
+
+.paymentRadio {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.paymentOptionTitle {
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.paymentOptionDescription {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.lockedBuildingCard {
+  padding: $space-4;
+  border: 1px dashed $color-border-strong;
+  border-radius: $radius-md;
+  background: $color-bg-subtle;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+}

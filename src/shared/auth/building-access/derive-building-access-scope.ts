@@ -14,7 +14,11 @@ export function deriveBuildingAccessScope(input: {
 }): BuildingAccessScope {
   const { role, accountStatus } = input;
 
-  if (accountStatus !== AccountStatus.ACTIVE) {
+  const buildingScopeAllowed =
+    accountStatus === AccountStatus.ACTIVE ||
+    accountStatus === AccountStatus.PENDING_APPROVAL;
+
+  if (!buildingScopeAllowed) {
     return {
       mode: BuildingScopeMode.DENIED,
       buildingIds: [],

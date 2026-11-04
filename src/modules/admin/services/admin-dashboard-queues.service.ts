@@ -7,8 +7,11 @@ import {
 import { Building } from "@/modules/buildings/infra/building.model";
 import { DebtCaseLawyerReviewStatus } from "@/modules/debt-cases/domain/debt-case-lawyer-review-status";
 import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
+import { BuildingAssociationReview } from "@/modules/debt-cases/infra/building-association-review.model";
+import { BuildingAssociationReviewStatus } from "@/modules/debt-cases/domain/debt-case-intake-draft-status";
 import { DebtCase } from "@/modules/debt-cases/infra/debt-case.model";
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { User } from "@/modules/users/infra/user.model";
 import { assertLawyerAdminOrganization } from "@/modules/organizations/services/assert-lawyer-admin";
@@ -24,7 +27,7 @@ export type AdminOperationalCounts = {
 
 export type AdminAttentionItem = {
   id: string;
-  kind: "user_pending" | "debt_case_review" | "building_verification";
+  kind: "user_pending" | "debt_case_review" | "building_verification" | "building_association";
   titleHe: string;
   metaHe: string;
   statusHe: string;
@@ -79,12 +82,33 @@ export async function listAdminAttentionItems(
 
   const pendingUsers = await User.find({
     role: { $in: [UserRole.BUILDING_REP, UserRole.MANAGEMENT_COMPANY] },
-    accountStatus: AccountStatus.PENDING_APPROVAL,
+    $or: [
+      { accountStatus: AccountStatus.PENDING_APPROVAL },
+      { clientApprovalStatus: ClientApprovalStatus.PENDING_LAWYER_APPROVAL },
+    ],
   })
     .sort({ createdAt: -1 })
     .limit(4)
     .select("fullName email role")
     .lean();
+
+  const buildingReviews = await BuildingAssociationReview.find({
+    status: BuildingAssociationReviewStatus.OPEN,
+  })
+    .sort({ createdAt: -1 })
+    .limit(3)
+    .lean();
+
+  for (const row of buildingReviews) {
+    items.push({
+      id: `building-assoc-${row.reviewId}`,
+      kind: "building_association",
+      titleHe: row.buildingSnapshot.displayName,
+      metaHe: `${row.buildingSnapshot.city}, ${row.buildingSnapshot.street} ${row.buildingSnapshot.houseNumber}`,
+      statusHe: "בדיקת שיוך בניין",
+      href: `/app/admin/building-association-reviews/${row.reviewId}`,
+    });
+  }
 
   for (const user of pendingUsers) {
     items.push({
@@ -92,7 +116,7 @@ export async function listAdminAttentionItems(
       kind: "user_pending",
       titleHe: user.fullName,
       metaHe: user.email ?? "",
-      statusHe: "ממתין לאישור חשבון",
+      statusHe: "ממתין לאישור לקוח",
       href: `/app/admin/users/${user._id.toString()}`,
     });
   }

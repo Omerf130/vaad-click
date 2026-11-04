@@ -5,6 +5,7 @@ import { ListPagination } from "@/components/ui/DataList/ListPagination";
 import dataListStyles from "@/components/ui/DataList/DataList.module.scss";
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import { formatAdminUserDateTime } from "@/modules/users/presentation/format-admin-user-date";
 import {
   accountStatusBadgeVariant,
@@ -61,7 +62,9 @@ export function AdminUsersTable({
             </thead>
             <tbody>
               {items.map((user) => {
-                const pending = user.accountStatus === AccountStatus.PENDING_APPROVAL;
+                const pending =
+                  user.accountStatus === AccountStatus.PENDING_APPROVAL ||
+                  user.clientApprovalStatus === ClientApprovalStatus.PENDING_LAWYER_APPROVAL;
                 return (
                   <tr
                     key={user.id}
@@ -94,7 +97,9 @@ export function AdminUsersTable({
 
       <ul className={`${dataListStyles.cardList} ${dataListStyles.mobileOnly}`} aria-label="משתמשים">
         {items.map((user) => {
-          const pending = user.accountStatus === AccountStatus.PENDING_APPROVAL;
+          const pending =
+            user.accountStatus === AccountStatus.PENDING_APPROVAL ||
+            user.clientApprovalStatus === ClientApprovalStatus.PENDING_LAWYER_APPROVAL;
           return (
             <li
               key={user.id}

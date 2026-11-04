@@ -7,6 +7,7 @@ import {
   OrganizationErrorCode,
 } from "@/modules/buildings/domain/organization-errors";
 import { mapOrganizationErrorToHebrew } from "@/modules/buildings/presentation/organization-messages.he";
+import { provisionNewBuildingForBuildingRepresentative } from "@/modules/buildings/services/client-building-provision.service";
 import { createBuildingForManagementCompany } from "@/modules/buildings/services/management-company-building.service";
 import { managementCompanyCreateBuildingInputSchema } from "@/modules/buildings/validation/building.schema";
 import { resolveAuditCorrelationId } from "@/modules/audit/services/audit-correlation";
@@ -96,6 +97,61 @@ export async function managementCompanyCreateBuildingFormAction(
       return {
         ...result,
         message: "כבר קיים בניין פעיל בכתובת זו. בדקו את הכתובת או פנו למשרד עורך הדין.",
+      };
+    }
+    return result;
+  }
+}
+
+export async function buildingRepresentativeCreateBuildingFormAction(
+  _prev: PortalBuildingActionState,
+  formData: FormData,
+): Promise<PortalBuildingActionState> {
+  try {
+    await assertSameOriginMutationRequest();
+    const context = await requireOperatorPortalAccess();
+    if (context.user.role !== UserRole.BUILDING_REP) {
+      return {
+        ok: false,
+        code: OrganizationErrorCode.FORBIDDEN,
+        message: mapOrganizationErrorToHebrew(OrganizationErrorCode.FORBIDDEN),
+      };
+    }
+
+    const payload = managementCompanyCreateBuildingInputSchema.parse({
+      displayName: formData.get("displayName"),
+      address: {
+        city: formData.get("city"),
+        street: formData.get("street"),
+        houseNumber: formData.get("houseNumber"),
+        postalCode: formData.get("postalCode") || undefined,
+      },
+    });
+
+    const correlationId = await resolveAuditCorrelationId();
+    const { buildingId } = await provisionNewBuildingForBuildingRepresentative({
+      context,
+      payload,
+      correlationId,
+    });
+
+    revalidatePath("/app");
+    revalidatePath("/app/buildings");
+    revalidatePath(`/app/buildings/${buildingId}`);
+
+    return {
+      ok: true,
+      buildingId,
+      message:
+        "פרטי הבניין נשמרו. ניתן להמשיך ליצירת טיוטת תיק חוב. הבניין אינו מאומת משפטית עד שמשרד עורך הדין יסיים את תהליך האימות.",
+    };
+  } catch (error) {
+    const result = handleError(error);
+    if (result.code === OrganizationErrorCode.DUPLICATE_ADDRESS) {
+      return {
+        ...result,
+        message:
+          "כבר קיים בניין פעיל בכתובת זו. לא ניתן לשייך אוטומטית — פנו למשרד עורך הדין לבדיקה.",
       };
     }
     return result;

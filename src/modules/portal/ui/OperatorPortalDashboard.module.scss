@@ -131,6 +131,50 @@
   font-weight: 700;
 }
 
+.emptyIntakeSection {
+  @extend .section;
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+.emptyIntakeLead {
+  margin: 0;
+  max-width: 42rem;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.emptyIntakeActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+}
+
+.emptyIntakeAccountLink {
+  margin: 0;
+  padding-top: $space-4;
+  border-top: 1px solid $color-border;
+  font-size: $font-size-sm;
+
+  a {
+    color: $color-accent;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-accent;
+      outline-offset: 2px;
+      border-radius: $radius-sm;
+    }
+  }
+}
+
 .actionsRow {
   display: flex;
   flex-wrap: wrap;

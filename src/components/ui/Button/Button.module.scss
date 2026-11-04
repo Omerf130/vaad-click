@@ -11,10 +11,21 @@
   border-radius: $radius-md;
   border: 1px solid transparent;
   cursor: pointer;
+  text-decoration: none;
   transition:
     background-color $transition-fast,
     border-color $transition-fast,
     color $transition-fast;
+
+  &:hover,
+  &:focus {
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
 
   &:disabled {
     opacity: 0.55;

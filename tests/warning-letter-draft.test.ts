@@ -7,6 +7,7 @@ import { DebtCaseOccupancyType } from "@/modules/debt-cases/domain/debt-case-occ
 import { DebtCasePaymentStatus } from "@/modules/debt-cases/domain/debt-case-payment-status";
 import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 import { LegalDebtorDesignation } from "@/modules/debt-cases/domain/debt-case-parties";
+import { emptyDebtCasePlatformFeeFields } from "@/modules/debt-cases/domain/debt-case-platform-fee.defaults";
 import type { DebtCaseRecord } from "@/modules/debt-cases/domain/debt-case-record.types";
 import { formatLetterCaseReference } from "@/modules/warning-letters/domain/format-letter-case-reference";
 import { WarningLetterClientPresentation } from "@/modules/warning-letters/domain/warning-letter-client-presentation";
@@ -47,6 +48,7 @@ function baseDebtCase(overrides?: Partial<DebtCaseRecord>): DebtCaseRecord {
     letterDeliveryStatus: DebtCaseLetterDeliveryStatus.NONE,
     paymentStatus: DebtCasePaymentStatus.NONE,
     legalHoldReasons: [],
+    ...emptyDebtCasePlatformFeeFields(),
     parties: {
       propertyOwners: [
         {

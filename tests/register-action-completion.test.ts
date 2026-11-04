@@ -78,7 +78,7 @@ describe("registerAction completion", () => {
       "opaque-session-token",
       SessionAuthStage.MFA_COMPLETE,
     );
-    expect(mockRedirect).toHaveBeenCalledWith("/app/account-status");
+    expect(mockRedirect).toHaveBeenCalledWith("/app");
     expect(mockRecordFailure).not.toHaveBeenCalled();
   });
 

@@ -245,3 +245,29 @@ export async function notifyMcBuildingRecorded(input: {
   );
   await insertNotificationsIdempotent({ notifications: rows, session: input.session });
 }
+
+function lawyerBuildingAssociationReviewPath(reviewId: string): string {
+  return `/app/admin/building-association-reviews/${reviewId}`;
+}
+
+export async function notifyLawyerAdminsBuildingAssociationReviewRequired(input: {
+  reviewId: string;
+  intakeDraftId: string;
+}): Promise<void> {
+  void input.intakeDraftId;
+  const recipients = await listActiveLawyerAdminUserIds();
+  const rows = mapForRecipients(
+    recipients,
+    {
+      eventType: NotificationEventType.BUILDING_ASSOCIATION_REVIEW_REQUIRED,
+      titleHe: "נדרשת בדיקת שיוך בניין",
+      bodyHe: "הוגשה בקשת תיק עם כתובת בניין שדורשת בדיקה ידנית.",
+      entityType: NotificationEntityType.ADMIN_QUEUE,
+      entityId: input.reviewId,
+      destinationPath: lawyerBuildingAssociationReviewPath(input.reviewId),
+    },
+    (recipientUserId) =>
+      `building_association_review:${input.reviewId}:${recipientUserId}`,
+  );
+  await insertNotificationsIdempotent({ notifications: rows });
+}

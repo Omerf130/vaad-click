@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Card } from "@/components/ui/Card/Card";
 import { BuildingRepPortalDashboard } from "@/modules/portal/ui/BuildingRepPortalDashboard";
-import { ManagementCompanyEmptyPortalDashboard } from "@/modules/portal/ui/ManagementCompanyEmptyPortalDashboard";
+import { PortalEmptyIntakeDashboard } from "@/modules/portal/ui/PortalEmptyIntakeDashboard";
 import { ManagementCompanyPortalDashboard } from "@/modules/portal/ui/ManagementCompanyPortalDashboard";
 import { OperatorPortalPageFrame } from "@/modules/portal/ui/OperatorPortalPageFrame";
 import { loadOperatorPortalDashboard } from "@/modules/portal/services/operator-portal-dashboard.service";
@@ -61,26 +61,12 @@ export default async function AppPortalPage() {
   const dashboard = await loadOperatorPortalDashboard(context);
 
   if (dashboard.kind === "empty") {
-    if (user.role === UserRole.MANAGEMENT_COMPANY) {
-      return (
-        <OperatorPortalPageFrame
-          title={`שלום, ${user.fullName}`}
-          subtitle={portalDashboardSubtitle(user.role)}
-        >
-          <ManagementCompanyEmptyPortalDashboard />
-        </OperatorPortalPageFrame>
-      );
-    }
     return (
       <OperatorPortalPageFrame
         title={`שלום, ${user.fullName}`}
         subtitle={portalDashboardSubtitle(user.role)}
       >
-        <Card className={styles.card}>
-          <p className={styles.body}>
-            החשבון מאושר, אך אין עדיין בניין משויך. מנהל המשרד ישייך בניין כאשר יהיה מוכן.
-          </p>
-        </Card>
+        <PortalEmptyIntakeDashboard />
       </OperatorPortalPageFrame>
     );
   }

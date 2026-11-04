@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MongoServerError } from "mongodb";
 
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 
 const USER_ID = "507f1f77bcf86cd799439011";
@@ -75,14 +76,14 @@ describe("registerPublicUser onboarding integration", () => {
     mockFindById.mockReturnValue({ session: mockQuerySession, lean: mockLean });
     mockLean.mockResolvedValue({
       _id: USER_ID,
-      accountStatus: AccountStatus.PENDING_APPROVAL,
+      accountStatus: AccountStatus.ACTIVE,
     });
     mockOnboardingCreate.mockResolvedValue(undefined);
     mockCreateSession.mockResolvedValue({ token: "session-token", session: {} });
     mockNotify.mockResolvedValue(undefined);
   });
 
-  it("registers a new user, creates onboarding, and keeps pending approval", async () => {
+  it("registers a new user and creates onboarding in the same transaction", async () => {
     const { registerPublicUser } = await import("@/modules/auth/services/register.service");
 
     const result = await registerPublicUser({
@@ -95,14 +96,17 @@ describe("registerPublicUser onboarding integration", () => {
     expect(result.ok).toBe(true);
     const mongoSession = mockStartSession.mock.results[0]?.value;
     expect(mockUserCreate).toHaveBeenCalledWith(
-      [expect.objectContaining({ accountStatus: AccountStatus.PENDING_APPROVAL })],
+      [
+        expect.objectContaining({
+          accountStatus: AccountStatus.ACTIVE,
+          clientApprovalStatus: ClientApprovalStatus.AWAITING_SUBMISSION,
+        }),
+      ],
       expect.objectContaining({ session: mongoSession }),
     );
     expect(mockQuerySession).toHaveBeenCalledWith(mongoSession);
     expect(mockOnboardingCreate).toHaveBeenCalled();
-    expect(mockNotify).toHaveBeenCalledWith(
-      expect.objectContaining({ registeredUserId: USER_ID }),
-    );
+    expect(mockNotify).not.toHaveBeenCalled();
   });
 
   it("propagates unexpected onboarding failures instead of masking them", async () => {

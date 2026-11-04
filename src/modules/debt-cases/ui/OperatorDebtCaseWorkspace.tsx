@@ -23,6 +23,7 @@ import type { PortalDocumentAssetListItem } from "@/modules/document-assets/pres
 import type { DocumentStorageUiState } from "@/modules/document-assets/presentation/document-asset-view.types";
 import type { OperatorDebtCaseActivityEntry } from "@/modules/portal/services/operator-debt-case-activity.service";
 import { OperatorCaseActivityPanel } from "@/modules/portal/ui/OperatorCaseActivityPanel";
+import { OperatorDebtCasePlatformFeePanel } from "@/modules/debt-cases/ui/OperatorDebtCasePlatformFeePanel";
 import { OperatorCaseLifecyclePanel } from "@/modules/portal/ui/OperatorCaseLifecyclePanel";
 import {
   DebtCaseLawyerReviewStatusBadge,
@@ -95,6 +96,7 @@ export function OperatorDebtCaseWorkspace({
         <div className={styles.tabPanelStack}>
           <p className={styles.nextAction}>{nextActionHint(record, editable, isReturned)}</p>
           <OperatorCaseLifecyclePanel record={record} embedded />
+          <OperatorDebtCasePlatformFeePanel record={record} />
           <OperatorDebtCaseOverviewPanel record={record} buildingDisplayName={buildingDisplayName} compact />
         </div>
       ),

@@ -5,6 +5,7 @@ import { useActionState, useRef, useState, type RefObject } from "react";
 import { Button } from "@/components/ui/Button/Button";
 import { AdminConfirmDialog } from "@/modules/admin/components/AdminConfirmDialog";
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import {
   approveRegisteredUserAction,
   reconsiderRejectedUserAction,
@@ -19,11 +20,19 @@ type ReviewKind = "approve" | "reject" | "reconsider";
 type UserAccountReviewPanelProps = {
   userId: string;
   accountStatus: AccountStatus;
+  clientApprovalStatus: ClientApprovalStatus | null;
 };
 
 const initialState: AdminUserActionState = { ok: false };
 
-export function UserAccountReviewPanel({ userId, accountStatus }: UserAccountReviewPanelProps) {
+export function UserAccountReviewPanel({
+  userId,
+  accountStatus,
+  clientApprovalStatus,
+}: UserAccountReviewPanelProps) {
+  const awaitingClientApproval =
+    accountStatus === AccountStatus.PENDING_APPROVAL ||
+    clientApprovalStatus === ClientApprovalStatus.PENDING_LAWYER_APPROVAL;
   const [dialog, setDialog] = useState<ReviewKind | null>(null);
   const approveFormRef = useRef<HTMLFormElement>(null);
   const rejectFormRef = useRef<HTMLFormElement>(null);
@@ -63,7 +72,7 @@ export function UserAccountReviewPanel({ userId, accountStatus }: UserAccountRev
       ) : null}
 
       <div className={styles.reviewActions}>
-        {accountStatus === AccountStatus.PENDING_APPROVAL ? (
+        {awaitingClientApproval ? (
           <>
             <Button type="button" variant="primary" onClick={() => setDialog("approve")}>
               {ADMIN_USER_UI_COPY.approveAction}

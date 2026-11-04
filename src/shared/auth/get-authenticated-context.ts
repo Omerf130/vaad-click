@@ -4,6 +4,7 @@ import { isSessionActive } from "@/modules/auth/domain/session-lifecycle";
 import type { SessionRecord } from "@/modules/auth/domain/session-types";
 import { findServerSessionByToken } from "@/modules/auth/services/session.service";
 import type { AccountStatus } from "@/modules/users/domain/account-status";
+import type { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import type { UserRole } from "@/modules/users/domain/user-role";
 import { User } from "@/modules/users/infra/user.model";
 import { readSessionTokenFromCookies } from "@/shared/auth/session-cookie-store";
@@ -14,6 +15,7 @@ export type AuthenticatedUser = {
   email: string;
   role: UserRole;
   accountStatus: AccountStatus;
+  clientApprovalStatus: ClientApprovalStatus | null;
 };
 
 export type AuthenticatedContext = {
@@ -45,6 +47,7 @@ export async function getAuthenticatedContext(): Promise<AuthenticatedContext | 
       email: user.email,
       role: user.role as UserRole,
       accountStatus: user.accountStatus as AccountStatus,
+      clientApprovalStatus: (user.clientApprovalStatus as ClientApprovalStatus | null) ?? null,
     },
   };
 }

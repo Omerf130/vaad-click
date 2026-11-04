@@ -78,7 +78,7 @@ describe("public header auth navigation", () => {
     ]);
   });
 
-  it("routes pending accounts to account status instead of dashboard", () => {
+  it("routes legacy pending operators to the dashboard", () => {
     const actions = resolvePublicHeaderNavActions(
       context({
         role: UserRole.BUILDING_REP,
@@ -87,8 +87,8 @@ describe("public header auth navigation", () => {
     );
     expect(actions).toEqual([
       {
-        href: PUBLIC_HEADER_NAV_DESTINATIONS.accountStatus,
-        label: "מעקב אחר הרשמה",
+        href: PUBLIC_HEADER_NAV_DESTINATIONS.operatorDashboard,
+        label: "מעבר לדשבורד",
         variant: "primary",
       },
     ]);

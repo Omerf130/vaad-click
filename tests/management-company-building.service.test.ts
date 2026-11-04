@@ -24,6 +24,7 @@ vi.mock("mongoose", () => ({
 }));
 
 const mockBuildingFindOne = vi.fn();
+const mockBuildingCountDocuments = vi.fn();
 const mockBuildingCreate = vi.fn();
 const mockUserFindById = vi.fn();
 const mockCompanyFindById = vi.fn();
@@ -31,6 +32,7 @@ const mockCompanyFindById = vi.fn();
 vi.mock("@/modules/buildings/infra/building.model", () => ({
   Building: {
     findOne: (...args: unknown[]) => mockBuildingFindOne(...args),
+    countDocuments: (...args: unknown[]) => mockBuildingCountDocuments(...args),
     create: (...args: unknown[]) => mockBuildingCreate(...args),
   },
 }));
@@ -87,6 +89,7 @@ describe("createBuildingForManagementCompany", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockBuildingFindOne.mockReturnValue({ lean: async () => null });
+    mockBuildingCountDocuments.mockResolvedValue(0);
     mockBuildingCreate.mockResolvedValue([{ buildingId: "new-id" }]);
     mockUserFindById.mockReturnValue({
       select: vi.fn().mockReturnThis(),

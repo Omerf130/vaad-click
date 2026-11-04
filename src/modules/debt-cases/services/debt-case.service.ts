@@ -36,7 +36,7 @@ import {
   assertCanListBuildingDebtCases,
   assertCanMutateDebtCase,
   assertCanReadDebtCase,
-  buildPendingUserDraftListFilter,
+  buildOperatorDebtCaseVisibilityFilter,
   resolveAuthorizedBuildingIdForDraftCreate,
 } from "@/modules/debt-cases/services/debt-case-authorization.service";
 import { WarningLetterDraftInvalidationReason } from "@/modules/warning-letters/domain/warning-letter-draft-invalidation-reason";
@@ -65,7 +65,6 @@ import { User } from "@/modules/users/infra/user.model";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 import { AuditWriteFailedError } from "@/shared/audit/errors/audit-errors";
 import { connectMongo } from "@/shared/db/connect";
-import { AccountStatus } from "@/modules/users/domain/account-status";
 
 function mapAuditPersistenceError(error: unknown): never {
   if (error instanceof AuditWriteFailedError) {
@@ -191,11 +190,9 @@ export async function listDebtCasesForBuilding(input: {
   await connectMongo();
   let filter: Record<string, unknown> = { buildingId: input.buildingId };
 
-  if (input.context.user.accountStatus === AccountStatus.PENDING_APPROVAL) {
-    filter = {
-      ...filter,
-      ...buildPendingUserDraftListFilter(input.context.user.id),
-    };
+  const visibility = buildOperatorDebtCaseVisibilityFilter(input.context.user);
+  if (visibility) {
+    filter = { ...filter, ...visibility };
   }
 
   const rows = await DebtCase.find(filter).sort({ updatedAt: -1 }).limit(200);
@@ -489,10 +486,6 @@ export async function submitDebtCaseForLawyerReview(input: {
   payload: unknown;
   correlationId?: string;
 }): Promise<DebtCaseRecord> {
-  if (input.context.user.accountStatus === AccountStatus.PENDING_APPROVAL) {
-    throw new DebtCaseError(DebtCaseErrorCode.SUBMIT_NOT_ALLOWED, "Account must be active to submit");
-  }
-
   let submitPayload;
   try {
     submitPayload = debtCaseSubmitInputSchema.parse(input.payload);
@@ -515,6 +508,7 @@ export async function submitDebtCaseForLawyerReview(input: {
     context: {
       role: input.context.user.role,
       accountStatus: input.context.user.accountStatus,
+      clientApprovalStatus: input.context.user.clientApprovalStatus,
     },
   });
 
@@ -647,6 +641,15 @@ export async function submitDebtCaseForLawyerReview(input: {
         revision: updated.revision,
         apartmentLabel: apt.apartmentNumberDisplay || "—",
         resubmitted: fromStatus === DebtCaseWorkflowStatus.RETURNED_FOR_COMPLETION,
+        session,
+      });
+
+      const { markClientPendingLawyerApprovalOnFirstSubmit } = await import(
+        "@/modules/users/services/client-approval.service"
+      );
+      await markClientPendingLawyerApprovalOnFirstSubmit({
+        context: input.context,
+        correlationId: input.correlationId,
         session,
       });
     });

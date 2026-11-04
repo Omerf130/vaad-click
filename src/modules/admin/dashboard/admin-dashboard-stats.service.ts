@@ -4,6 +4,7 @@ import { BuildingOrganizationalStatus } from "@/modules/buildings/domain/buildin
 import { Building } from "@/modules/buildings/infra/building.model";
 import { ManagementCompany } from "@/modules/management-companies/infra/management-company.model";
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { User } from "@/modules/users/infra/user.model";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
@@ -39,7 +40,10 @@ export async function getAdminDashboardStats(
       User.countDocuments(managedUserFilter),
       User.countDocuments({
         ...managedUserFilter,
-        accountStatus: AccountStatus.PENDING_APPROVAL,
+        $or: [
+          { accountStatus: AccountStatus.PENDING_APPROVAL },
+          { clientApprovalStatus: ClientApprovalStatus.PENDING_LAWYER_APPROVAL },
+        ],
       }),
       Building.countDocuments({
         organizationalStatus: BuildingOrganizationalStatus.ACTIVE,
@@ -64,7 +68,10 @@ export async function listPendingRegistrationPreviews(
 
   const rows = await User.find({
     role: { $in: MANAGED_ROLES },
-    accountStatus: AccountStatus.PENDING_APPROVAL,
+    $or: [
+      { accountStatus: AccountStatus.PENDING_APPROVAL },
+      { clientApprovalStatus: ClientApprovalStatus.PENDING_LAWYER_APPROVAL },
+    ],
   })
     .sort({ createdAt: -1 })
     .limit(limit)

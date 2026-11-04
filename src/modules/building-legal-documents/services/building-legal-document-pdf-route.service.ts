@@ -24,6 +24,7 @@ import { AccountStatus } from "@/modules/users/domain/account-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { resolveAuditCorrelationId } from "@/modules/audit/services/audit-correlation";
 import { canAccessOperationalPortal } from "@/shared/auth/account-portal-access";
+import { canOperatorUsePrivilegedLegalActions } from "@/modules/users/domain/client-portal-access";
 import { sessionGrantsAccess } from "@/shared/auth/access-policy";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 import { isProduction } from "@/shared/config/env.server";
@@ -134,6 +135,12 @@ function assertPortalPdfAccess(context: AuthenticatedContext): void {
     throw new BuildingLegalDocumentError(
       BuildingLegalDocumentErrorCode.FORBIDDEN,
       "Use admin PDF route",
+    );
+  }
+  if (!canOperatorUsePrivilegedLegalActions(context.user)) {
+    throw new BuildingLegalDocumentError(
+      BuildingLegalDocumentErrorCode.FORBIDDEN,
+      "Client approval required for legal documents",
     );
   }
   const allowed = sessionGrantsAccess({

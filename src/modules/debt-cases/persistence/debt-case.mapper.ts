@@ -111,6 +111,18 @@ export function mapDebtCaseDocumentToRecord(doc: DebtCaseDocument): DebtCaseReco
     letterDeliveryStatus: doc.letterDeliveryStatus as DebtCaseLetterDeliveryStatus,
     paymentStatus: doc.paymentStatus as DebtCasePaymentStatus,
     legalHoldReasons: (doc.legalHoldReasons ?? []) as DebtCaseLegalHoldReason[],
+    platformFeePreference: (doc.platformFeePreference ?? null) as DebtCaseRecord["platformFeePreference"],
+    platformFeeAmountMinor: doc.platformFeeAmountMinor ?? null,
+    platformFeeCollectionStatus: (doc.platformFeeCollectionStatus ??
+      null) as DebtCaseRecord["platformFeeCollectionStatus"],
+    platformFeeInternalNote: doc.platformFeeInternalNote ?? null,
+    platformFeeStatusHistory: (doc.platformFeeStatusHistory ?? []).map((entry) => ({
+      fromStatus: (entry.fromStatus ?? null) as DebtCaseRecord["platformFeeCollectionStatus"],
+      toStatus: entry.toStatus as NonNullable<DebtCaseRecord["platformFeeCollectionStatus"]>,
+      note: entry.note ?? null,
+      updatedByUserId: entry.updatedByUserId.toString(),
+      updatedAtIso: entry.updatedAt.toISOString(),
+    })),
   };
 }
 

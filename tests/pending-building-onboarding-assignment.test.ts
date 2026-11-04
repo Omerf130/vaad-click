@@ -327,14 +327,17 @@ describe("bindUserPendingOnboardingBuilding", () => {
 });
 
 describe("portal access scope CP14C", () => {
-  it("pending accounts remain denied for building portal scope", () => {
+  it("legacy pending accounts get empty assigned scope until a building is bound", () => {
     const scope = deriveBuildingAccessScope({
       role: UserRole.BUILDING_REP,
       accountStatus: AccountStatus.PENDING_APPROVAL,
       representativeBuildingPublicId: null,
       managementCompanyBuildingPublicIds: [],
     });
-    expect(scope.mode).toBe(BuildingScopeMode.DENIED);
+    expect(scope.mode).toBe(BuildingScopeMode.ASSIGNED);
+    if (scope.mode === BuildingScopeMode.ASSIGNED) {
+      expect(scope.buildingIds).toEqual([]);
+    }
   });
 
   it("active assigned rep receives assigned scope", () => {

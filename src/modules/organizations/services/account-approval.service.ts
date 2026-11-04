@@ -13,6 +13,8 @@ import {
   recordAccountRejected,
 } from "@/modules/organizations/services/organization-audit.service";
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
+import { resolveEffectiveClientApprovalStatus } from "@/modules/users/domain/client-portal-access";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { User } from "@/modules/users/infra/user.model";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
@@ -57,10 +59,17 @@ export async function approveRegisteredAccount(input: {
 }) {
   assertLawyerAdminOrganization(input.context);
   const user = await loadReviewableUser(input.targetUserId);
-  if (user.accountStatus !== AccountStatus.PENDING_APPROVAL) {
+  const clientApproval = resolveEffectiveClientApprovalStatus({
+    role: user.role as UserRole,
+    accountStatus: user.accountStatus as AccountStatus,
+    clientApprovalStatus: user.clientApprovalStatus as ClientApprovalStatus | null,
+  });
+  const legacyPendingAccount = user.accountStatus === AccountStatus.PENDING_APPROVAL;
+  const pendingClient = clientApproval === ClientApprovalStatus.PENDING_LAWYER_APPROVAL;
+  if (!legacyPendingAccount && !pendingClient) {
     throw new OrganizationError(
       OrganizationErrorCode.INVALID_ACCOUNT_STATUS,
-      "Account is not pending approval",
+      "Client is not awaiting approval",
     );
   }
 
@@ -69,8 +78,17 @@ export async function approveRegisteredAccount(input: {
   try {
     await session.withTransaction(async () => {
       const updated = await User.findOneAndUpdate(
-        { _id: user._id, accountStatus: AccountStatus.PENDING_APPROVAL },
-        { accountStatus: AccountStatus.ACTIVE },
+        {
+          _id: user._id,
+          $or: [
+            { accountStatus: AccountStatus.PENDING_APPROVAL },
+            { clientApprovalStatus: ClientApprovalStatus.PENDING_LAWYER_APPROVAL },
+          ],
+        },
+        {
+          accountStatus: AccountStatus.ACTIVE,
+          clientApprovalStatus: ClientApprovalStatus.APPROVED,
+        },
         { session, new: true },
       ).lean();
       if (!updated) {
@@ -101,10 +119,19 @@ export async function rejectRegisteredAccount(input: {
 }) {
   assertLawyerAdminOrganization(input.context);
   const user = await loadReviewableUser(input.targetUserId);
-  if (user.accountStatus !== AccountStatus.PENDING_APPROVAL) {
+  const clientApproval = resolveEffectiveClientApprovalStatus({
+    role: user.role as UserRole,
+    accountStatus: user.accountStatus as AccountStatus,
+    clientApprovalStatus: user.clientApprovalStatus as ClientApprovalStatus | null,
+  });
+  const rejectable =
+    user.accountStatus === AccountStatus.PENDING_APPROVAL ||
+    clientApproval === ClientApprovalStatus.PENDING_LAWYER_APPROVAL ||
+    clientApproval === ClientApprovalStatus.AWAITING_SUBMISSION;
+  if (!rejectable) {
     throw new OrganizationError(
       OrganizationErrorCode.INVALID_ACCOUNT_STATUS,
-      "Account is not pending approval",
+      "Client is not awaiting approval",
     );
   }
 
@@ -113,8 +140,14 @@ export async function rejectRegisteredAccount(input: {
   try {
     await session.withTransaction(async () => {
       const updated = await User.findOneAndUpdate(
-        { _id: user._id, accountStatus: AccountStatus.PENDING_APPROVAL },
-        { accountStatus: AccountStatus.REJECTED },
+        {
+          _id: user._id,
+          accountStatus: { $ne: AccountStatus.REJECTED },
+        },
+        {
+          accountStatus: AccountStatus.REJECTED,
+          clientApprovalStatus: ClientApprovalStatus.REJECTED,
+        },
         { session, new: true },
       ).lean();
       if (!updated) {

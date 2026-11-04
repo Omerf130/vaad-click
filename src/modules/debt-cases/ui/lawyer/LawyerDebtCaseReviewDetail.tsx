@@ -125,7 +125,11 @@ export function LawyerDebtCaseReviewDetail({
     Boolean(warningLetterDraftErrorHe);
 
   const overviewPanel = (
-    <LawyerCaseOverviewPanel bundle={bundle} onJumpToSection={jumpToSection} />
+    <LawyerCaseOverviewPanel
+      bundle={bundle}
+      onJumpToSection={jumpToSection}
+      canUpdatePlatformFee={canPerformReviewActions}
+    />
   );
 
   const warningLetterPanel = (

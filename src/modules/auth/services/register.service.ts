@@ -10,11 +10,11 @@ import {
 } from "@/modules/audit/services/auth-audit.service";
 import { createServerSession } from "@/modules/auth/services/session.service";
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import { assertPublicRegistrationRole } from "@/modules/users/domain/role-assignment";
 import { User } from "@/modules/users/infra/user.model";
 import { DebtCaseError } from "@/modules/debt-cases/domain/debt-case-errors";
 import { createPendingBuildingOnboardingRequest } from "@/modules/debt-cases/services/pending-building-onboarding.service";
-import { notifyLawyerAdminsAccountRegistrationPending } from "@/modules/notifications/services/notification-dispatch.service";
 import { connectMongo } from "@/shared/db/connect";
 import { AuditWriteFailedError } from "@/shared/audit/errors/audit-errors";
 import { hashPassword } from "@/shared/security/password";
@@ -75,7 +75,8 @@ export async function registerPublicUser(
               email: input.email,
               passwordHash,
               role: input.role,
-              accountStatus: AccountStatus.PENDING_APPROVAL,
+              accountStatus: AccountStatus.ACTIVE,
+              clientApprovalStatus: ClientApprovalStatus.AWAITING_SUBMISSION,
               emailVerifiedAt: null,
             },
           ],
@@ -104,12 +105,6 @@ export async function registerPublicUser(
         userId,
         role: input.role,
         correlationId: options?.correlationId,
-        session: mongoSession,
-      });
-
-      await notifyLawyerAdminsAccountRegistrationPending({
-        registeredUserId: userId,
-        registeredUserFullName: input.fullName,
         session: mongoSession,
       });
 

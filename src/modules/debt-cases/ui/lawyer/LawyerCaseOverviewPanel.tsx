@@ -23,14 +23,20 @@ import {
   DebtCaseLawyerReviewStatusBadge,
   DebtCaseWorkflowStatusBadge,
 } from "@/modules/debt-cases/ui/DebtCaseStatusBadges";
+import { LawyerDebtCasePlatformFeePanel } from "@/modules/debt-cases/ui/lawyer/LawyerDebtCasePlatformFeePanel";
 import styles from "@/modules/debt-cases/ui/lawyer/LawyerDebtCasesAdmin.module.scss";
 
 type Props = {
   bundle: LawyerDebtCaseDetailBundle;
   onJumpToSection: (sectionId: string) => void;
+  canUpdatePlatformFee?: boolean;
 };
 
-export function LawyerCaseOverviewPanel({ bundle, onJumpToSection }: Props) {
+export function LawyerCaseOverviewPanel({
+  bundle,
+  onJumpToSection,
+  canUpdatePlatformFee = false,
+}: Props) {
   const { record, legalReadiness } = bundle;
   const owners = record.parties.propertyOwners;
   const tenant = record.parties.tenant;
@@ -82,6 +88,8 @@ export function LawyerCaseOverviewPanel({ bundle, onJumpToSection }: Props) {
           </button>
         </nav>
       </section>
+
+      <LawyerDebtCasePlatformFeePanel record={record} canUpdate={canUpdatePlatformFee} />
 
       <p className={styles.bannerInfoCompact} role="note">
         הגשה לבדיקה ואישור להכנת מכתב אינם שולחים מכתב. אישור להכנת מכתב הוא החלטת ביקורת פנימית בלבד — לא

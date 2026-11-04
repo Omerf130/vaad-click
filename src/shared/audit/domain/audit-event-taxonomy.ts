@@ -35,6 +35,8 @@ export const AuditEventType = {
   USER_ADMIN_ACCOUNT_APPROVED: "user_admin.account.approved",
   USER_ADMIN_ACCOUNT_REJECTED: "user_admin.account.rejected",
   USER_ADMIN_ACCOUNT_RECONSIDERED: "user_admin.account.reconsidered",
+  USER_ADMIN_CLIENT_APPROVAL_PENDING_FIRST_SUBMISSION:
+    "user_admin.client_approval.pending_first_submission",
   USER_ADMIN_PENDING_ONBOARDING_BOUND: "user_admin.pending_onboarding.bound",
   BUILDING_RECORD_CREATED: "building.record.created",
   BUILDING_RECORD_UPDATED: "building.record.updated",

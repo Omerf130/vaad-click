@@ -66,10 +66,27 @@ describe("createPendingBuildingOnboardingRequest", () => {
     );
   });
 
-  it("rejects when the user is not pending approval", async () => {
+  it("allows active operator accounts to open onboarding", async () => {
     mockLean.mockResolvedValue({
       _id: USER_ID,
       accountStatus: AccountStatus.ACTIVE,
+    });
+
+    const { createPendingBuildingOnboardingRequest } = await import(
+      "@/modules/debt-cases/services/pending-building-onboarding.service"
+    );
+
+    await createPendingBuildingOnboardingRequest({
+      targetUserId: USER_ID,
+      createdByUserId: USER_ID,
+    });
+    expect(mockOnboardingCreate).toHaveBeenCalled();
+  });
+
+  it("rejects rejected accounts", async () => {
+    mockLean.mockResolvedValue({
+      _id: USER_ID,
+      accountStatus: AccountStatus.REJECTED,
     });
 
     const { createPendingBuildingOnboardingRequest } = await import(

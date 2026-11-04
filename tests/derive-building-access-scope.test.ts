@@ -13,9 +13,8 @@ const BUILDING_A = "11111111-1111-4111-8111-111111111111";
 const BUILDING_B = "22222222-2222-4222-8222-222222222222";
 
 describe("deriveBuildingAccessScope", () => {
-  it("denies operational scope for pending, rejected, disabled and locked accounts", () => {
+  it("denies building scope for rejected, disabled and locked accounts", () => {
     for (const accountStatus of [
-      AccountStatus.PENDING_APPROVAL,
       AccountStatus.REJECTED,
       AccountStatus.DISABLED,
       AccountStatus.LOCKED,
@@ -83,15 +82,15 @@ describe("deriveBuildingAccessScope", () => {
     expect(isBuildingPublicIdAuthorized(scope, BUILDING_B)).toBe(true);
   });
 
-  it("ignores stale assignments when account is not operational", () => {
+  it("keeps legacy pending_approval assignments for bound onboarding", () => {
     const scope = deriveBuildingAccessScope({
       role: UserRole.BUILDING_REP,
       accountStatus: AccountStatus.PENDING_APPROVAL,
       representativeBuildingPublicId: BUILDING_A,
       managementCompanyBuildingPublicIds: [],
     });
-    expect(scope.mode).toBe(BuildingScopeMode.DENIED);
-    expect(buildActiveBuildingScopeFilter(scope)).toEqual({ buildingId: { $in: [] } });
+    expect(scope.mode).toBe(BuildingScopeMode.ASSIGNED);
+    expect(isBuildingPublicIdAuthorized(scope, BUILDING_A)).toBe(true);
   });
 });
 

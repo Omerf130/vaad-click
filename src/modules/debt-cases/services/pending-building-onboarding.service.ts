@@ -71,10 +71,17 @@ export async function createPendingBuildingOnboardingRequest(input: {
     userQuery = userQuery.session(input.session);
   }
   const user = await userQuery.lean();
-  if (!user || user.accountStatus !== AccountStatus.PENDING_APPROVAL) {
+  if (!user) {
+    throw new DebtCaseError(DebtCaseErrorCode.FORBIDDEN, "User not found for onboarding");
+  }
+  if (
+    user.accountStatus === AccountStatus.REJECTED ||
+    user.accountStatus === AccountStatus.DISABLED ||
+    user.accountStatus === AccountStatus.LOCKED
+  ) {
     throw new DebtCaseError(
       DebtCaseErrorCode.FORBIDDEN,
-      "Onboarding request requires a pending-approval account",
+      "Onboarding request requires an eligible operator account",
     );
   }
 

@@ -7,6 +7,9 @@ import type { DebtCasePaymentStatus } from "@/modules/debt-cases/domain/debt-cas
 import type { DebtCaseValidationFlag } from "@/modules/debt-cases/domain/debt-case-validation-flag";
 import type { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 import type { DebtPeriodMonth } from "@/modules/debt-cases/domain/debt-period";
+import type { WarningLetterPlatformFeeCollectionStatus } from "@/modules/debt-cases/domain/warning-letter-platform-fee-collection-status";
+import type { WarningLetterPlatformFeePaymentPreference } from "@/modules/debt-cases/domain/warning-letter-platform-fee-payment-preference";
+import type { WarningLetterPlatformFeeStatusHistoryEntry } from "@/modules/debt-cases/domain/warning-letter-platform-fee-status-history";
 
 export type DebtCaseFinancialFields = {
   debtType: DebtCaseDebtType;
@@ -19,6 +22,14 @@ export type DebtCaseFinancialFields = {
 export type DebtCaseApartmentFields = {
   apartmentNumberDisplay: string;
   apartmentKeyNormalized: string;
+};
+
+export type DebtCasePlatformFeeFields = {
+  platformFeePreference: WarningLetterPlatformFeePaymentPreference | null;
+  platformFeeAmountMinor: number | null;
+  platformFeeCollectionStatus: WarningLetterPlatformFeeCollectionStatus | null;
+  platformFeeInternalNote: string | null;
+  platformFeeStatusHistory: WarningLetterPlatformFeeStatusHistoryEntry[];
 };
 
 export type DebtCaseLifecycleDimensions = {
@@ -45,7 +56,8 @@ export type DebtCaseRecord = {
   parties: DebtCasePartyStructure;
 } & DebtCaseApartmentFields &
   DebtCaseFinancialFields &
-  DebtCaseLifecycleDimensions;
+  DebtCaseLifecycleDimensions &
+  DebtCasePlatformFeeFields;
 
 /** Fields frozen when a warning letter is sent (future). */
 export type DebtCaseLetterSnapshot = DebtCaseApartmentFields &

@@ -1,12 +1,12 @@
 import "server-only";
 
-import { Types } from "mongoose";
-
 import { DebtCaseError, DebtCaseErrorCode } from "@/modules/debt-cases/domain/debt-case-errors";
 import { isLawyerAdminActor, type DebtCaseActorContext } from "@/modules/debt-cases/domain/debt-case-actor";
 import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 import type { DebtCaseDocument } from "@/modules/debt-cases/infra/debt-case.model";
 import { resolvePendingOnboardingBuildingForUser } from "@/modules/debt-cases/services/pending-building-onboarding.service";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
+import { resolveEffectiveClientApprovalStatus } from "@/modules/users/domain/client-portal-access";
 import { AccountStatus } from "@/modules/users/domain/account-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
@@ -17,6 +17,7 @@ function debtCaseActorFromContext(context: AuthenticatedContext): DebtCaseActorC
   return {
     role: context.user.role,
     accountStatus: context.user.accountStatus,
+    clientApprovalStatus: context.user.clientApprovalStatus,
   };
 }
 
@@ -114,6 +115,11 @@ export async function assertCanReadDebtCase(input: {
     throw new DebtCaseError(DebtCaseErrorCode.FORBIDDEN, "Access denied");
   }
 
+  const clientApproval = resolveEffectiveClientApprovalStatus(input.context.user);
+  if (clientApproval !== ClientApprovalStatus.APPROVED && !isOwner) {
+    throw new DebtCaseError(DebtCaseErrorCode.FORBIDDEN, "Access denied");
+  }
+
   await assertBuildingAccess({
     context: input.context,
     buildingPublicId: input.doc.buildingId,
@@ -129,6 +135,15 @@ export async function assertCanMutateDebtCase(input: {
   if (input.context.user.accountStatus === AccountStatus.PENDING_APPROVAL) {
     if (input.doc.workflowStatus !== DebtCaseWorkflowStatus.DRAFT) {
       throw new DebtCaseError(DebtCaseErrorCode.FORBIDDEN, "Pending accounts may edit drafts only");
+    }
+    return;
+  }
+
+  const clientApproval = resolveEffectiveClientApprovalStatus(input.context.user);
+  if (clientApproval !== ClientApprovalStatus.APPROVED) {
+    const isOwner = input.doc.createdByUserId.toString() === input.context.user.id;
+    if (!isOwner || input.doc.workflowStatus !== DebtCaseWorkflowStatus.DRAFT) {
+      throw new DebtCaseError(DebtCaseErrorCode.FORBIDDEN, "Unapproved clients may edit drafts only");
     }
     return;
   }
@@ -165,12 +180,7 @@ export async function assertCanListBuildingDebtCases(input: {
   });
 }
 
-export function buildPendingUserDraftListFilter(userId: string): Record<string, unknown> {
-  return {
-    createdByUserId: new Types.ObjectId(userId),
-    workflowStatus: DebtCaseWorkflowStatus.DRAFT,
-  };
-}
+export { buildPendingUserDraftListFilter, buildOperatorDebtCaseVisibilityFilter } from "@/modules/debt-cases/domain/operator-debt-case-scope";
 
 export async function assertLawyerAdminDebtCaseReview(input: {
   context: AuthenticatedContext;

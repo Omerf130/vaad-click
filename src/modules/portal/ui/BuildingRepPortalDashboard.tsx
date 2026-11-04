@@ -53,6 +53,9 @@ export function BuildingRepPortalDashboard({ data }: Props) {
           פעולות מהירות
         </h2>
         <div className={styles.actionsRow}>
+          <ButtonLink href="/app/debt-cases/new" variant="primary">
+            פתיחת תיק חייב חדש
+          </ButtonLink>
           <BuildingDebtCasesCreateButton
             buildingId={building.buildingId}
             action={createDebtCaseDraftFormAction}

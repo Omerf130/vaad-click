@@ -1,12 +1,11 @@
 import "server-only";
 
 import { Building } from "@/modules/buildings/infra/building.model";
-import { AccountStatus } from "@/modules/users/domain/account-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { DebtCaseLawyerReviewStatus } from "@/modules/debt-cases/domain/debt-case-lawyer-review-status";
 import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 import { DebtCase } from "@/modules/debt-cases/infra/debt-case.model";
-import { buildPendingUserDraftListFilter } from "@/modules/debt-cases/services/debt-case-authorization.service";
+import { buildOperatorDebtCaseVisibilityFilter } from "@/modules/debt-cases/services/debt-case-authorization.service";
 import {
   getAccessibleBuildingPublicIds,
   listAccessibleBuildings,
@@ -83,11 +82,9 @@ function buildDebtCaseScopeFilter(input: {
   const filter: Record<string, unknown> = {
     buildingId: { $in: [...input.buildingIds] },
   };
-  if (input.context.user.accountStatus === AccountStatus.PENDING_APPROVAL) {
-    return {
-      ...filter,
-      ...buildPendingUserDraftListFilter(input.context.user.id),
-    };
+  const visibility = buildOperatorDebtCaseVisibilityFilter(input.context.user);
+  if (visibility) {
+    return { ...filter, ...visibility };
   }
   return filter;
 }

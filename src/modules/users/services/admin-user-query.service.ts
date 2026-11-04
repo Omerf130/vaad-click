@@ -7,6 +7,7 @@ import { Building } from "@/modules/buildings/infra/building.model";
 import { ManagementCompany } from "@/modules/management-companies/infra/management-company.model";
 import { Session } from "@/modules/auth/infra/session.model";
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { User } from "@/modules/users/infra/user.model";
 import type { AdminUserListParams } from "@/modules/users/validation/admin-user-list.schema";
@@ -22,6 +23,7 @@ export type AdminUserListItem = {
   email: string;
   role: UserRole;
   accountStatus: AccountStatus;
+  clientApprovalStatus: ClientApprovalStatus | null;
   createdAt: Date;
 };
 
@@ -53,8 +55,15 @@ function buildListFilter(params: AdminUserListParams): Record<string, unknown> {
     role: { $in: MANAGED_ROLES },
   };
 
+  const andClauses: Record<string, unknown>[] = [];
+
   if (params.view === "pending") {
-    filter.accountStatus = AccountStatus.PENDING_APPROVAL;
+    andClauses.push({
+      $or: [
+        { accountStatus: AccountStatus.PENDING_APPROVAL },
+        { clientApprovalStatus: ClientApprovalStatus.PENDING_LAWYER_APPROVAL },
+      ],
+    });
   } else if (params.status) {
     filter.accountStatus = params.status;
   }
@@ -65,10 +74,18 @@ function buildListFilter(params: AdminUserListParams): Record<string, unknown> {
 
   if (params.q) {
     const pattern = escapeRegex(params.q.trim());
-    filter.$or = [
-      { fullName: { $regex: pattern, $options: "i" } },
-      { email: { $regex: pattern, $options: "i" } },
-    ];
+    andClauses.push({
+      $or: [
+        { fullName: { $regex: pattern, $options: "i" } },
+        { email: { $regex: pattern, $options: "i" } },
+      ],
+    });
+  }
+
+  if (andClauses.length === 1) {
+    Object.assign(filter, andClauses[0]);
+  } else if (andClauses.length > 1) {
+    filter.$and = andClauses;
   }
 
   return filter;
@@ -81,7 +98,10 @@ export async function countPendingApprovalUsers(
   await connectMongo();
   return User.countDocuments({
     role: { $in: MANAGED_ROLES },
-    accountStatus: AccountStatus.PENDING_APPROVAL,
+    $or: [
+      { accountStatus: AccountStatus.PENDING_APPROVAL },
+      { clientApprovalStatus: ClientApprovalStatus.PENDING_LAWYER_APPROVAL },
+    ],
   });
 }
 
@@ -105,7 +125,7 @@ export async function listAdminUsers(input: {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(ADMIN_USER_LIST_PAGE_SIZE)
-      .select("fullName email role accountStatus createdAt")
+      .select("fullName email role accountStatus clientApprovalStatus createdAt")
       .lean(),
     User.countDocuments(filter),
   ]);
@@ -116,6 +136,7 @@ export async function listAdminUsers(input: {
     email: row.email ?? "",
     role: row.role as UserRole,
     accountStatus: row.accountStatus as AccountStatus,
+    clientApprovalStatus: (row.clientApprovalStatus as ClientApprovalStatus | null) ?? null,
     createdAt: row.createdAt,
   }));
 
@@ -218,6 +239,7 @@ export async function getAdminUserDetail(input: {
     email: user.email,
     role: user.role as UserRole,
     accountStatus: user.accountStatus as AccountStatus,
+    clientApprovalStatus: (user.clientApprovalStatus as ClientApprovalStatus | null) ?? null,
     createdAt: user.createdAt,
     lastSessionAt: lastSession?.createdAt ?? null,
     assignment,

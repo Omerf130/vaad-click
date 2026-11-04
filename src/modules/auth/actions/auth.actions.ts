@@ -73,10 +73,7 @@ function portalRedirectPath(input: {
   if (input.role === UserRole.LAWYER_ADMIN) {
     return "/app/admin";
   }
-  if (
-    input.accountStatus === AccountStatus.PENDING_APPROVAL ||
-    input.accountStatus === AccountStatus.REJECTED
-  ) {
+  if (input.accountStatus === AccountStatus.REJECTED) {
     return "/app/account-status";
   }
   return "/app";
@@ -276,7 +273,7 @@ export async function registerAction(
   redirect(
     portalRedirectPath({
       role: parsed.data.role,
-      accountStatus: AccountStatus.PENDING_APPROVAL,
+      accountStatus: AccountStatus.ACTIVE,
       returnTo: null,
     }),
   );

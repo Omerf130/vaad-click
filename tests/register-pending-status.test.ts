@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import { UserRole } from "@/modules/users/domain/user-role";
 
 const mockWithTransaction = vi.fn(async (fn: () => Promise<void>) => fn());
@@ -52,7 +53,7 @@ describe("registerPublicUser account status", () => {
     mockUserCreate.mockResolvedValue([{ _id: { toString: () => "new-user-id" } }]);
   });
 
-  it("creates building_rep and management_company users as pending_approval", async () => {
+  it("creates building_rep and management_company users as active awaiting first submission", async () => {
     const { registerPublicUser } = await import("@/modules/auth/services/register.service");
 
     for (const role of [UserRole.BUILDING_REP, UserRole.MANAGEMENT_COMPANY] as const) {
@@ -64,8 +65,12 @@ describe("registerPublicUser account status", () => {
         role,
       });
       expect(result.ok).toBe(true);
-      const payload = mockUserCreate.mock.calls[0]?.[0]?.[0] as { accountStatus: string };
-      expect(payload.accountStatus).toBe(AccountStatus.PENDING_APPROVAL);
+      const payload = mockUserCreate.mock.calls[0]?.[0]?.[0] as {
+        accountStatus: string;
+        clientApprovalStatus: string;
+      };
+      expect(payload.accountStatus).toBe(AccountStatus.ACTIVE);
+      expect(payload.clientApprovalStatus).toBe(ClientApprovalStatus.AWAITING_SUBMISSION);
     }
   });
 });

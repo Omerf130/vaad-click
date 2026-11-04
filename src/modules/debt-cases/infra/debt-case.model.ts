@@ -10,6 +10,8 @@ import { DebtCaseLetterDeliveryStatus } from "@/modules/debt-cases/domain/debt-c
 import { DebtCaseOccupancyType } from "@/modules/debt-cases/domain/debt-case-occupancy-type";
 import { LegalDebtorDesignation } from "@/modules/debt-cases/domain/debt-case-parties";
 import { DebtCasePaymentStatus } from "@/modules/debt-cases/domain/debt-case-payment-status";
+import { WarningLetterPlatformFeeCollectionStatus } from "@/modules/debt-cases/domain/warning-letter-platform-fee-collection-status";
+import { WarningLetterPlatformFeePaymentPreference } from "@/modules/debt-cases/domain/warning-letter-platform-fee-payment-preference";
 import {
   DebtCaseValidationFlagCode,
   DebtCaseValidationFlagSeverity,
@@ -132,6 +134,33 @@ const debtCaseSchema = new Schema(
       type: String,
       enum: Object.values(DebtCasePaymentStatus),
       default: DebtCasePaymentStatus.NONE,
+    },
+    platformFeePreference: {
+      type: String,
+      enum: Object.values(WarningLetterPlatformFeePaymentPreference),
+      default: null,
+    },
+    platformFeeAmountMinor: { type: Number, default: null },
+    platformFeeCollectionStatus: {
+      type: String,
+      enum: Object.values(WarningLetterPlatformFeeCollectionStatus),
+      default: null,
+    },
+    platformFeeInternalNote: { type: String, trim: true, default: null },
+    platformFeeStatusHistory: {
+      type: [
+        new Schema(
+          {
+            fromStatus: { type: String, default: null },
+            toStatus: { type: String, required: true },
+            note: { type: String, default: null },
+            updatedByUserId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+            updatedAt: { type: Date, required: true },
+          },
+          { _id: false },
+        ),
+      ],
+      default: [],
     },
     legalHoldReasons: {
       type: [String],

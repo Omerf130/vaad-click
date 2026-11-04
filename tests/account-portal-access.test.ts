@@ -24,13 +24,13 @@ function context(
 }
 
 describe("account portal access (CP6A)", () => {
-  it("allows pending and rejected users on account-status only", () => {
+  it("allows legacy pending operators on portal; rejected users on account-status only", () => {
     const pending = context({
       role: UserRole.BUILDING_REP,
       accountStatus: AccountStatus.PENDING_APPROVAL,
     });
     expect(canAccessAccountStatusPage(pending)).toBe(true);
-    expect(canAccessOperationalPortal(pending)).toBe(false);
+    expect(canAccessOperationalPortal(pending)).toBe(true);
 
     const rejected = context({
       role: UserRole.MANAGEMENT_COMPANY,

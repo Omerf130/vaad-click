@@ -10,6 +10,7 @@ import {
   LegalDebtorDesignation,
   type DebtCasePartyStructure,
 } from "@/modules/debt-cases/domain/debt-case-parties";
+import { emptyDebtCasePlatformFeeFields } from "@/modules/debt-cases/domain/debt-case-platform-fee.defaults";
 import type { DebtCaseRecord } from "@/modules/debt-cases/domain/debt-case-record.types";
 import { AmountsMonetaryBasis } from "@/modules/financial-settings/domain/amounts-monetary-basis";
 import type { PublishedFinancialSettingsVersion } from "@/modules/financial-settings/domain/published-financial-settings-version";
@@ -66,6 +67,7 @@ function baseDebtCase(parties: DebtCasePartyStructure): DebtCaseRecord {
     letterDeliveryStatus: DebtCaseLetterDeliveryStatus.NONE,
     paymentStatus: DebtCasePaymentStatus.NONE,
     legalHoldReasons: [],
+    ...emptyDebtCasePlatformFeeFields(),
     parties,
   };
 }

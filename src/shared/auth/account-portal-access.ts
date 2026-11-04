@@ -1,4 +1,5 @@
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { canAccessOperatorPortal } from "@/modules/users/domain/client-portal-access";
 import { UserRole } from "@/modules/users/domain/user-role";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 
@@ -23,5 +24,5 @@ export function canAccessOperationalPortal(context: AuthenticatedContext): boole
   if (context.user.role === UserRole.LAWYER_ADMIN) {
     return context.user.accountStatus === AccountStatus.ACTIVE;
   }
-  return context.user.accountStatus === AccountStatus.ACTIVE;
+  return canAccessOperatorPortal(context.user);
 }

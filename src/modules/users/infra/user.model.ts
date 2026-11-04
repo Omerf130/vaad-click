@@ -3,6 +3,7 @@ import "server-only";
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
 
 import { AccountStatus } from "@/modules/users/domain/account-status";
+import { ClientApprovalStatus } from "@/modules/users/domain/client-approval-status";
 import { MfaMethod } from "@/modules/users/domain/mfa-state";
 import { UserRole } from "@/modules/users/domain/user-role";
 import { normalizeEmail } from "@/shared/validation/email";
@@ -60,6 +61,11 @@ const userSchema = new Schema(
       enum: Object.values(AccountStatus),
       default: AccountStatus.PENDING_APPROVAL,
     },
+    clientApprovalStatus: {
+      type: String,
+      enum: Object.values(ClientApprovalStatus),
+      default: null,
+    },
     managementCompanyId: {
       type: Schema.Types.ObjectId,
       ref: "ManagementCompany",
@@ -76,6 +82,7 @@ const userSchema = new Schema(
 );
 
 userSchema.index({ role: 1, accountStatus: 1 });
+userSchema.index({ role: 1, clientApprovalStatus: 1 });
 
 export type UserDocument = InferSchemaType<typeof userSchema> & {
   _id: mongoose.Types.ObjectId;

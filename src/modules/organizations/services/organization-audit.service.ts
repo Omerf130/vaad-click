@@ -2,7 +2,10 @@ import "server-only";
 
 import type { ClientSession } from "mongoose";
 
-import { writeAuditEventMandatory } from "@/modules/audit/services/audit-writer.service";
+import {
+  writeAuditEvent,
+  writeAuditEventMandatory,
+} from "@/modules/audit/services/audit-writer.service";
 import { AuditEventType } from "@/shared/audit/domain/audit-event-taxonomy";
 import { AuditOutcome } from "@/shared/audit/domain/audit-outcome";
 import { buildUserAuditActor } from "@/shared/audit/build-audit-actor";
@@ -40,6 +43,27 @@ export async function recordAccountRejected(input: AuditBase & { targetUserId: s
     },
     { session: input.session },
   );
+}
+
+export async function recordClientApprovalPendingOnFirstSubmission(input: {
+  context: AuthenticatedContext;
+  targetUserId: string;
+  correlationId?: string;
+  session?: ClientSession;
+}) {
+  const payload = {
+    eventType: AuditEventType.USER_ADMIN_CLIENT_APPROVAL_PENDING_FIRST_SUBMISSION,
+    actor: buildUserAuditActor(input.context),
+    action: "client_approval_pending_first_submission",
+    outcome: AuditOutcome.SUCCESS,
+    target: { entityType: "user", entityId: input.targetUserId },
+    correlationId: input.correlationId,
+  };
+  if (input.session) {
+    await writeAuditEventMandatory(payload, { session: input.session });
+    return;
+  }
+  await writeAuditEvent(payload, { mandatory: true });
 }
 
 export async function recordAccountReconsidered(input: AuditBase & { targetUserId: string }) {

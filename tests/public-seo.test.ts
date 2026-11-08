@@ -26,9 +26,12 @@ describe("public SEO helpers", () => {
     expect(metadata.robots).toMatchObject({ index: false, follow: true });
   });
 
-  it("tracks legal pages as draft pending approval", () => {
-    expect(
-      legalDocumentList.every((page) => page.publicationStatus === "draft_pending_approval"),
-    ).toBe(true);
+  it("tracks privacy as draft while terms and accessibility are published", () => {
+    const privacy = legalDocumentList.find((p) => p.path === "/privacy");
+    const terms = legalDocumentList.find((p) => p.path === "/terms");
+    const accessibility = legalDocumentList.find((p) => p.path === "/accessibility");
+    expect(privacy?.publicationStatus).toBe("draft_pending_approval");
+    expect(terms?.publicationStatus).toBe("published");
+    expect(accessibility?.publicationStatus).toBe("published");
   });
 });

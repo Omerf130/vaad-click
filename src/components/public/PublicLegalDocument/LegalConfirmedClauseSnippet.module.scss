@@ -1,0 +1,29 @@
+@use "../../../styles/tokens" as *;
+
+.snippet {
+  margin-block: $space-5 0;
+  padding: $space-4;
+  border-radius: $radius-md;
+  border: 1px solid $color-border;
+  background: $color-bg-surface;
+}
+
+.heading {
+  margin: 0 0 $space-2;
+  font-size: $font-size-md;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.note {
+  margin: 0 0 $space-2;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.text {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  color: $color-text;
+}

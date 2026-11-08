@@ -14,7 +14,7 @@
 }
 
 .container {
-  max-width: 42rem;
+  max-width: 46rem;
 }
 
 .docHeader {
@@ -45,6 +45,27 @@
   color: $color-text-muted;
 }
 
+.meta {
+  margin: $space-3 0 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.metaLabel {
+  font-weight: 600;
+}
+
 .draftLead {
-  margin: 0;
+  margin: 0 0 $space-4;
+}
+
+.importPending {
+  margin: 0 0 $space-5;
+  padding: $space-3;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  color: $color-text-muted;
+  background: $color-bg-surface;
+  border: 1px solid $color-border;
 }

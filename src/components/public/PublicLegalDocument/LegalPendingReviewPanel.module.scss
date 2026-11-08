@@ -1,0 +1,54 @@
+@use "../../../styles/tokens" as *;
+
+.panel {
+  margin-block-start: $space-6;
+  padding: $space-4;
+  border-radius: $radius-md;
+  border: 1px dashed $color-border;
+  background: $color-bg-surface;
+}
+
+.title {
+  margin: 0 0 $space-2;
+  font-size: $font-size-md;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.lead {
+  margin: 0 0 $space-3;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
+
+.list {
+  margin: 0;
+}
+
+.row {
+  display: grid;
+  gap: $space-1;
+  margin-bottom: $space-3;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  dt {
+    font-weight: 600;
+    font-size: $font-size-sm;
+    color: $color-text;
+  }
+
+  dd {
+    margin: 0;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+  }
+}
+
+.pending {
+  font-style: italic;
+  color: $color-primary;
+}

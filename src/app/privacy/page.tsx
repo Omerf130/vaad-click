@@ -7,8 +7,8 @@ import { buildPublicPageMetadata } from "@/shared/seo/build-public-page-metadata
 const document = legalDocuments.privacy;
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: document.title,
-  description: document.draftNoticeBody,
+  title: `${document.title} | ועד בקליק`,
+  description: document.seoDescription,
   path: document.path,
   noIndex: true,
 });

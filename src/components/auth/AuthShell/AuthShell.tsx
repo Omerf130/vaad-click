@@ -12,6 +12,9 @@ type AuthShellProps = {
 export function AuthShell({ title, subtitle, children }: AuthShellProps) {
   return (
     <div className={styles.page}>
+      <a href="#auth-main" className="skipLink">
+        דלג לתוכן הראשי
+      </a>
       <header className={styles.header}>
         <Container className={styles.headerInner}>
           <Link href="/" className={styles.brand}>
@@ -19,7 +22,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
           </Link>
         </Container>
       </header>
-      <main className={styles.main}>
+      <main id="auth-main" className={styles.main}>
         <Container className={styles.container}>
           <div className={styles.card}>
             <h1 className={styles.title}>{title}</h1>

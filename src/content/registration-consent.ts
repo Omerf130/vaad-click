@@ -5,9 +5,9 @@ import { legalDocuments } from "@/content/legal-pages";
  * No server-side consent field is collected in CP10.
  */
 export const registrationConsentState = {
-  status: "pending_legal_approval" as const,
+  status: "informational_only" as const,
   notice:
-    "מסמכי פרטיות ותנאי שימוש מחייבים עדיין בעריכה. יצירת חשבון בשלב זה אינה מהווה הסכמה לתנאים שטרם פורסמו.",
+    "לפני יצירת חשבון מומלץ לעיין בתנאי השימוש ובמדיניות הפרטיות. יצירת חשבון כאן אינה מחליפה חתימה על הסכם שכר הטרחה או ייפוי הכוח במסגרת ההצטרפות למשרד.",
   privacyPath: legalDocuments.privacy.path,
   termsPath: legalDocuments.terms.path,
 };

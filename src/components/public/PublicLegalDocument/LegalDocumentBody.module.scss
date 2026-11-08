@@ -1,0 +1,44 @@
+@use "../../../styles/tokens" as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+}
+
+.section {
+  margin: 0;
+}
+
+.sectionHeading {
+  margin: 0 0 $space-3;
+  font-size: $font-size-lg;
+  font-weight: 700;
+  color: $color-text;
+  line-height: $line-height-tight;
+}
+
+.subsectionHeading {
+  margin: $space-4 0 $space-2;
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+  line-height: $line-height-tight;
+}
+
+.paragraph {
+  margin: 0 0 $space-3;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.list {
+  margin: 0 0 $space-3;
+  padding-inline-start: $space-5;
+
+  li {
+    margin-bottom: $space-2;
+  }
+}

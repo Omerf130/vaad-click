@@ -1,0 +1,23 @@
+@use "../../../styles/tokens" as *;
+
+.notice {
+  margin-block: $space-5;
+  padding: $space-4;
+  border-radius: $radius-md;
+  border: 1px solid rgb(180 120 20 / 35%);
+  background: rgb(255 248 230 / 80%);
+}
+
+.title {
+  margin: 0 0 $space-2;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.body {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  color: $color-text-muted;
+}

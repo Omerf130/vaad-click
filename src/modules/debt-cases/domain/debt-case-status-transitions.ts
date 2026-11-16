@@ -31,6 +31,7 @@ const WORKFLOW_TRANSITIONS: Readonly<
     [DebtCaseWorkflowStatus.REJECTED]: ["lawyer_admin"],
     [DebtCaseWorkflowStatus.CLOSED_MANUAL]: ["lawyer_admin"],
     [DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW]: ["operator", "lawyer_admin"],
+    [DebtCaseWorkflowStatus.LETTER_SENT]: ["lawyer_admin"],
   },
   [DebtCaseWorkflowStatus.RETURNED_FOR_COMPLETION]: {
     [DebtCaseWorkflowStatus.RETURNED_FOR_COMPLETION]: ["operator", "lawyer_admin"],
@@ -38,9 +39,12 @@ const WORKFLOW_TRANSITIONS: Readonly<
     [DebtCaseWorkflowStatus.CLOSED_MANUAL]: ["lawyer_admin"],
   },
   [DebtCaseWorkflowStatus.REJECTED]: {},
-  [DebtCaseWorkflowStatus.CLOSED_MANUAL]: {},
+  [DebtCaseWorkflowStatus.CLOSED_MANUAL]: {
+    [DebtCaseWorkflowStatus.LETTER_SENT]: ["lawyer_admin"],
+  },
   [DebtCaseWorkflowStatus.LETTER_SENT]: {
     [DebtCaseWorkflowStatus.CLOSED_MANUAL]: ["lawyer_admin"],
+    [DebtCaseWorkflowStatus.LETTER_SENT]: ["lawyer_admin"],
   },
 };
 
@@ -86,14 +90,19 @@ export function assertDebtCaseWorkflowTransition(input: {
   to: DebtCaseWorkflowStatus;
   context: DebtCaseActorContext;
 }): void {
-  if (isTerminalDebtCaseWorkflowStatus(input.from) && input.from !== input.to) {
+  const actor = resolveWorkflowTransitionActor(input.context);
+  const reopenFromClosed =
+    input.from === DebtCaseWorkflowStatus.CLOSED_MANUAL &&
+    input.to === DebtCaseWorkflowStatus.LETTER_SENT &&
+    actor === "lawyer_admin";
+
+  if (isTerminalDebtCaseWorkflowStatus(input.from) && input.from !== input.to && !reopenFromClosed) {
     throw new DebtCaseError(
       DebtCaseErrorCode.INVALID_STATUS_TRANSITION,
       "Terminal workflow status cannot change",
     );
   }
 
-  const actor = resolveWorkflowTransitionActor(input.context);
   const allowedActors = WORKFLOW_TRANSITIONS[input.from]?.[input.to];
   if (!allowedActors?.includes(actor)) {
     throw new DebtCaseError(

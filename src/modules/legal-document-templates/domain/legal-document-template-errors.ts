@@ -9,6 +9,8 @@ export const LegalDocumentTemplateErrorCode = {
   CONTENT_HASH_MISMATCH: "content_hash_mismatch",
   ALREADY_PUBLISHED: "already_published",
   DRAFT_ALREADY_EXISTS: "draft_already_exists",
+  NON_OPERATIVE_REVISION: "non_operative_revision",
+  STATEMENT_OF_CLAIM_BODY_INVALID: "statement_of_claim_body_invalid",
 } as const;
 
 export type LegalDocumentTemplateErrorCode =

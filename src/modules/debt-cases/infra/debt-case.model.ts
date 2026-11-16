@@ -16,6 +16,7 @@ import {
   DebtCaseValidationFlagCode,
   DebtCaseValidationFlagSeverity,
 } from "@/modules/debt-cases/domain/debt-case-validation-flag";
+import { DebtCaseResolutionKind } from "@/modules/debt-cases/domain/debt-case-resolution-kind";
 import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 
 const propertyOwnerPartySchema = new Schema(
@@ -171,6 +172,14 @@ const debtCaseSchema = new Schema(
     predecessorDebtCaseId: { type: String, trim: true, default: null },
     letterSentAt: { type: Date, default: null },
     debtSnapshotAtLetter: { type: letterSnapshotSchema, default: null },
+    caseResolutionKind: {
+      type: String,
+      enum: [...Object.values(DebtCaseResolutionKind), null],
+      default: null,
+    },
+    caseResolutionReasonHe: { type: String, trim: true, default: null },
+    caseResolutionAt: { type: Date, default: null },
+    caseResolutionByUserId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     submittedAt: { type: Date, default: null },
     submittedByUserId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     createdByUserId: { type: Schema.Types.ObjectId, ref: "User", required: true },

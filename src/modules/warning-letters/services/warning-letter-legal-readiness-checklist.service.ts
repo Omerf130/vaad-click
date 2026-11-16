@@ -8,19 +8,24 @@ import { getDocumentStorageCapability } from "@/modules/document-assets/infra/do
 import { WarningLetterDraftLegalApprovalStatus } from "@/modules/warning-letters/domain/warning-letter-draft-legal-approval-status";
 import { WarningLetterDraftLoadState } from "@/modules/warning-letters/domain/warning-letter-draft-load-state";
 import {
-  isWarningLetterOperativeDeadlinePolicyResolved,
-  WARNING_LETTER_ELECTRONIC_SIGNING_BLOCKED_HE,
+  WARNING_LETTER_MANUAL_FINAL_PDF_ARCHIVAL_NOTE_HE,
   WARNING_LETTER_OPERATIVE_DEADLINE_POLICY_BLOCKED_HE,
+  WARNING_LETTER_OPERATIVE_DEADLINE_POLICY_SUMMARY_HE,
+} from "@/modules/warning-letters/domain/warning-letter-operative-deadline-policy";
+import {
+  WARNING_LETTER_ELECTRONIC_SIGNING_BLOCKED_HE,
   WARNING_LETTER_PAYMENT_COLLECTION_BLOCKED_HE,
-  WARNING_LETTER_PDF_STORAGE_BLOCKED_HE,
   WARNING_LETTER_WHATSAPP_DISPATCH_BLOCKED_HE,
 } from "@/modules/warning-letters/domain/warning-letter-operative-policy";
+import type { WarningLetterContentSnapshot } from "@/modules/warning-letters/snapshot/warning-letter-snapshot.types";
 import { formatUnapprovedTemplateVariantHe } from "@/modules/warning-letters/presentation/warning-letter-approval-blockers.he";
 import { collectWarningLetterWordingApprovalBlockersHe } from "@/modules/warning-letters/services/warning-letter-draft-approval-gates";
 import {
   collectWarningLetterDispatchBlockersHe,
   collectWarningLetterFinalizationBlockersHe,
+  collectWarningLetterManualDeliveryBlockersHe,
 } from "@/modules/warning-letters/services/warning-letter-finalization-gates";
+import type { WarningLetterFinalDocumentView } from "@/modules/warning-letters/services/warning-letter-finalization.service";
 import type { WarningLetterDraftView } from "@/modules/warning-letters/services/warning-letter-draft.service";
 import { listWarningLetterTemplateVariantCatalogWithApprovalStatus } from "@/modules/warning-letters/services/warning-letter-template-variant-approval.service";
 
@@ -42,6 +47,7 @@ export type WarningLetterLegalReadinessChecklist = {
   wordingApprovalAllowed: boolean;
   finalizationAllowed: boolean;
   dispatchAllowed: boolean;
+  manualDeliveryAllowed: boolean;
 };
 
 export async function buildWarningLetterLegalReadinessChecklist(input: {
@@ -51,6 +57,9 @@ export async function buildWarningLetterLegalReadinessChecklist(input: {
   draft: WarningLetterDraftView | null;
   legalWordingApprovalStatus: WarningLetterDraftLegalApprovalStatus;
   hasFinalDocument: boolean;
+  operativeDeadlinePolicyConfirmed: boolean;
+  operativeSnapshotForFinalize?: WarningLetterContentSnapshot | null;
+  finalDocument?: WarningLetterFinalDocumentView | null;
 }): Promise<WarningLetterLegalReadinessChecklist> {
   const items: LegalReadinessChecklistItem[] = [];
 
@@ -123,9 +132,9 @@ export async function buildWarningLetterLegalReadinessChecklist(input: {
   items.push({
     id: "deadline_policy",
     labelHe: "מדיניות מועד לתשלום (גרסה מבצעית)",
-    status: isWarningLetterOperativeDeadlinePolicyResolved() ? "complete" : "needs_lawyer",
-    detailHe: isWarningLetterOperativeDeadlinePolicyResolved()
-      ? undefined
+    status: input.operativeDeadlinePolicyConfirmed ? "complete" : "needs_lawyer",
+    detailHe: input.operativeDeadlinePolicyConfirmed
+      ? WARNING_LETTER_OPERATIVE_DEADLINE_POLICY_SUMMARY_HE
       : WARNING_LETTER_OPERATIVE_DEADLINE_POLICY_BLOCKED_HE,
   });
 
@@ -139,9 +148,12 @@ export async function buildWarningLetterLegalReadinessChecklist(input: {
   const storage = getDocumentStorageCapability();
   items.push({
     id: "pdf_storage",
-    labelHe: "אחסון PDF פרטי",
+    labelHe: "אחסון PDF פרטי (ארכיון בינארי)",
     status: storage.state === "configured" ? "complete" : "blocked_integration",
-    detailHe: storage.state === "configured" ? undefined : WARNING_LETTER_PDF_STORAGE_BLOCKED_HE,
+    detailHe:
+      storage.state === "configured"
+        ? undefined
+        : `${WARNING_LETTER_MANUAL_FINAL_PDF_ARCHIVAL_NOTE_HE} (אין ספק אחסון מוגדר — ההורדה מייצרת PDF מהצילום).`,
   });
 
   items.push({
@@ -173,6 +185,8 @@ export async function buildWarningLetterLegalReadinessChecklist(input: {
     loadState: input.loadState,
     draft: input.draft,
     legalWordingApprovalStatus: input.legalWordingApprovalStatus,
+    operativeDeadlinePolicyConfirmed: input.operativeDeadlinePolicyConfirmed,
+    operativeSnapshotForFinalize: input.operativeSnapshotForFinalize ?? null,
   });
 
   const dispatchBlockers = collectWarningLetterDispatchBlockersHe({
@@ -181,7 +195,14 @@ export async function buildWarningLetterLegalReadinessChecklist(input: {
     loadState: input.loadState,
     draft: input.draft,
     legalWordingApprovalStatus: input.legalWordingApprovalStatus,
+    operativeDeadlinePolicyConfirmed: input.operativeDeadlinePolicyConfirmed,
+    operativeSnapshotForFinalize: input.operativeSnapshotForFinalize ?? null,
     hasFinalDocument: input.hasFinalDocument,
+  });
+
+  const manualDeliveryBlockers = collectWarningLetterManualDeliveryBlockersHe({
+    debtCase: input.debtCase,
+    finalDocument: input.finalDocument ?? null,
   });
 
   return {
@@ -189,5 +210,6 @@ export async function buildWarningLetterLegalReadinessChecklist(input: {
     wordingApprovalAllowed: wordingBlockers.length === 0,
     finalizationAllowed: finalizationBlockers.length === 0,
     dispatchAllowed: dispatchBlockers.length === 0,
+    manualDeliveryAllowed: manualDeliveryBlockers.length === 0,
   };
 }

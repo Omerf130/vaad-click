@@ -25,6 +25,7 @@ function revision(partial: Partial<LegalDocumentTemplateRevisionView> & { revisi
     publishedAtIso: null,
     approved: false,
     approvedAtIso: null,
+    operativeStatus: "operative_eligible",
     ...partial,
   };
 }

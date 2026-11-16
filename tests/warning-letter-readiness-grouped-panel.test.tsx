@@ -17,6 +17,7 @@ const checklist: WarningLetterLegalReadinessChecklist = {
   wordingApprovalAllowed: false,
   finalizationAllowed: false,
   dispatchAllowed: false,
+  manualDeliveryAllowed: false,
 };
 
 describe("WarningLetterReadinessGroupedPanel", () => {

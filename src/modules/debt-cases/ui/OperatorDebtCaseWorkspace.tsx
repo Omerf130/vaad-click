@@ -25,6 +25,7 @@ import type { OperatorDebtCaseActivityEntry } from "@/modules/portal/services/op
 import { OperatorCaseActivityPanel } from "@/modules/portal/ui/OperatorCaseActivityPanel";
 import { OperatorDebtCasePlatformFeePanel } from "@/modules/debt-cases/ui/OperatorDebtCasePlatformFeePanel";
 import { OperatorCaseLifecyclePanel } from "@/modules/portal/ui/OperatorCaseLifecyclePanel";
+import type { PortalDebtCasePaymentSummary } from "@/modules/debt-cases/services/debt-case-post-letter-finance.service";
 import {
   DebtCaseLawyerReviewStatusBadge,
   DebtCaseWorkflowStatusBadge,
@@ -45,6 +46,8 @@ type Props = {
   returnFeedbackHe: string | null;
   documents: PortalDocumentAssetListItem[];
   storageState: DocumentStorageUiState;
+  printedDeadlineDateIso?: string | null;
+  paymentSummary?: PortalDebtCasePaymentSummary | null;
 };
 
 function nextActionHint(record: DebtCaseRecord, editable: boolean, isReturned: boolean): string {
@@ -56,6 +59,9 @@ function nextActionHint(record: DebtCaseRecord, editable: boolean, isReturned: b
   }
   if (record.workflowStatus === DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW) {
     return "התיק בבדיקת עורך הדין — אין פעולה נדרשת כרגע.";
+  }
+  if (record.workflowStatus === DebtCaseWorkflowStatus.LETTER_SENT) {
+    return "מכתב התראה נשלח (לפי תיעוד המשרד) — ממתינים להמשך טיפול.";
   }
   if (record.workflowStatus === DebtCaseWorkflowStatus.REJECTED) {
     return "התיק נדחה — פנו למשרד עורך הדין.";
@@ -72,6 +78,8 @@ export function OperatorDebtCaseWorkspace({
   returnFeedbackHe,
   documents,
   storageState,
+  printedDeadlineDateIso = null,
+  paymentSummary = null,
 }: Props) {
   const editable = isOperatorDebtCaseEditable(record);
   const isReturned = record.workflowStatus === DebtCaseWorkflowStatus.RETURNED_FOR_COMPLETION;
@@ -95,7 +103,12 @@ export function OperatorDebtCaseWorkspace({
       panel: (
         <div className={styles.tabPanelStack}>
           <p className={styles.nextAction}>{nextActionHint(record, editable, isReturned)}</p>
-          <OperatorCaseLifecyclePanel record={record} embedded />
+          <OperatorCaseLifecyclePanel
+            record={record}
+            printedDeadlineDateIso={printedDeadlineDateIso}
+            paymentSummary={paymentSummary}
+            embedded
+          />
           <OperatorDebtCasePlatformFeePanel record={record} />
           <OperatorDebtCaseOverviewPanel record={record} buildingDisplayName={buildingDisplayName} compact />
         </div>

@@ -24,6 +24,11 @@ const warningLetterDeliveryRecordSchema = new Schema(
     recipientContactHint: { type: String, default: null },
     authorizedByUserId: { type: Schema.Types.ObjectId, required: true },
     authorizedAt: { type: Date, required: true },
+    sentAt: { type: Date, default: null },
+    confirmedDeliveredAt: { type: Date, default: null },
+    internalNotes: { type: String, default: null },
+    evidenceDocumentAssetId: { type: String, default: null },
+    idempotencyKey: { type: String, default: null, index: true },
     attemptRecordedAt: { type: Date, default: null },
     trackingReference: { type: String, default: null },
     evidenceNote: { type: String, default: null },
@@ -35,6 +40,15 @@ const warningLetterDeliveryRecordSchema = new Schema(
     timestamps: true,
     collection: "warning_letter_delivery_records",
     strict: "throw",
+  },
+);
+
+warningLetterDeliveryRecordSchema.index(
+  { debtCaseId: 1, idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { idempotencyKey: { $type: "string" } },
+    name: "unique_delivery_idempotency_per_case",
   },
 );
 

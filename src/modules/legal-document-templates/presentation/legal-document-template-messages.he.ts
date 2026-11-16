@@ -12,6 +12,10 @@ const MESSAGES: Record<LegalDocumentTemplateErrorCode, string> = {
     "הניסוח השתנה מאז האישור — נדרש אישור מחדש.",
   [LegalDocumentTemplateErrorCode.ALREADY_PUBLISHED]: "גרסה זו כבר פורסמה.",
   [LegalDocumentTemplateErrorCode.DRAFT_ALREADY_EXISTS]: "כבר קיימת טיוטה פעילה — שמרו שינוי או מחקו לפני יצירה חדשה.",
+  [LegalDocumentTemplateErrorCode.NON_OPERATIVE_REVISION]:
+    "גרסה זו מסומנת לפיתוח בלבד — אין לאשר או לפרסם לשימוש מבצעי.",
+  [LegalDocumentTemplateErrorCode.STATEMENT_OF_CLAIM_BODY_INVALID]:
+    "מבנה תבנית כתב התביעה אינו תקין — בדקו מקטעים ומצייני מקום.",
 };
 
 export function formatLegalDocumentTemplateErrorHe(

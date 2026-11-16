@@ -10,15 +10,24 @@ import {
 } from "@/modules/audit/services/audit-writer.service";
 import {
   LEGAL_DOCUMENT_TEMPLATE_CATEGORY_VALUES,
+  isStructuredLegalDocumentTemplateCategory,
   legalDocumentTemplateCategoryLabelHe,
-  type LegalDocumentTemplateCategory,
+  LegalDocumentTemplateCategory,
 } from "@/modules/legal-document-templates/domain/legal-document-template-category";
 import { computeLegalDocumentTemplateContentSha256 } from "@/modules/legal-document-templates/domain/legal-document-template-content-hash";
 import {
   LegalDocumentTemplateError,
   LegalDocumentTemplateErrorCode,
 } from "@/modules/legal-document-templates/domain/legal-document-template-errors";
-import { evaluatePublishEligibility } from "@/modules/legal-document-templates/domain/legal-document-template-lifecycle.rules";
+import {
+  evaluateApprovalEligibility,
+  evaluatePublishEligibility,
+} from "@/modules/legal-document-templates/domain/legal-document-template-lifecycle.rules";
+import {
+  defaultOperativeStatusForCategory,
+  LegalDocumentTemplateOperativeStatus,
+  type LegalDocumentTemplateOperativeStatus as OperativeStatus,
+} from "@/modules/legal-document-templates/domain/legal-document-template-operative-status";
 import { LEGAL_DOCUMENT_TEMPLATE_DEV_PLACEHOLDER_HE } from "@/modules/legal-document-templates/domain/legal-document-template-placeholder";
 import { LegalDocumentTemplateRevisionStatus } from "@/modules/legal-document-templates/domain/legal-document-template-revision-status";
 import { LegalDocumentTemplateApproval } from "@/modules/legal-document-templates/infra/legal-document-template-approval.model";
@@ -30,6 +39,12 @@ import { buildUserAuditActor } from "@/shared/audit/build-audit-actor";
 import { AuditEventType } from "@/shared/audit/domain/audit-event-taxonomy";
 import { AuditOutcome } from "@/shared/audit/domain/audit-outcome";
 import { connectMongo } from "@/shared/db/connect";
+import {
+  buildDevelopmentStatementOfClaimTemplateBody,
+  parseStatementOfClaimTemplateBody,
+  serializeStatementOfClaimTemplateBody,
+  validateStatementOfClaimTemplateBodyStructure,
+} from "@/modules/statement-of-claim-templates/domain/statement-of-claim-template-body";
 
 export type LegalDocumentTemplateRevisionView = {
   revisionId: string;
@@ -42,6 +57,7 @@ export type LegalDocumentTemplateRevisionView = {
   publishedAtIso: string | null;
   approved: boolean;
   approvedAtIso: string | null;
+  operativeStatus: OperativeStatus;
 };
 
 export type LegalDocumentTemplateCategoryWorkspace = {
@@ -63,10 +79,13 @@ function mapRevisionView(input: {
     isCurrentDraft: boolean;
     createdAt?: Date;
     publishedAt?: Date | null;
+    operativeStatus?: string;
   };
   approval: { approvedAt: Date } | null;
 }): LegalDocumentTemplateRevisionView {
   const approved = input.approval != null;
+  const operativeStatus = (input.revision.operativeStatus ??
+    LegalDocumentTemplateOperativeStatus.OPERATIVE_ELIGIBLE) as OperativeStatus;
   return {
     revisionId: input.revision.revisionId,
     revisionNumber: input.revision.revisionNumber,
@@ -78,7 +97,106 @@ function mapRevisionView(input: {
     publishedAtIso: input.revision.publishedAt ? input.revision.publishedAt.toISOString() : null,
     approved,
     approvedAtIso: input.approval?.approvedAt.toISOString() ?? null,
+    operativeStatus,
   };
+}
+
+function assertValidStatementOfClaimBodyText(bodyText: string): void {
+  const parsed = parseStatementOfClaimTemplateBody(bodyText);
+  if (!parsed.ok) {
+    throw new LegalDocumentTemplateError(
+      LegalDocumentTemplateErrorCode.STATEMENT_OF_CLAIM_BODY_INVALID,
+      parsed.issues[0]?.messageHe ?? "Invalid statement of claim template body",
+    );
+  }
+  const structureIssues = validateStatementOfClaimTemplateBodyStructure(parsed.body);
+  if (structureIssues.length > 0) {
+    throw new LegalDocumentTemplateError(
+      LegalDocumentTemplateErrorCode.STATEMENT_OF_CLAIM_BODY_INVALID,
+      structureIssues[0]!.messageHe,
+    );
+  }
+}
+
+function resolveRevisionOperativeStatus(revision: {
+  category: string;
+  operativeStatus?: string | null;
+}): OperativeStatus {
+  if (
+    revision.operativeStatus === LegalDocumentTemplateOperativeStatus.DEVELOPMENT_ONLY ||
+    revision.operativeStatus === LegalDocumentTemplateOperativeStatus.OPERATIVE_ELIGIBLE
+  ) {
+    return revision.operativeStatus;
+  }
+  return defaultOperativeStatusForCategory(revision.category);
+}
+
+async function seedStatementOfClaimDevelopmentDraftIfAbsent(input: {
+  context: AuthenticatedContext;
+  templateId: string;
+}): Promise<void> {
+  const existingCount = await LegalDocumentTemplateRevision.countDocuments({
+    templateId: input.templateId,
+  });
+  if (existingCount > 0) {
+    return;
+  }
+  const bodyText = serializeStatementOfClaimTemplateBody(
+    buildDevelopmentStatementOfClaimTemplateBody(),
+  );
+  const revisionId = randomUUID();
+  const contentSha256 = computeLegalDocumentTemplateContentSha256({
+    category: LegalDocumentTemplateCategory.STATEMENT_OF_CLAIM,
+    revisionId,
+    bodyText,
+  });
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      await LegalDocumentTemplateRevision.create(
+        [
+          {
+            revisionId,
+            templateId: input.templateId,
+            category: LegalDocumentTemplateCategory.STATEMENT_OF_CLAIM,
+            revisionNumber: 1,
+            bodyText,
+            contentSha256,
+            lifecycleStatus: LegalDocumentTemplateRevisionStatus.DRAFT,
+            isCurrentDraft: true,
+            operativeStatus: LegalDocumentTemplateOperativeStatus.DEVELOPMENT_ONLY,
+            createdByUserId: new Types.ObjectId(input.context.user.id),
+            publishedAt: null,
+          },
+        ],
+        { session },
+      );
+      await LegalDocumentTemplate.updateOne(
+        { templateId: input.templateId },
+        { $set: { currentDraftRevisionId: revisionId } },
+        { session },
+      );
+      await writeAuditEventMandatory(
+        {
+          eventType: AuditEventType.LEGAL_DOCUMENT_ONBOARDING_TEMPLATE_DRAFT_CREATED,
+          actor: buildUserAuditActor(input.context),
+          action: "statement_of_claim_dev_template_seeded",
+          outcome: AuditOutcome.SUCCESS,
+          target: { entityType: "legal_document_template", entityId: input.templateId },
+          metadata: {
+            category: LegalDocumentTemplateCategory.STATEMENT_OF_CLAIM,
+            revisionId,
+            revisionNumber: 1,
+            operativeStatus: LegalDocumentTemplateOperativeStatus.DEVELOPMENT_ONLY,
+            contentSha256Prefix: contentSha256.slice(0, 16),
+          },
+        },
+        { session },
+      );
+    });
+  } finally {
+    await session.endSession();
+  }
 }
 
 function assertLawyerAdmin(context: AuthenticatedContext): void {
@@ -126,10 +244,20 @@ export async function ensureLegalDocumentTemplateShells(): Promise<void> {
   }
 }
 
-export async function loadLegalDocumentTemplateWorkspace(): Promise<
-  LegalDocumentTemplateCategoryWorkspace[]
-> {
+export async function loadLegalDocumentTemplateWorkspace(
+  context: AuthenticatedContext,
+): Promise<LegalDocumentTemplateCategoryWorkspace[]> {
+  assertLawyerAdmin(context);
   await ensureLegalDocumentTemplateShells();
+  const socTemplate = await LegalDocumentTemplate.findOne({
+    category: LegalDocumentTemplateCategory.STATEMENT_OF_CLAIM,
+  }).lean();
+  if (socTemplate) {
+    await seedStatementOfClaimDevelopmentDraftIfAbsent({
+      context,
+      templateId: socTemplate.templateId,
+    });
+  }
   const templates = await LegalDocumentTemplate.find({}).lean();
   const byCategory = new Map(templates.map((row) => [row.category, row] as const));
 
@@ -205,7 +333,16 @@ export async function createLegalDocumentTemplateDraft(input: {
 
   const revisionId = randomUUID();
   const revisionNumber = await nextRevisionNumber(template.templateId);
-  const bodyText = input.useDevPlaceholder ? LEGAL_DOCUMENT_TEMPLATE_DEV_PLACEHOLDER_HE : "";
+  const isSoc = isStructuredLegalDocumentTemplateCategory(input.category);
+  const bodyText = isSoc
+    ? serializeStatementOfClaimTemplateBody(buildDevelopmentStatementOfClaimTemplateBody())
+    : input.useDevPlaceholder
+      ? LEGAL_DOCUMENT_TEMPLATE_DEV_PLACEHOLDER_HE
+      : "";
+  if (isSoc) {
+    assertValidStatementOfClaimBodyText(bodyText);
+  }
+  const operativeStatus = defaultOperativeStatusForCategory(input.category);
   const contentSha256 = computeLegalDocumentTemplateContentSha256({
     category: input.category,
     revisionId,
@@ -226,6 +363,7 @@ export async function createLegalDocumentTemplateDraft(input: {
             contentSha256,
             lifecycleStatus: LegalDocumentTemplateRevisionStatus.DRAFT,
             isCurrentDraft: true,
+            operativeStatus,
             createdByUserId: new Types.ObjectId(input.context.user.id),
             publishedAt: null,
           },
@@ -270,6 +408,9 @@ export async function saveLegalDocumentTemplateDraftRevision(input: {
 }): Promise<{ revisionId: string; revisionNumber: number }> {
   assertLawyerAdmin(input.context);
   const template = await ensureTemplateShell(input.category);
+  if (isStructuredLegalDocumentTemplateCategory(input.category)) {
+    assertValidStatementOfClaimBodyText(input.bodyText);
+  }
   const currentDraft = template.currentDraftRevisionId
     ? await LegalDocumentTemplateRevision.findOne({
         revisionId: template.currentDraftRevisionId,
@@ -285,6 +426,7 @@ export async function saveLegalDocumentTemplateDraftRevision(input: {
     revisionId,
     bodyText: input.bodyText,
   });
+  const operativeStatus = defaultOperativeStatusForCategory(input.category);
 
   const session = await mongoose.startSession();
   try {
@@ -312,6 +454,7 @@ export async function saveLegalDocumentTemplateDraftRevision(input: {
             contentSha256,
             lifecycleStatus: LegalDocumentTemplateRevisionStatus.DRAFT,
             isCurrentDraft: true,
+            operativeStatus,
             createdByUserId: new Types.ObjectId(input.context.user.id),
             publishedAt: null,
           },
@@ -376,6 +519,21 @@ export async function approveLegalDocumentTemplateRevision(input: {
       LegalDocumentTemplateErrorCode.REVISION_IMMUTABLE,
       "Revision not draft",
     );
+  }
+
+  const operativeStatus = resolveRevisionOperativeStatus(revision);
+  const approvalEligibility = evaluateApprovalEligibility({
+    category: revision.category,
+    operativeStatus,
+    lifecycleStatus: revision.lifecycleStatus as LegalDocumentTemplateRevisionStatus,
+    isCurrentDraft: revision.isCurrentDraft,
+  });
+  if (!approvalEligibility.ok) {
+    throw new LegalDocumentTemplateError(approvalEligibility.code, "Approval blocked");
+  }
+
+  if (isStructuredLegalDocumentTemplateCategory(revision.category as LegalDocumentTemplateCategory)) {
+    assertValidStatementOfClaimBodyText(revision.bodyText);
   }
 
   const expectedHash = computeLegalDocumentTemplateContentSha256({
@@ -448,7 +606,10 @@ export async function publishLegalDocumentTemplateRevision(input: {
   }
 
   const approval = await loadApprovalByRevisionId(revision.revisionId);
+  const operativeStatus = resolveRevisionOperativeStatus(revision);
   const eligibility = evaluatePublishEligibility({
+    category: revision.category,
+    operativeStatus,
     lifecycleStatus: revision.lifecycleStatus as LegalDocumentTemplateRevisionStatus,
     isCurrentDraft: revision.isCurrentDraft,
     contentSha256: revision.contentSha256,

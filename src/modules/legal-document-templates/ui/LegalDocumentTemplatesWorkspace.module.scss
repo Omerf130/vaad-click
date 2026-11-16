@@ -418,3 +418,73 @@
   font-size: $font-size-sm;
   color: $color-text-muted;
 }
+
+.subsectionTitle {
+  margin: 0 0 $space-2;
+  font-size: $font-size-md;
+  font-weight: 600;
+}
+
+.socEditorRoot {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.socLayout {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) 1fr;
+  gap: $space-4;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.socSectionNav {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.socNavItem,
+.socNavItemActive {
+  text-align: right;
+  padding: $space-2;
+  border-radius: $radius-sm;
+  border: 1px solid $color-border;
+  background: $color-bg-surface;
+  font-size: $font-size-sm;
+  cursor: pointer;
+}
+
+.socNavItemActive {
+  border-color: $color-accent;
+  background: $color-bg-subtle;
+  font-weight: 600;
+}
+
+.socMain {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.socPlaceholderBar {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.socPlaceholderButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.socPreviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+}

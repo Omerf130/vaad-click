@@ -14,6 +14,7 @@ import {
   LAWYER_CASE_TAB_DOCUMENTS,
   LAWYER_CASE_TAB_OVERVIEW,
   LAWYER_CASE_TAB_WARNING_LETTER,
+  LAWYER_CASE_TAB_STATEMENT_OF_CLAIM,
   resolveLawyerCaseTabForSection,
 } from "@/modules/debt-cases/presentation/lawyer-case-section-navigation";
 import {
@@ -27,6 +28,9 @@ import type { WarningLetterDraftDetailResult } from "@/modules/warning-letters/s
 import type { WarningLetterDeliveryRecordView } from "@/modules/warning-letters/services/warning-letter-delivery.service";
 import type { WarningLetterFinalDocumentView } from "@/modules/warning-letters/services/warning-letter-finalization.service";
 import type { WarningLetterLegalReadinessChecklist } from "@/modules/warning-letters/services/warning-letter-legal-readiness-checklist.service";
+import type { OperativeDeadlinePolicyConfirmationView } from "@/modules/warning-letters/services/warning-letter-operative-deadline-policy.service";
+import type { WarningLetterPostLetterTrackingView } from "@/modules/warning-letters/services/warning-letter-post-letter-tracking.service";
+import type { DebtCasePostLetterFinanceBundle } from "@/modules/debt-cases/services/debt-case-post-letter-finance.service";
 import { WarningLetterLawyerDraftWorkspace } from "@/modules/warning-letters/ui/WarningLetterLawyerDraftWorkspace";
 import { WarningLetterDraftLegalApprovalStatus } from "@/modules/warning-letters/domain/warning-letter-draft-legal-approval-status";
 import { WarningLetterDraftLoadState } from "@/modules/warning-letters/domain/warning-letter-draft-load-state";
@@ -43,6 +47,10 @@ import {
 } from "@/modules/debt-cases/ui/WorkspaceAccessibleTabs";
 import workspaceStyles from "@/modules/debt-cases/ui/DebtCaseWorkspace.module.scss";
 import styles from "@/modules/debt-cases/ui/lawyer/LawyerDebtCasesAdmin.module.scss";
+import { StatementOfClaimDraftPanel } from "@/modules/statement-of-claim-drafts/ui/StatementOfClaimDraftPanel";
+import type { StatementOfClaimDraftWorkspaceView } from "@/modules/statement-of-claim-drafts/services/statement-of-claim-draft.service";
+import type { DebtCaseEvidenceInventoryView } from "@/modules/debt-cases/domain/debt-case-evidence-inventory.types";
+import { DebtCaseEvidenceExportPanel } from "@/modules/debt-cases/ui/lawyer/DebtCaseEvidenceExportPanel";
 
 type Props = {
   bundle: LawyerDebtCaseDetailBundle;
@@ -64,6 +72,12 @@ type Props = {
   warningLetterLegalChecklist?: WarningLetterLegalReadinessChecklist | null;
   warningLetterFinalDocument?: WarningLetterFinalDocumentView | null;
   warningLetterDeliveryRecords?: WarningLetterDeliveryRecordView[];
+  operativeDeadlinePolicy?: OperativeDeadlinePolicyConfirmationView | null;
+  warningLetterPostLetterTracking?: WarningLetterPostLetterTrackingView | null;
+  caseDocumentAssets?: AdminDocumentAssetListItem[];
+  postLetterFinance?: DebtCasePostLetterFinanceBundle | null;
+  statementOfClaimDraftWorkspace?: StatementOfClaimDraftWorkspaceView | null;
+  evidenceInventory?: DebtCaseEvidenceInventoryView | null;
 };
 
 export function LawyerDebtCaseReviewDetail({
@@ -75,6 +89,12 @@ export function LawyerDebtCaseReviewDetail({
   warningLetterLegalChecklist = null,
   warningLetterFinalDocument = null,
   warningLetterDeliveryRecords = [],
+  operativeDeadlinePolicy = null,
+  warningLetterPostLetterTracking = null,
+  caseDocumentAssets = [],
+  postLetterFinance = null,
+  statementOfClaimDraftWorkspace = null,
+  evidenceInventory = null,
   caseActivity = [],
   caseDocuments = [],
   documentStorageState = { configured: false, state: "storage_not_configured" },
@@ -146,7 +166,14 @@ export function LawyerDebtCaseReviewDetail({
           approvalBlockersHe={warningLetterApprovalBlockersHe}
           revisionHistory={warningLetterRevisionHistory}
           checklist={warningLetterLegalChecklist}
+          operativeDeadlinePolicy={operativeDeadlinePolicy}
+          postLetterTracking={warningLetterPostLetterTracking}
+          caseDocumentAssets={caseDocumentAssets}
+          workflowStatus={record.workflowStatus}
+          letterSentAtIso={record.letterSentAtIso}
           onBackToCaseOverview={focusCaseOverview}
+          postLetterFinance={postLetterFinance}
+          postLetterRecord={record}
           lifecycle={
             warningLetterLegalChecklist
               ? {
@@ -178,7 +205,14 @@ export function LawyerDebtCaseReviewDetail({
           approvalBlockersHe={warningLetterApprovalBlockersHe}
           revisionHistory={warningLetterRevisionHistory}
           checklist={warningLetterLegalChecklist}
+          operativeDeadlinePolicy={operativeDeadlinePolicy}
+          postLetterTracking={warningLetterPostLetterTracking}
+          caseDocumentAssets={caseDocumentAssets}
+          workflowStatus={record.workflowStatus}
+          letterSentAtIso={record.letterSentAtIso}
           onBackToCaseOverview={focusCaseOverview}
+          postLetterFinance={postLetterFinance}
+          postLetterRecord={record}
           lifecycle={{
             debtCaseId: record.debtCaseId,
             buildingId: record.buildingId,
@@ -206,6 +240,12 @@ export function LawyerDebtCaseReviewDetail({
             storageState={documentStorageState}
             embedded
           />
+          {evidenceInventory ? (
+            <DebtCaseEvidenceExportPanel
+              debtCaseId={record.debtCaseId}
+              inventory={evidenceInventory}
+            />
+          ) : null}
         </div>
       ),
     },
@@ -225,6 +265,21 @@ export function LawyerDebtCaseReviewDetail({
       id: LAWYER_CASE_TAB_WARNING_LETTER,
       label: "מכתב התראה",
       panel: warningLetterPanel,
+    });
+  }
+
+  if (statementOfClaimDraftWorkspace != null) {
+    lawyerTabs.push({
+      id: LAWYER_CASE_TAB_STATEMENT_OF_CLAIM,
+      label: "כתב תביעה",
+      panel: (
+        <div className={workspaceStyles.tabPanelStack}>
+          <StatementOfClaimDraftPanel
+            debtCaseId={record.debtCaseId}
+            workspace={statementOfClaimDraftWorkspace}
+          />
+        </div>
+      ),
     });
   }
 

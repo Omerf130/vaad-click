@@ -1,12 +1,13 @@
-/** Letter date + 10 calendar days — lawyer answer Q17 (printed deadline only; receipt wording unchanged). */
+import {
+  jerusalemIsoDateFromInstant,
+  startOfDayJerusalem,
+} from "@/shared/time/jerusalem-calendar";
+
+/** Letter date + 10 Jerusalem calendar days (operative policy CP20B). */
 export function computePrintedDeadlineDateIso(letterDateIso: string): string {
-  const base = new Date(letterDateIso);
-  if (Number.isNaN(base.getTime())) {
-    throw new RangeError("Invalid letterDateIso");
-  }
-  const deadline = new Date(base);
-  deadline.setUTCDate(deadline.getUTCDate() + 10);
-  return deadline.toISOString().slice(0, 10);
+  const base = startOfDayJerusalem(letterDateIso);
+  const deadline = new Date(base.getTime() + 10 * 24 * 60 * 60 * 1000);
+  return jerusalemIsoDateFromInstant(deadline);
 }
 
 export function formatLetterDateDisplayHe(isoDate: string): string {

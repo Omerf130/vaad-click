@@ -1,11 +1,11 @@
 /**
- * Operative (non-preview) warning-letter policy gates.
- * Lawyer answers acknowledge both receipt-based and letter-date+10 deadline wordings;
- * product/legal reconciliation for final dispatch is not decided — keep blocked.
+ * Operative (non-preview) warning-letter integration policy gates.
+ * Manual finalization (CP20B) does not require payment/storage/dispatch integrations.
  */
 
-export const WARNING_LETTER_OPERATIVE_DEADLINE_POLICY_BLOCKED_HE =
-  "מועד לתשלום בגרסה מבצעית: קיימים שני ניסוחים (10 ימים מקבלת המכתב לעומת תאריך מפורש מחושב מתאריך המכתב). לא נקבעה החלטה משפטית מחייבת לסגירה — סגירת מסמך סופי והגשה חסומות עד להכרעת עורך הדין.";
+export {
+  WARNING_LETTER_OPERATIVE_DEADLINE_POLICY_BLOCKED_HE,
+} from "@/modules/warning-letters/domain/warning-letter-operative-deadline-policy";
 
 export const WARNING_LETTER_PAYMENT_COLLECTION_BLOCKED_HE =
   "גביית תשלום מקוונת (קישור אישי / חשבון נאמנות) אינה פעילה — אין אינטגרציית תשלום מאושרת.";
@@ -19,6 +19,7 @@ export const WARNING_LETTER_PDF_STORAGE_BLOCKED_HE =
 export const WARNING_LETTER_WHATSAPP_DISPATCH_BLOCKED_HE =
   "שליחת ווטסאפ אוטומטית/איסוף הוכחות דרך הפלטפורמה אינה מאושרת — רק תיעוד ידני בלוח הבקרה.";
 
+/** @deprecated Use isOperativeDeadlinePolicyConfirmed() — sync helper for review PDF deadline placeholder only. */
 export function isWarningLetterOperativeDeadlinePolicyResolved(): boolean {
   return false;
 }

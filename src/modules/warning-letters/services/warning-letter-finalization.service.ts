@@ -15,15 +15,20 @@ import { WarningLetterFinalDocumentStatus } from "@/modules/warning-letters/doma
 import { WarningLetterDraftStatus } from "@/modules/warning-letters/domain/warning-letter-draft-status";
 import { WarningLetterDraft } from "@/modules/warning-letters/infra/warning-letter-draft.model";
 import { WarningLetterFinalDocument } from "@/modules/warning-letters/infra/warning-letter-final-document.model";
+import { WARNING_LETTER_MANUAL_FINAL_PDF_ARCHIVAL_NOTE_HE } from "@/modules/warning-letters/domain/warning-letter-operative-deadline-policy";
+import { applyFinalizationLetterDatesToSnapshot } from "@/modules/warning-letters/snapshot/apply-finalization-letter-dates";
+import type { WarningLetterContentSnapshot } from "@/modules/warning-letters/snapshot/warning-letter-snapshot.types";
 import { collectWarningLetterFinalizationBlockersHe } from "@/modules/warning-letters/services/warning-letter-finalization-gates";
 import {
   loadWarningLetterDraftDetailForApprovedCaseReadOnly,
   mapMongoDraftWriteError,
 } from "@/modules/warning-letters/services/warning-letter-draft.service";
 import { generateWarningLetterFinalPdf } from "@/modules/warning-letters/services/warning-letter-pdf.service";
+import { isOperativeDeadlinePolicyConfirmed } from "@/modules/warning-letters/services/warning-letter-operative-deadline-policy.service";
 import { recordWarningLetterFinalization } from "@/modules/warning-letters/services/warning-letter-lifecycle-audit.service";
 import type { AuthenticatedContext } from "@/shared/auth/get-authenticated-context";
 import { connectMongo } from "@/shared/db/connect";
+import { todayJerusalemIso } from "@/shared/time/jerusalem-calendar";
 
 export type WarningLetterFinalDocumentView = {
   finalDocumentId: string;
@@ -32,10 +37,53 @@ export type WarningLetterFinalDocumentView = {
   draftRevision: number;
   status: string;
   contentSha256: string;
+  materialInputsSha256: string;
+  letterCaseReference: string;
+  contentSnapshot: WarningLetterContentSnapshot;
   finalizedAtIso: string;
   operativeBlockReasonsHe: string[];
   pdfAvailable: boolean;
+  letterDateIso: string | null;
+  printedDeadlineDateIso: string | null;
+  pdfArchivalNoteHe: string;
 };
+
+type FinalDocumentLean = {
+  finalDocumentId: string;
+  debtCaseId: string;
+  draftId: string;
+  draftRevision: number;
+  status: string;
+  contentSha256: string;
+  materialInputsSha256: string;
+  letterCaseReference: string;
+  finalizedAt: Date;
+  operativeBlockReasonsHe?: string[];
+  pdfStorageKey?: string | null;
+  contentSnapshot: unknown;
+};
+
+function mapFinalDocumentView(doc: FinalDocumentLean): WarningLetterFinalDocumentView {
+  const snapshot = doc.contentSnapshot as WarningLetterContentSnapshot;
+  const pdfReady = doc.status === WarningLetterFinalDocumentStatus.READY_FOR_DELIVERY;
+  return {
+    finalDocumentId: doc.finalDocumentId,
+    debtCaseId: doc.debtCaseId,
+    draftId: doc.draftId,
+    draftRevision: doc.draftRevision,
+    status: doc.status,
+    contentSha256: doc.contentSha256,
+    materialInputsSha256: doc.materialInputsSha256,
+    letterCaseReference: doc.letterCaseReference,
+    contentSnapshot: snapshot,
+    finalizedAtIso: doc.finalizedAt.toISOString(),
+    operativeBlockReasonsHe: doc.operativeBlockReasonsHe ?? [],
+    pdfAvailable: pdfReady,
+    letterDateIso: snapshot?.letterDateIso ?? null,
+    printedDeadlineDateIso: snapshot?.printedDeadlineDateIso ?? null,
+    pdfArchivalNoteHe: WARNING_LETTER_MANUAL_FINAL_PDF_ARCHIVAL_NOTE_HE,
+  };
+}
 
 export async function loadWarningLetterFinalDocumentForCase(
   debtCaseId: string,
@@ -47,16 +95,24 @@ export async function loadWarningLetterFinalDocumentForCase(
   if (!doc) {
     return null;
   }
+  return mapFinalDocumentView(doc as FinalDocumentLean);
+}
+
+export async function loadWarningLetterFinalDocumentById(input: {
+  debtCaseId: string;
+  finalDocumentId: string;
+}): Promise<(WarningLetterFinalDocumentView & { snapshot: WarningLetterContentSnapshot }) | null> {
+  await connectMongo();
+  const doc = await WarningLetterFinalDocument.findOne({
+    debtCaseId: input.debtCaseId,
+    finalDocumentId: input.finalDocumentId,
+  }).lean();
+  if (!doc?.contentSnapshot) {
+    return null;
+  }
   return {
-    finalDocumentId: doc.finalDocumentId,
-    debtCaseId: doc.debtCaseId,
-    draftId: doc.draftId,
-    draftRevision: doc.draftRevision,
-    status: doc.status,
-    contentSha256: doc.contentSha256,
-    finalizedAtIso: doc.finalizedAt.toISOString(),
-    operativeBlockReasonsHe: doc.operativeBlockReasonsHe ?? [],
-    pdfAvailable: Boolean(doc.pdfStorageKey),
+    ...mapFinalDocumentView(doc as FinalDocumentLean),
+    snapshot: doc.contentSnapshot as WarningLetterContentSnapshot,
   };
 }
 
@@ -77,12 +133,20 @@ export async function finalizeWarningLetterForDebtCase(input: {
     debtCaseRecord: debtCase,
   });
 
+  const operativeDeadlinePolicyConfirmed = await isOperativeDeadlinePolicyConfirmed();
+  const letterDateIso = todayJerusalemIso();
+  const operativeSnapshotForFinalize = detail.draft
+    ? applyFinalizationLetterDatesToSnapshot(detail.draft.snapshot, letterDateIso)
+    : null;
+
   const blockers = collectWarningLetterFinalizationBlockersHe({
     debtCase,
     legalReadiness: input.legalReadiness,
     loadState: detail.loadState,
     draft: detail.draft,
     legalWordingApprovalStatus: detail.legalWordingApprovalStatus,
+    operativeDeadlinePolicyConfirmed,
+    operativeSnapshotForFinalize,
   });
 
   if (blockers.length > 0) {
@@ -105,17 +169,7 @@ export async function finalizeWarningLetterForDebtCase(input: {
   if (existing) {
     return {
       created: false,
-      finalDocument: {
-        finalDocumentId: existing.finalDocumentId,
-        debtCaseId: existing.debtCaseId,
-        draftId: existing.draftId,
-        draftRevision: existing.draftRevision,
-        status: existing.status,
-        contentSha256: existing.contentSha256,
-        finalizedAtIso: existing.finalizedAt.toISOString(),
-        operativeBlockReasonsHe: existing.operativeBlockReasonsHe ?? [],
-        pdfAvailable: Boolean(existing.pdfStorageKey),
-      },
+      finalDocument: mapFinalDocumentView(existing as FinalDocumentLean),
     };
   }
 
@@ -129,9 +183,14 @@ export async function finalizeWarningLetterForDebtCase(input: {
     throw new WarningLetterDraftError(WarningLetterDraftErrorCode.NOT_FOUND, "Active draft missing");
   }
 
+  if (!operativeSnapshotForFinalize) {
+    throw new WarningLetterDraftError(WarningLetterDraftErrorCode.NOT_FOUND, "Draft snapshot missing");
+  }
+
   const pdfResult = await generateWarningLetterFinalPdf({
-    snapshot: detail.draft.snapshot,
-    contentSha256: detail.draft.contentSha256,
+    snapshot: operativeSnapshotForFinalize,
+    contentSha256: operativeSnapshotForFinalize.contentSha256,
+    draftRevision: detail.draft.draftRevision,
   });
 
   const operativeBlockReasonsHe = pdfResult.ok ? [] : [pdfResult.reasonHe];
@@ -155,9 +214,9 @@ export async function finalizeWarningLetterForDebtCase(input: {
             draftRevision: detail.draft!.draftRevision,
             letterCaseReference: detail.draft!.letterCaseReference,
             templateVersionId: detail.draft!.templateVersionId,
-            contentSha256: detail.draft!.contentSha256,
+            contentSha256: operativeSnapshotForFinalize.contentSha256,
             materialInputsSha256: active.materialInputsSha256,
-            contentSnapshot: detail.draft!.snapshot,
+            contentSnapshot: operativeSnapshotForFinalize,
             status,
             finalizedByUserId: new Types.ObjectId(input.context.user.id),
             finalizedAt,
@@ -176,7 +235,7 @@ export async function finalizeWarningLetterForDebtCase(input: {
           debtCaseId: input.debtCaseId,
           draftId: detail.draft!.draftId,
           draftRevision: detail.draft!.draftRevision,
-          contentSha256: detail.draft!.contentSha256,
+          contentSha256: operativeSnapshotForFinalize.contentSha256,
           blocked: !pdfResult.ok,
           correlationId: input.correlationId,
         },
@@ -184,6 +243,19 @@ export async function finalizeWarningLetterForDebtCase(input: {
       );
     });
   } catch (error) {
+    if ((error as { code?: number }).code === 11000) {
+      const raced = await WarningLetterFinalDocument.findOne({
+        debtCaseId: input.debtCaseId,
+        draftId: input.draftId,
+        draftRevision: detail.draft!.draftRevision,
+      }).lean();
+      if (raced) {
+        return {
+          created: false,
+          finalDocument: mapFinalDocumentView(raced as FinalDocumentLean),
+        };
+      }
+    }
     mapMongoDraftWriteError(error);
     throw error;
   } finally {
@@ -192,16 +264,19 @@ export async function finalizeWarningLetterForDebtCase(input: {
 
   return {
     created: true,
-    finalDocument: {
+    finalDocument: mapFinalDocumentView({
       finalDocumentId,
       debtCaseId: input.debtCaseId,
       draftId: detail.draft.draftId,
       draftRevision: detail.draft.draftRevision,
       status,
-      contentSha256: detail.draft.contentSha256,
-      finalizedAtIso: finalizedAt.toISOString(),
+      contentSha256: operativeSnapshotForFinalize.contentSha256,
+      materialInputsSha256: active.materialInputsSha256,
+      letterCaseReference: detail.draft.letterCaseReference,
+      contentSnapshot: operativeSnapshotForFinalize,
+      finalizedAt,
       operativeBlockReasonsHe,
-      pdfAvailable: pdfResult.ok,
-    },
+      pdfStorageKey: pdfResult.ok ? pdfResult.storageKey : null,
+    }),
   };
 }

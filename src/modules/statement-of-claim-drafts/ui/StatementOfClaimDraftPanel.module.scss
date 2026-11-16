@@ -1,0 +1,82 @@
+@use "../../../styles/tokens" as *;
+
+.bannerDev {
+  background: $color-warning-bg;
+  color: $color-warning-text;
+  border: 1px solid $color-border-strong;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.bannerStale {
+  background: $color-info-bg;
+  color: $color-info-text;
+  border: 1px solid $color-border;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.sectionCard {
+  background: $color-bg-surface;
+  border: 1px solid $color-border;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.sectionBody {
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: $color-text;
+}
+
+.listCompact {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  font-size: 0.88rem;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.metaGrid {
+  display: grid;
+  gap: 0.35rem 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+}
+
+.statusMessage {
+  font-size: 0.88rem;
+  margin-bottom: 0.75rem;
+}
+
+.statusError {
+  color: $color-error-text;
+}
+
+.statusOk {
+  color: $color-success-text;
+}
+
+.systemBaselineHint {
+  font-size: 0.82rem;
+  color: $color-text-muted;
+  margin: 0.25rem 0 0.5rem;
+}

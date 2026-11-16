@@ -1,18 +1,16 @@
 import "server-only";
 
-import { getDocumentStorageCapability } from "@/modules/document-assets/infra/document-storage-registry";
 import type { BuildingLegalReadinessResult } from "@/modules/debt-cases/domain/debt-case-legal-readiness";
 import type { DebtCaseRecord } from "@/modules/debt-cases/domain/debt-case-record.types";
 import { DebtCaseLawyerReviewStatus } from "@/modules/debt-cases/domain/debt-case-lawyer-review-status";
+import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
+import { WarningLetterFinalDocumentStatus } from "@/modules/warning-letters/domain/warning-letter-final-document-status";
+import type { WarningLetterFinalDocumentView } from "@/modules/warning-letters/services/warning-letter-finalization.service";
 import { WarningLetterDraftLegalApprovalStatus } from "@/modules/warning-letters/domain/warning-letter-draft-legal-approval-status";
 import { WarningLetterDraftLoadState } from "@/modules/warning-letters/domain/warning-letter-draft-load-state";
-import {
-  isWarningLetterOperativeDeadlinePolicyResolved,
-  WARNING_LETTER_ELECTRONIC_SIGNING_BLOCKED_HE,
-  WARNING_LETTER_OPERATIVE_DEADLINE_POLICY_BLOCKED_HE,
-  WARNING_LETTER_PAYMENT_COLLECTION_BLOCKED_HE,
-  WARNING_LETTER_PDF_STORAGE_BLOCKED_HE,
-} from "@/modules/warning-letters/domain/warning-letter-operative-policy";
+import { WARNING_LETTER_OPERATIVE_DEADLINE_POLICY_BLOCKED_HE } from "@/modules/warning-letters/domain/warning-letter-operative-deadline-policy";
+import type { WarningLetterContentSnapshot } from "@/modules/warning-letters/snapshot/warning-letter-snapshot.types";
+import { collectOperativeFinalSnapshotBlockersHe } from "@/modules/warning-letters/snapshot/collect-operative-finalization-blockers";
 import { formatUnapprovedTemplateVariantHe } from "@/modules/warning-letters/presentation/warning-letter-approval-blockers.he";
 import { formatLegalHoldReasonHe } from "@/modules/debt-cases/presentation/debt-case-labels.he";
 import type { WarningLetterDraftView } from "@/modules/warning-letters/services/warning-letter-draft.service";
@@ -24,6 +22,8 @@ export type WarningLetterFinalizationGateInput = {
   loadState: WarningLetterDraftLoadState;
   draft: WarningLetterDraftView | null;
   legalWordingApprovalStatus: WarningLetterDraftLegalApprovalStatus;
+  operativeDeadlinePolicyConfirmed: boolean;
+  operativeSnapshotForFinalize?: WarningLetterContentSnapshot | null;
 };
 
 export function collectWarningLetterFinalizationBlockersHe(
@@ -64,23 +64,20 @@ export function collectWarningLetterFinalizationBlockersHe(
     for (const reason of input.legalReadiness.holdReasons) {
       blockers.push(formatLegalHoldReasonHe(reason));
     }
-    blockers.push(WARNING_LETTER_ELECTRONIC_SIGNING_BLOCKED_HE);
   }
 
-  if (!isWarningLetterOperativeDeadlinePolicyResolved()) {
+  if (!input.operativeDeadlinePolicyConfirmed) {
     blockers.push(WARNING_LETTER_OPERATIVE_DEADLINE_POLICY_BLOCKED_HE);
   }
 
-  blockers.push(WARNING_LETTER_PAYMENT_COLLECTION_BLOCKED_HE);
-
-  const storage = getDocumentStorageCapability();
-  if (storage.state !== "configured") {
-    blockers.push(WARNING_LETTER_PDF_STORAGE_BLOCKED_HE);
+  if (input.operativeSnapshotForFinalize) {
+    blockers.push(...collectOperativeFinalSnapshotBlockersHe(input.operativeSnapshotForFinalize));
   }
 
   return [...new Set(blockers)];
 }
 
+/** Legacy dispatch gate — always blocked (automatic channels). */
 export function collectWarningLetterDispatchBlockersHe(
   input: WarningLetterFinalizationGateInput & { hasFinalDocument: boolean },
 ): string[] {
@@ -92,4 +89,38 @@ export function collectWarningLetterDispatchBlockersHe(
     "הגשה אוטומטית חסומה — ניתן לתעד ניסיון/הוכחות ידנית בלבד, ללא אישור משלוח.",
   );
   return [...new Set(blockers)];
+}
+
+export function collectWarningLetterManualDeliveryBlockersHe(input: {
+  debtCase: DebtCaseRecord;
+  finalDocument: WarningLetterFinalDocumentView | null;
+}): string[] {
+  const blockers: string[] = [];
+
+  if (!input.finalDocument) {
+    blockers.push("לא נוצר מסמך סופי — תיעוד משלוח חסום.");
+    return blockers;
+  }
+
+  if (input.finalDocument.status !== WarningLetterFinalDocumentStatus.READY_FOR_DELIVERY) {
+    blockers.push("מסמך הסופי אינו מוכן להפצה מבצעית.");
+  }
+
+  if (!input.finalDocument.pdfAvailable) {
+    blockers.push("PDF סופי אינו זמין — לא ניתן לתעד משלוח מבצעי.");
+  }
+
+  if (input.debtCase.lawyerReviewStatus !== DebtCaseLawyerReviewStatus.APPROVED_FOR_LETTER_PREP) {
+    blockers.push("התיק טרם אושר להכנת מכתב — תיעוד משלוח חסום.");
+  }
+
+  const workflowOk =
+    input.debtCase.workflowStatus === DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW ||
+    input.debtCase.workflowStatus === DebtCaseWorkflowStatus.LETTER_SENT;
+
+  if (!workflowOk) {
+    blockers.push("סטטוס תיק אינו מאפשר תיעוד משלוח ידני.");
+  }
+
+  return blockers;
 }

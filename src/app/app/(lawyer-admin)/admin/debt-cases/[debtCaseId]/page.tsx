@@ -15,15 +15,23 @@ import {
   loadWarningLetterDraftDetailForApprovedCaseReadOnly,
   type WarningLetterDraftDetailResult,
 } from "@/modules/warning-letters/services/warning-letter-draft.service";
+import { applyFinalizationLetterDatesToSnapshot } from "@/modules/warning-letters/snapshot/apply-finalization-letter-dates";
 import { buildWarningLetterLegalReadinessChecklist } from "@/modules/warning-letters/services/warning-letter-legal-readiness-checklist.service";
+import { loadOperativeDeadlinePolicyConfirmation } from "@/modules/warning-letters/services/warning-letter-operative-deadline-policy.service";
+import { todayJerusalemIso } from "@/shared/time/jerusalem-calendar";
 import { listWarningLetterDeliveryRecords } from "@/modules/warning-letters/services/warning-letter-delivery.service";
 import { loadWarningLetterFinalDocumentForCase } from "@/modules/warning-letters/services/warning-letter-finalization.service";
+import { buildWarningLetterPostLetterTrackingView } from "@/modules/warning-letters/services/warning-letter-post-letter-tracking.service";
 import { loadAdminDebtCaseActivity } from "@/modules/admin/services/admin-activity.service";
 import {
   getDocumentStorageUiState,
   listDebtCaseDocumentAssetsForLawyerAdmin,
 } from "@/modules/document-assets/services/document-asset.service";
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
+import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
+import { loadDebtCasePostLetterFinanceBundle } from "@/modules/debt-cases/services/debt-case-post-letter-finance.service";
+import { loadStatementOfClaimDraftWorkspace } from "@/modules/statement-of-claim-drafts/services/statement-of-claim-draft.service";
+import { buildDebtCaseEvidenceInventory } from "@/modules/debt-cases/services/debt-case-evidence-inventory.service";
 
 type PageProps = {
   params: Promise<{ debtCaseId: string }>;
@@ -45,6 +53,11 @@ export default async function AdminDebtCaseReviewDetailPage({ params }: PageProp
   const { debtCaseId } = await params;
   const context = await requireLawyerAdminPortal();
   const bundle = await loadBundle(debtCaseId);
+  const evidenceInventory = await buildDebtCaseEvidenceInventory({
+    context,
+    debtCase: bundle.record,
+  });
+
   const [caseActivity, caseDocuments, documentStorageState] = await Promise.all([
     loadAdminDebtCaseActivity({ context, debtCaseId }),
     listDebtCaseDocumentAssetsForLawyerAdmin({
@@ -71,6 +84,15 @@ export default async function AdminDebtCaseReviewDetailPage({ params }: PageProp
   let warningLetterDeliveryRecords: Awaited<
     ReturnType<typeof listWarningLetterDeliveryRecords>
   > = [];
+  const operativeDeadlinePolicy = await loadOperativeDeadlinePolicyConfirmation();
+  const operativeDeadlinePolicyConfirmed = operativeDeadlinePolicy != null;
+  let warningLetterPostLetterTracking: ReturnType<
+    typeof buildWarningLetterPostLetterTrackingView
+  > | null = null;
+  let postLetterFinance: Awaited<ReturnType<typeof loadDebtCasePostLetterFinanceBundle>> = null;
+  let statementOfClaimDraftWorkspace: Awaited<
+    ReturnType<typeof loadStatementOfClaimDraftWorkspace>
+  > | null = null;
 
   if (bundle.record.lawyerReviewStatus === DebtCaseLawyerReviewStatus.APPROVED_FOR_LETTER_PREP) {
     try {
@@ -92,6 +114,12 @@ export default async function AdminDebtCaseReviewDetailPage({ params }: PageProp
       });
       warningLetterFinalDocument = await loadWarningLetterFinalDocumentForCase(debtCaseId);
       warningLetterDeliveryRecords = await listWarningLetterDeliveryRecords(debtCaseId);
+      const operativeSnapshotForFinalize = warningLetterDraftDetail.draft
+        ? applyFinalizationLetterDatesToSnapshot(
+            warningLetterDraftDetail.draft.snapshot,
+            todayJerusalemIso(),
+          )
+        : null;
       warningLetterLegalChecklist = await buildWarningLetterLegalReadinessChecklist({
         debtCase: bundle.record,
         legalReadiness: bundle.legalReadiness,
@@ -99,7 +127,29 @@ export default async function AdminDebtCaseReviewDetailPage({ params }: PageProp
         draft: warningLetterDraftDetail.draft,
         legalWordingApprovalStatus: warningLetterDraftDetail.legalWordingApprovalStatus,
         hasFinalDocument: warningLetterFinalDocument != null,
+        operativeDeadlinePolicyConfirmed,
+        operativeSnapshotForFinalize,
+        finalDocument: warningLetterFinalDocument,
       });
+      warningLetterPostLetterTracking = buildWarningLetterPostLetterTrackingView({
+        record: bundle.record,
+        finalDocument: warningLetterFinalDocument,
+        deliveryRecords: warningLetterDeliveryRecords,
+      });
+      if (
+        bundle.record.workflowStatus === DebtCaseWorkflowStatus.LETTER_SENT ||
+        bundle.record.workflowStatus === DebtCaseWorkflowStatus.CLOSED_MANUAL
+      ) {
+        postLetterFinance = await loadDebtCasePostLetterFinanceBundle(debtCaseId);
+      }
+      if (warningLetterFinalDocument != null) {
+        statementOfClaimDraftWorkspace = await loadStatementOfClaimDraftWorkspace({
+          context,
+          debtCaseId,
+          debtCase: bundle.record,
+          legalReadiness: bundle.legalReadiness,
+        });
+      }
     } catch (error) {
       if (error instanceof WarningLetterDraftError) {
         warningLetterDraftErrorHe = formatWarningLetterDraftErrorHe(error.code);
@@ -131,6 +181,12 @@ export default async function AdminDebtCaseReviewDetailPage({ params }: PageProp
         warningLetterLegalChecklist={warningLetterLegalChecklist}
         warningLetterFinalDocument={warningLetterFinalDocument}
         warningLetterDeliveryRecords={warningLetterDeliveryRecords}
+        operativeDeadlinePolicy={operativeDeadlinePolicy}
+        warningLetterPostLetterTracking={warningLetterPostLetterTracking}
+        caseDocumentAssets={caseDocuments}
+        postLetterFinance={postLetterFinance}
+        statementOfClaimDraftWorkspace={statementOfClaimDraftWorkspace}
+        evidenceInventory={evidenceInventory}
       />
     </AdminPageFrame>
   );

@@ -2,6 +2,7 @@ export const LAWYER_CASE_TAB_OVERVIEW = "overview";
 export const LAWYER_CASE_TAB_DOCUMENTS = "documents";
 export const LAWYER_CASE_TAB_ACTIVITY = "activity";
 export const LAWYER_CASE_TAB_WARNING_LETTER = "warning-letter";
+export const LAWYER_CASE_TAB_STATEMENT_OF_CLAIM = "statement-of-claim";
 
 export const LAWYER_CASE_SECTION_PARTIES = "case-parties";
 export const LAWYER_CASE_SECTION_DEBT = "case-debt";

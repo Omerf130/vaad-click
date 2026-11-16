@@ -101,10 +101,18 @@ export const AuditEventType = {
     "legal_document.building_instance.pdf_viewed",
   LEGAL_DOCUMENT_BUILDING_INSTANCE_PDF_DOWNLOADED:
     "legal_document.building_instance.pdf_downloaded",
+  LEGAL_DOCUMENT_STATEMENT_OF_CLAIM_DRAFT_CREATED:
+    "legal_document.statement_of_claim_draft.created",
+  LEGAL_DOCUMENT_STATEMENT_OF_CLAIM_DRAFT_REGENERATED:
+    "legal_document.statement_of_claim_draft.regenerated",
+  LEGAL_DOCUMENT_STATEMENT_OF_CLAIM_DRAFT_EDITED:
+    "legal_document.statement_of_claim_draft.edited",
   LEGAL_DOCUMENT_WARNING_LETTER_FINALIZED:
     "legal_document.warning_letter.finalized",
   LEGAL_DOCUMENT_WARNING_LETTER_FINALIZATION_BLOCKED:
     "legal_document.warning_letter.finalization_blocked",
+  LEGAL_DOCUMENT_WARNING_LETTER_DELIVERY_CONFIRMED:
+    "legal_document.warning_letter_delivery.confirmed",
   LEGAL_DOCUMENT_WARNING_LETTER_DELIVERY_RECORDED:
     "legal_document.warning_letter.delivery_recorded",
   LEGAL_DOCUMENT_DELIVERED: "legal_document.letter.delivered",
@@ -118,6 +126,10 @@ export const AuditEventType = {
   DEBTOR_DISPUTE_FILED: "debtor_access.dispute.filed",
   PAYMENT_RECORDED: "payment.transaction.recorded",
   PAYMENT_ADJUSTED: "payment.ledger.adjusted",
+  DEBT_CASE_DEBTOR_RESPONSE_RECORDED: "debt_case.debtor_response.recorded",
+  DEBT_CASE_RESOLUTION_RECORDED: "debt_case.resolution.recorded",
+  DEBT_CASE_REOPENED: "debt_case.resolution.reopened",
+  DEBT_CASE_EVIDENCE_EXPORT_CREATED: "debt_case.evidence_export.created",
   SYSTEM_CONFIG_UPDATED: "system_config.settings.updated",
   SYSTEM_CONFIG_FINANCIAL_SETTINGS_DRAFT_CREATED:
     "system_config.financial_settings.draft_created",

@@ -206,7 +206,7 @@ describe("WarningLetterLawyerDraftWorkspace inline save (component)", () => {
     );
 
     expect(screen.queryByText("עריכת טיוטה")).toBeTruthy();
-    expect(screen.getByText(/גרסה 2/)).toBeTruthy();
+    expect(screen.getByRole("group", { name: "הורדת PDF לבדיקה" })).toBeTruthy();
     expect(updatedSnapshot.numberedClauses[1]?.body).toBe("עריכה חדשה לסעיף 2");
     },
     15_000,

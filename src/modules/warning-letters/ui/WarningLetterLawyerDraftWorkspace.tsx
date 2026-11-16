@@ -24,10 +24,19 @@ import {
 } from "@/modules/warning-letters/presentation/warning-letter-draft-messages.he";
 import type { WarningLetterDraftDetailResult } from "@/modules/warning-letters/services/warning-letter-draft.service";
 import type { WarningLetterDeliveryRecordView } from "@/modules/warning-letters/services/warning-letter-delivery.service";
+import type { WarningLetterPostLetterTrackingView } from "@/modules/warning-letters/services/warning-letter-post-letter-tracking.service";
+import type { AdminDocumentAssetListItem } from "@/modules/document-assets/presentation/document-asset-view.types";
+import type { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 import type { WarningLetterFinalDocumentView } from "@/modules/warning-letters/services/warning-letter-finalization.service";
 import type { WarningLetterLegalReadinessChecklist } from "@/modules/warning-letters/services/warning-letter-legal-readiness-checklist.service";
+import type { OperativeDeadlinePolicyConfirmationView } from "@/modules/warning-letters/services/warning-letter-operative-deadline-policy.service";
+import { WarningLetterOperativeDeadlinePolicyPanel } from "@/modules/warning-letters/ui/WarningLetterOperativeDeadlinePolicyPanel";
 import { WarningLetterDocumentView } from "@/modules/warning-letters/ui/WarningLetterDocumentView";
+import { WarningLetterReviewPdfDownload } from "@/modules/warning-letters/ui/WarningLetterReviewPdfDownload";
 import { WarningLetterLifecyclePanel } from "@/modules/warning-letters/ui/WarningLetterLifecyclePanel";
+import type { DebtCaseRecord } from "@/modules/debt-cases/domain/debt-case-record.types";
+import type { DebtCasePostLetterFinanceBundle } from "@/modules/debt-cases/services/debt-case-post-letter-finance.service";
+import { DebtCasePostLetterFinancePanel } from "@/modules/debt-cases/ui/lawyer/DebtCasePostLetterFinancePanel";
 import { WarningLetterReadinessGroupedPanel } from "@/modules/warning-letters/ui/WarningLetterReadinessGroupedPanel";
 import tabStyles from "@/modules/warning-letters/ui/WarningLetterCaseTab.module.scss";
 import {
@@ -79,7 +88,14 @@ type Props = {
   revisionHistory: RevisionRow[];
   presentation?: "monolith" | "tabs";
   checklist?: WarningLetterLegalReadinessChecklist | null;
+  operativeDeadlinePolicy?: OperativeDeadlinePolicyConfirmationView | null;
+  postLetterTracking?: WarningLetterPostLetterTrackingView | null;
+  caseDocumentAssets?: AdminDocumentAssetListItem[];
+  workflowStatus?: DebtCaseWorkflowStatus;
+  letterSentAtIso?: string | null;
   lifecycle?: WarningLetterLifecycleBundle | null;
+  postLetterFinance?: DebtCasePostLetterFinanceBundle | null;
+  postLetterRecord?: DebtCaseRecord | null;
   onBackToCaseOverview?: () => void;
 };
 
@@ -108,7 +124,14 @@ export function WarningLetterLawyerDraftWorkspace({
   revisionHistory,
   presentation = "monolith",
   checklist = null,
+  operativeDeadlinePolicy = null,
+  postLetterTracking = null,
+  caseDocumentAssets = [],
+  workflowStatus,
+  letterSentAtIso = null,
   lifecycle = null,
+  postLetterFinance = null,
+  postLetterRecord = null,
   onBackToCaseOverview,
 }: Props) {
   const [activeSubTab, setActiveSubTab] = useState(WL_SUBTAB_LETTER);
@@ -407,6 +430,14 @@ export function WarningLetterLawyerDraftWorkspace({
             </p>
           ) : null}
 
+          {!isEditing ? (
+            <WarningLetterReviewPdfDownload
+              debtCaseId={debtCaseId}
+              draftId={draft!.draftId}
+              draftRevision={draft!.draftRevision}
+            />
+          ) : null}
+
           {saveState.message && !isEditing ? <ActionFeedback state={saveState} /> : null}
 
           <form onSubmit={handleSaveSubmit} className={isEditing ? styles.editForm : undefined}>
@@ -591,7 +622,13 @@ export function WarningLetterLawyerDraftWorkspace({
         id: WL_SUBTAB_READINESS,
         label: "מוכנות משפטית",
         panel: readinessChecklist ? (
-          <WarningLetterReadinessGroupedPanel checklist={readinessChecklist} />
+          <div className={tabStyles.managementStack}>
+            <WarningLetterOperativeDeadlinePolicyPanel
+              confirmation={operativeDeadlinePolicy}
+              debtCaseId={debtCaseId}
+            />
+            <WarningLetterReadinessGroupedPanel checklist={readinessChecklist} />
+          </div>
         ) : (
           <p className={styles.metaLine}>נתוני מוכנות משפטית אינם זמינים לתיק זה.</p>
         ),
@@ -619,6 +656,18 @@ export function WarningLetterLawyerDraftWorkspace({
                 finalDocument={lifecycle.finalDocument}
                 deliveryRecords={lifecycle.deliveryRecords}
                 debtorDisplayName={lifecycle.debtorDisplayName}
+                postLetterTracking={postLetterTracking}
+                caseDocumentAssets={caseDocumentAssets}
+                workflowStatus={workflowStatus ?? "awaiting_lawyer_review"}
+                letterSentAtIso={letterSentAtIso}
+              />
+            ) : null}
+            {postLetterFinance && postLetterRecord ? (
+              <DebtCasePostLetterFinancePanel
+                embedded
+                record={postLetterRecord}
+                bundle={postLetterFinance}
+                caseDocumentAssets={caseDocumentAssets}
               />
             ) : null}
             {revisionHistoryBlock}

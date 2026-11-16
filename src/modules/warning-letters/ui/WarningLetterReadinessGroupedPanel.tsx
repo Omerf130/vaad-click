@@ -97,11 +97,11 @@ export function WarningLetterReadinessGroupedPanel({ checklist }: Props) {
           </dd>
         </div>
         <div>
-          <dt>תיעוד הגשה</dt>
+          <dt>תיעוד משלוח ידני</dt>
           <dd>
             <StatusBadge
-              variant={checklist.dispatchAllowed ? "success" : "warning"}
-              label={checklist.dispatchAllowed ? "מותר" : "חסום"}
+              variant={checklist.manualDeliveryAllowed ? "success" : "warning"}
+              label={checklist.manualDeliveryAllowed ? "מותר" : "חסום"}
             />
           </dd>
         </div>

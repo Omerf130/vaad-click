@@ -3,6 +3,7 @@ import "server-only";
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
 
 import { LEGAL_DOCUMENT_TEMPLATE_CATEGORY_VALUES } from "@/modules/legal-document-templates/domain/legal-document-template-category";
+import { LegalDocumentTemplateOperativeStatus } from "@/modules/legal-document-templates/domain/legal-document-template-operative-status";
 import { LegalDocumentTemplateRevisionStatus } from "@/modules/legal-document-templates/domain/legal-document-template-revision-status";
 
 const REVISION_STATUS_VALUES = Object.values(LegalDocumentTemplateRevisionStatus);
@@ -28,6 +29,13 @@ const legalDocumentTemplateRevisionSchema = new Schema(
       index: true,
     },
     isCurrentDraft: { type: Boolean, required: true, default: false, index: true },
+    operativeStatus: {
+      type: String,
+      enum: Object.values(LegalDocumentTemplateOperativeStatus),
+      required: true,
+      default: LegalDocumentTemplateOperativeStatus.OPERATIVE_ELIGIBLE,
+      index: true,
+    },
     createdByUserId: { type: Schema.Types.ObjectId, required: true },
     publishedAt: { type: Date, default: null },
   },

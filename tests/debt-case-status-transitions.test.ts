@@ -56,6 +56,16 @@ describe("assertDebtCaseWorkflowTransition", () => {
     ).toThrow(DebtCaseError);
   });
 
+  it("allows lawyer to mark case letter sent from awaiting review", () => {
+    expect(() =>
+      assertDebtCaseWorkflowTransition({
+        from: DebtCaseWorkflowStatus.AWAITING_LAWYER_REVIEW,
+        to: DebtCaseWorkflowStatus.LETTER_SENT,
+        context: { role: UserRole.LAWYER_ADMIN, accountStatus: AccountStatus.ACTIVE },
+      }),
+    ).not.toThrow();
+  });
+
   it("allows lawyer to return case for completion", () => {
     expect(() =>
       assertDebtCaseWorkflowTransition({

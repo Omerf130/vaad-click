@@ -10,10 +10,12 @@ import {
 import { formatWarningLetterDraftErrorHe } from "@/modules/warning-letters/presentation/warning-letter-draft-messages.he";
 import { approveWarningLetterTemplateVariant } from "@/modules/warning-letters/services/warning-letter-template-variant-approval.service";
 import {
-  authorizeWarningLetterDeliveryAttempt,
+  confirmWarningLetterDeliveryDelivered,
+  recordManualWarningLetterDelivery,
   recordWarningLetterDeliveryAttemptDetails,
 } from "@/modules/warning-letters/services/warning-letter-delivery.service";
 import { finalizeWarningLetterForDebtCase } from "@/modules/warning-letters/services/warning-letter-finalization.service";
+import { confirmOperativeDeadlinePolicyForLawyerAdmin } from "@/modules/warning-letters/services/warning-letter-operative-deadline-policy.service";
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
 import { assertSameOriginMutationRequest } from "@/shared/security/request-origin";
 
@@ -75,6 +77,30 @@ export async function approveWarningLetterTemplateVariantFormAction(
   }
 }
 
+export async function confirmOperativeDeadlinePolicyFormAction(
+  _prev: WarningLetterLifecycleActionState,
+  formData: FormData,
+): Promise<WarningLetterLifecycleActionState> {
+  try {
+    await assertSameOriginMutationRequest();
+    const context = await requireLawyerAdminPortal();
+    const revalidateDebtCaseId = String(formData.get("debtCaseId") ?? "").trim();
+    const result = await confirmOperativeDeadlinePolicyForLawyerAdmin({ context });
+    revalidatePath("/app/admin/warning-letter-templates");
+    if (revalidateDebtCaseId) {
+      revalidatePath(adminDebtCaseDetailPath(revalidateDebtCaseId));
+    }
+    return {
+      ok: true,
+      message: result.alreadyConfirmed
+        ? "מדיניות המועד כבר אושרה במערכת."
+        : "מדיניות המועד אושרה לצורך סגירת מסמכים סופיים (בכפוף לאישור משפטי סופי).",
+    };
+  } catch (error) {
+    return mapLifecycleError(error, "לא ניתן לאשר את מדיניות המועד.");
+  }
+}
+
 export async function finalizeWarningLetterFormAction(
   _prev: WarningLetterLifecycleActionState,
   formData: FormData,
@@ -109,7 +135,7 @@ export async function finalizeWarningLetterFormAction(
   }
 }
 
-export async function authorizeWarningLetterDeliveryFormAction(
+export async function recordManualWarningLetterDeliveryFormAction(
   _prev: WarningLetterLifecycleActionState,
   formData: FormData,
 ): Promise<WarningLetterLifecycleActionState> {
@@ -117,33 +143,87 @@ export async function authorizeWarningLetterDeliveryFormAction(
     await assertSameOriginMutationRequest();
     const context = await requireLawyerAdminPortal();
     const debtCaseId = String(formData.get("debtCaseId") ?? "").trim();
-    const buildingId = String(formData.get("buildingId") ?? "").trim();
     const finalDocumentId = String(formData.get("finalDocumentId") ?? "").trim();
     const channel = String(formData.get("channel") ?? "").trim();
+    const deliveryStatus = String(formData.get("deliveryStatus") ?? "").trim();
+    const sentAtIsoLocal = String(formData.get("sentAtIsoLocal") ?? "").trim();
     const recipientDisplayName = String(formData.get("recipientDisplayName") ?? "").trim();
     const recipientContactHint = String(formData.get("recipientContactHint") ?? "").trim();
-    if (!debtCaseId || !finalDocumentId || !recipientDisplayName) {
-      return { ok: false, message: "פרטי הגשה חסרים." };
+    const trackingReference = String(formData.get("trackingReference") ?? "").trim();
+    const internalNotes = String(formData.get("internalNotes") ?? "").trim();
+    const evidenceDocumentAssetId = String(formData.get("evidenceDocumentAssetId") ?? "").trim();
+    const idempotencyKey = String(formData.get("idempotencyKey") ?? "").trim();
+    if (!debtCaseId || !finalDocumentId || !recipientDisplayName || !sentAtIsoLocal) {
+      return { ok: false, message: "פרטי משלוח חסרים." };
     }
-    const legalReadiness = await loadBuildingLegalReadinessForDebtCase(buildingId);
     const correlationId = await resolveAuditCorrelationId();
-    await authorizeWarningLetterDeliveryAttempt({
+    const result = await recordManualWarningLetterDelivery({
       context,
       debtCaseId,
       finalDocumentId,
       channel,
+      deliveryStatus,
+      sentAtIsoLocal,
       recipientDisplayName,
       recipientContactHint: recipientContactHint || undefined,
-      legalReadiness,
+      trackingReference: trackingReference || undefined,
+      internalNotes: internalNotes || undefined,
+      evidenceDocumentAssetId: evidenceDocumentAssetId || undefined,
+      idempotencyKey: idempotencyKey || undefined,
       correlationId,
     });
     revalidatePath(adminDebtCaseDetailPath(debtCaseId));
+    const sentNote = result.caseLetterSent
+      ? " סטטוס התיק עודכן ל«מכתב נשלח» (תיעוד בלבד)."
+      : "";
     return {
       ok: true,
-      message: "נרשמה הרשאה לתיעוד הגשה ידני (לא נשלח דבר אוטומטית).",
+      message: result.created
+        ? `נרשם משלוח ידני.${sentNote}`
+        : `רישום משלוח כבר קיים (מפתח idempotency).${sentNote}`,
     };
   } catch (error) {
-    return mapLifecycleError(error, "לא ניתן לרשום הגשה.");
+    return mapLifecycleError(error, "לא ניתן לרשום משלוח ידני.");
+  }
+}
+
+/** @deprecated — CP21 uses recordManualWarningLetterDeliveryFormAction */
+export async function authorizeWarningLetterDeliveryFormAction(
+  _prev: WarningLetterLifecycleActionState,
+  formData: FormData,
+): Promise<WarningLetterLifecycleActionState> {
+  return recordManualWarningLetterDeliveryFormAction(_prev, formData);
+}
+
+export async function confirmWarningLetterDeliveryFormAction(
+  _prev: WarningLetterLifecycleActionState,
+  formData: FormData,
+): Promise<WarningLetterLifecycleActionState> {
+  try {
+    await assertSameOriginMutationRequest();
+    const context = await requireLawyerAdminPortal();
+    const debtCaseId = String(formData.get("debtCaseId") ?? "").trim();
+    const deliveryRecordId = String(formData.get("deliveryRecordId") ?? "").trim();
+    const confirmedDeliveredAtIsoLocal = String(
+      formData.get("confirmedDeliveredAtIsoLocal") ?? "",
+    ).trim();
+    const internalNotes = String(formData.get("internalNotes") ?? "").trim();
+    if (!debtCaseId || !deliveryRecordId || !confirmedDeliveredAtIsoLocal) {
+      return { ok: false, message: "פרטי אישור קבלה חסרים." };
+    }
+    const correlationId = await resolveAuditCorrelationId();
+    await confirmWarningLetterDeliveryDelivered({
+      context,
+      debtCaseId,
+      deliveryRecordId,
+      confirmedDeliveredAtIsoLocal,
+      internalNotes: internalNotes || undefined,
+      correlationId,
+    });
+    revalidatePath(adminDebtCaseDetailPath(debtCaseId));
+    return { ok: true, message: "נרשמה אישור קבלה (נפרד משליחה)." };
+  } catch (error) {
+    return mapLifecycleError(error, "לא ניתן לאשר קבלה.");
   }
 }
 

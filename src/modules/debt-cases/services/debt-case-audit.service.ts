@@ -193,6 +193,40 @@ export async function recordDebtCaseApprovedForLetterPrep(
   );
 }
 
+export async function recordDebtCaseLetterSent(
+  input: {
+    context: AuthenticatedContext;
+    debtCaseId: string;
+    buildingId: string;
+    revision: number;
+    correlationId?: string;
+    finalDocumentId: string;
+    deliveryRecordId: string;
+    letterSentAtIso: string;
+  },
+  session: ClientSession,
+): Promise<void> {
+  await writeAuditEventMandatory(
+    {
+      eventType: AuditEventType.DEBT_CASE_STATUS_CHANGED,
+      actor: buildUserAuditActor(input.context),
+      action: "debt_case_letter_sent_manual",
+      outcome: AuditOutcome.SUCCESS,
+      target: { entityType: "debt_case", entityId: input.debtCaseId },
+      metadata: {
+        buildingId: input.buildingId,
+        workflowStatus: DebtCaseWorkflowStatus.LETTER_SENT,
+        revision: input.revision,
+        finalDocumentId: input.finalDocumentId,
+        deliveryRecordId: input.deliveryRecordId,
+        letterSentAtIso: input.letterSentAtIso,
+      },
+      correlationId: input.correlationId,
+    },
+    { session },
+  );
+}
+
 export async function recordDebtCaseReviewInvalidatedByEdit(
   input: DebtCaseAuditBase & { lawyerReviewStatus: DebtCaseLawyerReviewStatus },
 ): Promise<void> {

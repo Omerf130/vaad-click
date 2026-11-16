@@ -4,13 +4,13 @@ import { loadLegalDocumentTemplateWorkspace } from "@/modules/legal-document-tem
 import { requireLawyerAdminPortal } from "@/shared/auth/require-access";
 
 export default async function AdminLegalDocumentTemplatesPage() {
-  await requireLawyerAdminPortal();
-  const categories = await loadLegalDocumentTemplateWorkspace();
+  const context = await requireLawyerAdminPortal();
+  const categories = await loadLegalDocumentTemplateWorkspace(context);
 
   return (
     <AdminPageFrame
       title="מסמכים משפטיים"
-      subtitle="ניהול טיוטות, גרסאות, אישור ופרסום של תבניות ייפוי כוח, הסכם שכר טרחה והצהרה — ללא מסמכים לבניין."
+      subtitle="ניהול טיוטות, גרסאות, אישור ופרסום של תבניות ייפוי כוח, הסכם שכר טרחה, הצהרה וכתב תביעה (מבנה) — ללא מסמכים לבניין."
     >
       <LegalDocumentTemplatesWorkspace categories={categories} />
     </AdminPageFrame>

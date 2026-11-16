@@ -1,0 +1,98 @@
+@page {
+  size: A4;
+  margin: 18mm 16mm 22mm 16mm;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "NotoSansHebrew", "David", "Times New Roman", serif;
+  font-size: 11pt;
+  line-height: 1.55;
+  color: #111;
+  direction: rtl;
+  text-align: right;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.pageWatermark {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42pt;
+  font-weight: 700;
+  color: rgba(180, 40, 40, 0.12);
+  transform: rotate(-32deg);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
+
+.documentRoot {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.reviewBanner {
+  font-size: 9pt;
+  font-weight: 700;
+  color: #7c2d12;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  padding: 0.45rem 0.65rem;
+  margin-bottom: 0.85rem;
+  text-align: center;
+}
+
+.metaRow {
+  font-size: 10pt;
+  margin-bottom: 1rem;
+  color: #374151;
+}
+
+.socSection {
+  margin-bottom: 1.1rem;
+  break-inside: avoid-page;
+  page-break-inside: avoid;
+}
+
+.socSectionTitle {
+  font-size: 12pt;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+  color: #0f172a;
+}
+
+.socSectionIndex {
+  font-weight: 600;
+  margin-left: 0.35rem;
+}
+
+.socSectionBody {
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.socSectionBody mark.factual {
+  background: #ecfdf5;
+  color: inherit;
+  padding: 0 0.1rem;
+}
+
+.systemBaselineNote {
+  font-size: 8.5pt;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}

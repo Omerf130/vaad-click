@@ -5,6 +5,7 @@ import type { DebtCaseLegalHoldReason } from "@/modules/debt-cases/domain/debt-c
 import type { DebtCasePartyStructure } from "@/modules/debt-cases/domain/debt-case-parties";
 import type { DebtCasePaymentStatus } from "@/modules/debt-cases/domain/debt-case-payment-status";
 import type { DebtCaseValidationFlag } from "@/modules/debt-cases/domain/debt-case-validation-flag";
+import type { DebtCaseResolutionKind } from "@/modules/debt-cases/domain/debt-case-resolution-kind";
 import type { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 import type { DebtPeriodMonth } from "@/modules/debt-cases/domain/debt-period";
 import type { WarningLetterPlatformFeeCollectionStatus } from "@/modules/debt-cases/domain/warning-letter-platform-fee-collection-status";
@@ -47,6 +48,9 @@ export type DebtCaseRecord = {
   revision: number;
   predecessorDebtCaseId: string | null;
   letterSentAtIso: string | null;
+  caseResolutionKind: DebtCaseResolutionKind | null;
+  caseResolutionReasonHe: string | null;
+  caseResolutionAtIso: string | null;
   validationFlags: DebtCaseValidationFlag[];
   createdByUserId: string;
   updatedByUserId: string;

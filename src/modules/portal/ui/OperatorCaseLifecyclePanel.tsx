@@ -1,7 +1,10 @@
 import { DebtCaseLawyerReviewStatus } from "@/modules/debt-cases/domain/debt-case-lawyer-review-status";
-import { DebtCaseLetterDeliveryStatus } from "@/modules/debt-cases/domain/debt-case-letter-delivery-status";
 import { DebtCaseWorkflowStatus } from "@/modules/debt-cases/domain/debt-case-workflow-status";
 import type { DebtCaseRecord } from "@/modules/debt-cases/domain/debt-case-record.types";
+import {
+  formatClientDebtCaseTrackingPhaseHe,
+  resolveClientDebtCaseTrackingPhase,
+} from "@/modules/debt-cases/presentation/client-debt-case-tracking-phase";
 import {
   DebtCaseLawyerReviewStatusBadge,
   DebtCaseWorkflowStatusBadge,
@@ -9,32 +12,28 @@ import {
 import {
   OPERATOR_LETTER_DELIVERY_NOT_ACTIVE_HE,
   OPERATOR_LETTER_PREP_CLARIFICATION_HE,
-  OPERATOR_PAYMENT_NOT_ACTIVE_HE,
 } from "@/modules/portal/presentation/operator-debt-case-activity.he";
+import { formatDebtCasePaymentStatusHe } from "@/modules/debt-cases/presentation/debt-case-payment-status.he";
+import type { PortalDebtCasePaymentSummary } from "@/modules/debt-cases/services/debt-case-post-letter-finance.service";
 import styles from "@/modules/portal/ui/OperatorPortalDashboard.module.scss";
 
 type Props = {
   record: DebtCaseRecord;
+  printedDeadlineDateIso?: string | null;
+  paymentSummary?: PortalDebtCasePaymentSummary | null;
   embedded?: boolean;
 };
 
-function formatLetterDeliveryHe(status: string, letterSentAtIso: string | null): string {
-  if (letterSentAtIso) {
-    return `מכתב נשלח (תיעוד) · ${new Date(letterSentAtIso).toLocaleDateString("he-IL")}`;
-  }
-  if (status === DebtCaseLetterDeliveryStatus.SENT) {
-    return "סטטוס משלוח: נשלח (ללא תאריך)";
-  }
-  if (status === DebtCaseLetterDeliveryStatus.PENDING_SEND) {
-    return "ממתין להפעלת תהליך משלוח — לא פעיל כרגע";
-  }
-  if (status === DebtCaseLetterDeliveryStatus.NONE) {
-    return OPERATOR_LETTER_DELIVERY_NOT_ACTIVE_HE;
-  }
-  return OPERATOR_LETTER_DELIVERY_NOT_ACTIVE_HE;
-}
-
-export function OperatorCaseLifecyclePanel({ record, embedded = false }: Props) {
+export function OperatorCaseLifecyclePanel({
+  record,
+  printedDeadlineDateIso = null,
+  paymentSummary = null,
+  embedded = false,
+}: Props) {
+  const clientPhase = resolveClientDebtCaseTrackingPhase({
+    record,
+    printedDeadlineDateIso,
+  });
   const showLetterPrepNote =
     record.lawyerReviewStatus === DebtCaseLawyerReviewStatus.APPROVED_FOR_LETTER_PREP;
 
@@ -68,12 +67,30 @@ export function OperatorCaseLifecyclePanel({ record, embedded = false }: Props) 
           </dd>
         </div>
         <div>
-          <dt>משלוח מכתב</dt>
-          <dd>{formatLetterDeliveryHe(record.letterDeliveryStatus, record.letterSentAtIso)}</dd>
+          <dt>מעקב מכתב (לקוח)</dt>
+          <dd>{formatClientDebtCaseTrackingPhaseHe(clientPhase)}</dd>
         </div>
         <div>
-          <dt>תשלום</dt>
-          <dd>{OPERATOR_PAYMENT_NOT_ACTIVE_HE}</dd>
+          <dt>משלוח מכתב</dt>
+          <dd>
+            {record.letterSentAtIso
+              ? `מכתב נשלח (תיעוד) · ${new Date(record.letterSentAtIso).toLocaleDateString("he-IL")}`
+              : OPERATOR_LETTER_DELIVERY_NOT_ACTIVE_HE}
+          </dd>
+        </div>
+        {printedDeadlineDateIso ? (
+          <div>
+            <dt>מועד אחרון (מכתב)</dt>
+            <dd>{printedDeadlineDateIso}</dd>
+          </div>
+        ) : null}
+        <div>
+          <dt>תשלום (תיעוד)</dt>
+          <dd>
+            {paymentSummary
+              ? `${formatDebtCasePaymentStatusHe(paymentSummary.paymentStatus)} · יתרה ${paymentSummary.outstandingBalanceDisplay} ₪ (מול ${paymentSummary.letterTotalDueDisplay} ₪ במכתב)`
+              : "תיעוד תשלומים יוצג לאחר מכתב מסופק."}
+          </dd>
         </div>
       </dl>
       {showLetterPrepNote ? (

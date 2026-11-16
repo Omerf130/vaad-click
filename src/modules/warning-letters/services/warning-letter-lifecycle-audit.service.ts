@@ -48,6 +48,32 @@ export async function recordWarningLetterFinalization(
   );
 }
 
+export async function recordWarningLetterDeliveryConfirmedEvent(input: {
+  context: AuthenticatedContext;
+  deliveryRecordId: string;
+  debtCaseId: string;
+  finalDocumentId: string;
+  confirmedDeliveredAtIso: string;
+  correlationId?: string;
+}): Promise<void> {
+  await writeAuditEvent(
+    {
+      eventType: AuditEventType.LEGAL_DOCUMENT_WARNING_LETTER_DELIVERY_CONFIRMED,
+      actor: buildUserAuditActor(input.context),
+      action: "warning_letter_delivery_confirmed",
+      outcome: AuditOutcome.SUCCESS,
+      target: { entityType: "warning_letter_delivery", entityId: input.deliveryRecordId },
+      metadata: {
+        debtCaseId: input.debtCaseId,
+        finalDocumentId: input.finalDocumentId,
+        confirmedDeliveredAtIso: input.confirmedDeliveredAtIso,
+      },
+      correlationId: input.correlationId,
+    },
+    { mandatory: true },
+  );
+}
+
 export async function recordWarningLetterDeliveryEvent(input: {
   context: AuthenticatedContext;
   deliveryRecordId: string;

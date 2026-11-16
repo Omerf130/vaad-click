@@ -2,6 +2,7 @@ import "server-only";
 
 import { computeLegalDocumentTemplateContentSha256 } from "@/modules/legal-document-templates/domain/legal-document-template-content-hash";
 import type { LegalDocumentTemplateCategory } from "@/modules/legal-document-templates/domain/legal-document-template-category";
+import { LegalDocumentTemplateOperativeStatus } from "@/modules/legal-document-templates/domain/legal-document-template-operative-status";
 import { LegalDocumentTemplateRevisionStatus } from "@/modules/legal-document-templates/domain/legal-document-template-revision-status";
 import { LegalDocumentTemplateApproval } from "@/modules/legal-document-templates/infra/legal-document-template-approval.model";
 import { LegalDocumentTemplateRevision } from "@/modules/legal-document-templates/infra/legal-document-template-revision.model";
@@ -38,6 +39,12 @@ export async function resolveApprovedPublishedLegalTemplateRevision(
   }).lean();
 
   if (!revision) {
+    return null;
+  }
+
+  if (
+    revision.operativeStatus === LegalDocumentTemplateOperativeStatus.DEVELOPMENT_ONLY
+  ) {
     return null;
   }
 

@@ -8,6 +8,7 @@ import {
 } from "@/modules/legal-document-templates/domain/legal-document-template-errors";
 import { evaluatePublishEligibility } from "@/modules/legal-document-templates/domain/legal-document-template-lifecycle.rules";
 import { LegalDocumentTemplateCategory } from "@/modules/legal-document-templates/domain/legal-document-template-category";
+import { LegalDocumentTemplateOperativeStatus } from "@/modules/legal-document-templates/domain/legal-document-template-operative-status";
 import { LegalDocumentTemplateRevisionStatus } from "@/modules/legal-document-templates/domain/legal-document-template-revision-status";
 import {
   approveLegalDocumentTemplateRevision,
@@ -116,6 +117,8 @@ describe("legal document template lifecycle", () => {
 
   it("rejects publish without approval", () => {
     const result = evaluatePublishEligibility({
+      category: LegalDocumentTemplateCategory.POWER_OF_ATTORNEY,
+      operativeStatus: LegalDocumentTemplateOperativeStatus.OPERATIVE_ELIGIBLE,
       lifecycleStatus: LegalDocumentTemplateRevisionStatus.DRAFT,
       isCurrentDraft: true,
       contentSha256: "abc",
@@ -129,6 +132,8 @@ describe("legal document template lifecycle", () => {
 
   it("rejects publish when approval hash differs", () => {
     const result = evaluatePublishEligibility({
+      category: LegalDocumentTemplateCategory.POWER_OF_ATTORNEY,
+      operativeStatus: LegalDocumentTemplateOperativeStatus.OPERATIVE_ELIGIBLE,
       lifecycleStatus: LegalDocumentTemplateRevisionStatus.DRAFT,
       isCurrentDraft: true,
       contentSha256: "abc",
@@ -166,6 +171,7 @@ describe("legal document template lifecycle", () => {
         contentSha256,
         lifecycleStatus: LegalDocumentTemplateRevisionStatus.DRAFT,
         isCurrentDraft: true,
+        operativeStatus: LegalDocumentTemplateOperativeStatus.OPERATIVE_ELIGIBLE,
       }),
     });
     mockFindOneApproval.mockReturnValue({ lean: async () => null });
@@ -197,6 +203,7 @@ describe("legal document template lifecycle", () => {
         contentSha256,
         lifecycleStatus: LegalDocumentTemplateRevisionStatus.DRAFT,
         isCurrentDraft: true,
+        operativeStatus: LegalDocumentTemplateOperativeStatus.OPERATIVE_ELIGIBLE,
       }),
     });
     mockFindOneApproval.mockReturnValue({ lean: async () => null });
@@ -222,6 +229,8 @@ describe("legal document template lifecycle", () => {
 
   it("treats published revisions as immutable for publish eligibility", () => {
     const result = evaluatePublishEligibility({
+      category: LegalDocumentTemplateCategory.POWER_OF_ATTORNEY,
+      operativeStatus: LegalDocumentTemplateOperativeStatus.OPERATIVE_ELIGIBLE,
       lifecycleStatus: LegalDocumentTemplateRevisionStatus.PUBLISHED,
       isCurrentDraft: false,
       contentSha256: "abc",

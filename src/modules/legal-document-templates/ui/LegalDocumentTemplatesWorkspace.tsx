@@ -12,7 +12,12 @@ import {
   saveLegalDocumentTemplateDraftFormAction,
   type LegalDocumentTemplateActionState,
 } from "@/modules/legal-document-templates/actions/legal-document-template.actions";
-import type { LegalDocumentTemplateCategory } from "@/modules/legal-document-templates/domain/legal-document-template-category";
+import { LegalDocumentTemplateCategory } from "@/modules/legal-document-templates/domain/legal-document-template-category";
+import { LegalDocumentTemplateOperativeStatus } from "@/modules/legal-document-templates/domain/legal-document-template-operative-status";
+import { formatLegalDocumentTemplateOperativeStatusHe } from "@/modules/legal-document-templates/domain/legal-document-template-operative-status";
+import { renderStatementOfClaimTemplatePlainPreview } from "@/modules/statement-of-claim-templates/domain/statement-of-claim-template-body";
+import { parseStatementOfClaimTemplateBody } from "@/modules/statement-of-claim-templates/domain/statement-of-claim-template-body";
+import { StatementOfClaimTemplateEditor } from "@/modules/statement-of-claim-templates/ui/StatementOfClaimTemplateEditor";
 import type {
   LegalDocumentTemplateCategoryWorkspace,
   LegalDocumentTemplateRevisionView,
@@ -93,6 +98,7 @@ function CategoryDocumentWorkspace({
   onDirtyChange: (category: LegalDocumentTemplateCategory, isDirty: boolean) => void;
 }) {
   const draft = workspace.currentDraft;
+  const isStatementOfClaim = workspace.category === LegalDocumentTemplateCategory.STATEMENT_OF_CLAIM;
   const baselineText = resolveEditorBaselineText(workspace);
   const [bodyText, setBodyText] = useState(baselineText);
   const [historyViewRevisionId, setHistoryViewRevisionId] = useState<string | null>(null);
@@ -128,14 +134,30 @@ function CategoryDocumentWorkspace({
     initialState,
   );
 
-  const approvalPreviewText = draft?.bodyText ?? "";
-  const canApproveOrPublish = Boolean(draft) && !isDirty && !isHistoryView;
+  const approvalPreviewText = useMemo(() => {
+    if (!draft?.bodyText) {
+      return "";
+    }
+    if (isStatementOfClaim) {
+      const parsed = parseStatementOfClaimTemplateBody(draft.bodyText);
+      if (parsed.ok) {
+        return renderStatementOfClaimTemplatePlainPreview(parsed.body);
+      }
+      return draft.bodyText;
+    }
+    return draft.bodyText;
+  }, [draft, isStatementOfClaim]);
+  const nonOperative =
+    draft?.operativeStatus === LegalDocumentTemplateOperativeStatus.DEVELOPMENT_ONLY;
+  const canApproveOrPublish = Boolean(draft) && !isDirty && !isHistoryView && !nonOperative;
   const publishBlockedReason = !draft
     ? "אין טיוטה פעילה."
     : isDirty
       ? "יש שינויים שלא נשמרו — שמרו את הטיוטה לפני אישור או פרסום."
       : isHistoryView
         ? "צפייה בגרסה היסטורית — חזרו לטיוטה הפעילה."
+        : nonOperative
+          ? "תבנית פיתוח בלבד — אין אישור או פרסום מבצעי."
         : !draft.approved
           ? "פרסום ייפתח רק לאחר אישור מפורש של הניסוח השמור."
           : null;
@@ -199,8 +221,14 @@ function CategoryDocumentWorkspace({
             </div>
             {draft ? (
               <StatusBadge
-                label={draft.approved ? "מאושר — טרם פורסם" : "בעריכה"}
-                variant={draft.approved ? "warning" : "info"}
+                label={
+                  nonOperative
+                    ? formatLegalDocumentTemplateOperativeStatusHe(draft.operativeStatus)
+                    : draft.approved
+                      ? "מאושר — טרם פורסם"
+                      : "בעריכה"
+                }
+                variant={nonOperative ? "warning" : draft.approved ? "warning" : "info"}
               />
             ) : null}
           </header>
@@ -214,9 +242,18 @@ function CategoryDocumentWorkspace({
                 {revisionStatusLabelHe(historyRevision.lifecycleStatus)}) — לקריאה בלבד. אין
                 שינוי לטיוטה הפעילה.
               </p>
-              <div className={styles.previewBox} dir="rtl">
-                {historyRevision.bodyText || "(ריק)"}
-              </div>
+              {isStatementOfClaim ? (
+                <StatementOfClaimTemplateEditor
+                  draft={historyRevision}
+                  bodyText={historyRevision.bodyText}
+                  onBodyTextChange={() => {}}
+                  readOnly
+                />
+              ) : (
+                <div className={styles.previewBox} dir="rtl">
+                  {historyRevision.bodyText || "(ריק)"}
+                </div>
+              )}
               <TechnicalDetails
                 label={`גרסה ${historyRevision.revisionNumber}`}
                 contentSha256={historyRevision.contentSha256}
@@ -286,17 +323,27 @@ function CategoryDocumentWorkspace({
                 </p>
               ) : null}
               <ActionFeedback state={saveState} />
-              <label className={styles.editorLabel} htmlFor="ldt-active-editor">
-                ניסוח הטיוטה
-              </label>
-              <textarea
-                id="ldt-active-editor"
-                className={styles.editor}
-                value={bodyText}
-                onChange={(event) => handleEditorChange(event.target.value)}
-                dir="rtl"
-                aria-describedby="ldt-editor-hint"
-              />
+              {isStatementOfClaim ? (
+                <StatementOfClaimTemplateEditor
+                  draft={draft}
+                  bodyText={bodyText}
+                  onBodyTextChange={handleEditorChange}
+                />
+              ) : (
+                <>
+                  <label className={styles.editorLabel} htmlFor="ldt-active-editor">
+                    ניסוח הטיוטה
+                  </label>
+                  <textarea
+                    id="ldt-active-editor"
+                    className={styles.editor}
+                    value={bodyText}
+                    onChange={(event) => handleEditorChange(event.target.value)}
+                    dir="rtl"
+                    aria-describedby="ldt-editor-hint"
+                  />
+                </>
+              )}
               <p id="ldt-editor-hint" className={styles.metaLine}>
                 כל שמירה יוצרת גרסת טיוטה חדשה; גרסאות קודמות נשמרות בהיסטוריה.
               </p>

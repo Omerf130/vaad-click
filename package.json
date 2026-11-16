@@ -16,14 +16,19 @@
     "provision:lawyer-admin": "node --env-file=.env.local scripts/provision-lawyer-admin.mjs",
     "count:lawyer-admins": "node --env-file=.env.local scripts/count-lawyer-admins.mjs",
     "issue:lawyer-admin-setup-link": "node --env-file=.env.local scripts/issue-lawyer-admin-setup-link.mjs",
-    "dev:sample-legal-document-pdf": "cross-env VAAD_DEV_SAMPLE_PDF=1 vitest run tests/building-legal-document-pdf.test.ts -t \"writes a dev sample PDF\""
+    "dev:sample-legal-document-pdf": "cross-env VAAD_DEV_SAMPLE_PDF=1 vitest run tests/building-legal-document-pdf.test.ts -t \"writes a dev sample PDF\"",
+    "dev:sample-warning-letter-review-pdf": "cross-env VAAD_DEV_WARNING_LETTER_PDF=1 vitest run tests/warning-letter-review-pdf.test.ts -t \"writes representative review PDF samples\"",
+    "dev:sample-warning-letter-review-visual": "cross-env VAAD_DEV_WARNING_LETTER_PDF=1 VAAD_DEV_WARNING_LETTER_VISUAL=1 vitest run tests/warning-letter-review-pdf.test.ts -t \"writes representative review PDF samples\""
   },
   "dependencies": {
     "@expo-google-fonts/noto-sans-hebrew": "^0.4.1",
+    "@sparticuz/chromium": "^153.0.0",
+    "archiver": "^8.0.0",
     "argon2": "^0.45.1",
     "mongoose": "^9.11.2",
     "next": "16.4.3",
     "pdfmake": "^0.3.13",
+    "puppeteer-core": "^25.17.0",
     "rate-limiter-flexible": "^11.2.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -34,6 +39,7 @@
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
+    "@types/archiver": "^8.0.0",
     "@types/node": "^22.20.5",
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",

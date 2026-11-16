@@ -20,7 +20,7 @@ import { BuildingLegalDocument } from "@/modules/building-legal-documents/infra/
 import { BuildingOrganizationalStatus } from "@/modules/buildings/domain/building-status";
 import { Building } from "@/modules/buildings/infra/building.model";
 import {
-  LEGAL_DOCUMENT_TEMPLATE_CATEGORY_VALUES,
+  BUILDING_LEGAL_DOCUMENT_TEMPLATE_CATEGORIES,
   legalDocumentTemplateCategoryLabelHe,
   type LegalDocumentTemplateCategory,
 } from "@/modules/legal-document-templates/domain/legal-document-template-category";
@@ -197,7 +197,7 @@ export async function loadBuildingLegalDocumentsAdminView(input: {
   }
 
   const views: BuildingLegalDocumentCategoryAdminView[] = [];
-  for (const category of LEGAL_DOCUMENT_TEMPLATE_CATEGORY_VALUES) {
+  for (const category of BUILDING_LEGAL_DOCUMENT_TEMPLATE_CATEGORIES) {
     const [active, supersededRows, historyCount, generation] = await Promise.all([
       BuildingLegalDocument.findOne({
         buildingId: input.buildingId,
@@ -257,7 +257,7 @@ export async function loadBuildingLegalDocumentsPortalView(input: {
   await connectMongo();
 
   const views: BuildingLegalDocumentCategoryPortalView[] = [];
-  for (const category of LEGAL_DOCUMENT_TEMPLATE_CATEGORY_VALUES) {
+  for (const category of BUILDING_LEGAL_DOCUMENT_TEMPLATE_CATEGORIES) {
     const active = await BuildingLegalDocument.findOne({
       buildingId: input.buildingId,
       category,

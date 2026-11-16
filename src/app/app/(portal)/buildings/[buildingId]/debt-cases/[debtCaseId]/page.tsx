@@ -12,8 +12,13 @@ import {
   loadLatestOperatorReturnFeedbackHe,
   loadOperatorDebtCaseActivity,
 } from "@/modules/portal/services/operator-debt-case-activity.service";
+import {
+  DebtCaseWorkflowStatus,
+} from "@/modules/debt-cases/domain/debt-case-workflow-status";
+import { loadPrintedDeadlineIsoForPortalDebtCase } from "@/modules/warning-letters/services/warning-letter-post-letter-tracking.service";
 import { OperatorPortalPageFrame } from "@/modules/portal/ui/OperatorPortalPageFrame";
 import { requireOperatorBuildingPortalAccess } from "@/shared/auth/require-operator-building-access";
+import { loadPortalDebtCasePaymentSummary } from "@/modules/debt-cases/services/debt-case-post-letter-finance.service";
 
 type PageProps = {
   params: Promise<{ buildingId: string; debtCaseId: string }>;
@@ -34,6 +39,15 @@ export default async function PortalDebtCaseDetailPage({ params }: PageProps) {
     Promise.resolve(getDocumentStorageUiState()),
   ]);
 
+  const printedDeadlineDateIso =
+    record.workflowStatus === DebtCaseWorkflowStatus.LETTER_SENT
+      ? await loadPrintedDeadlineIsoForPortalDebtCase(debtCaseId)
+      : null;
+  const paymentSummary =
+    record.workflowStatus === DebtCaseWorkflowStatus.LETTER_SENT ||
+    record.workflowStatus === DebtCaseWorkflowStatus.CLOSED_MANUAL
+      ? await loadPortalDebtCasePaymentSummary({ record })
+      : null;
   const defaults = debtCaseRecordToFormDefaults(record);
   const caseTitle = `תיק חוב · דירה ${record.apartmentNumberDisplay || "—"}`;
 
@@ -57,6 +71,8 @@ export default async function PortalDebtCaseDetailPage({ params }: PageProps) {
         returnFeedbackHe={returnFeedbackHe}
         documents={documents}
         storageState={storageState}
+        printedDeadlineDateIso={printedDeadlineDateIso}
+        paymentSummary={paymentSummary}
       />
     </OperatorPortalPageFrame>
   );
